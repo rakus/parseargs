@@ -1,0 +1,121 @@
+
+if [ -z "$script_dir" ]; then
+    echo >&2 "ERROR: variable 'script_dir' not set"
+fi
+
+PRJ_DIR="$script_dir/.."
+TGT_DIR="$PRJ_DIR/target"
+
+REL_PA_EXE="$TGT_DIR/release/parseargs"
+DBG_PA_EXE="$TGT_DIR/debug/parseargs"
+
+if [ -e "$REL_PA_EXE" ] && [ -e "$DBG_PA_EXE" ]; then
+    if [ "$REL_PA_EXE" -nt "$TGT_DIR/debug/parseargs" ]; then
+        PA_EXE="$REL_PA_EXE"
+    else
+        PA_EXE="$DBG_PA_EXE"
+    fi
+elif [ -e "$DBG_PA_EXE" ]; then
+        PA_EXE="$DBG_PA_EXE"
+elif [ -e "$REL_PA_EXE" ]; then
+        PA_EXE="$REL_PA_EXE"
+fi
+
+if [ -z "$PA_EXE" ]; then
+    echo >&2 "ERROR: Parseargs executable not found - run cargo build"
+    exit 1
+fi
+
+
+error_cnt=0
+
+start_test()
+{
+    echo "Test-Script $script_name"
+    echo "Testing $PA_EXE"
+}
+
+end_test()
+{
+    rc=0
+    if [ $error_cnt -eq 0 ]; then
+        printf >&2 '\033[01;32mALL TESTS OK\033[0m\n'
+    else
+        printf >&2 '\033[01;31mTEST FAILURES\033[0m\n'
+        rc=1
+    fi
+    echo "-------------------------------------------------------------------------------"
+    return $rc
+}
+
+
+
+ok()
+{
+    printf '\033[01;32mOK\033[0m:   %s\n' "$*"
+}
+
+failed()
+{
+    printf >&2 '\033[01;31mFAIL\033[0m: %s\n' "$*"
+    error_cnt=$((error_cnt+1))
+}
+
+test_pa()
+{
+    local expect="$1"
+    shift
+    local args="$(printf "'%s' " "$@")"
+    (
+    if eval "$($PA_EXE -s sh "$@")"; then
+        if eval "$expect"; then
+            ok "parseargs $args"
+            exit 0
+        else
+            failed "parseargs $args"
+            exit 0
+        fi
+    else
+        failed "parseargs exit code: $?"
+    fi
+    ) || failed "parseargs $args"
+    return $?
+}
+
+test_pa_errmsg()
+{
+    local rc="$1"
+    local msg_re="$2"
+    shift 2
+    local args="$(printf "'%s' " "$@")"
+
+    message="$($PA_EXE "$@" 2>&1 1>/dev/null )"
+
+    if echo "$message" | grep -q "$msg_re" ; then
+        ok "parseargs $args  - Output matches >>$msg_re<<"
+        return 0
+    else
+        failed "parseargs $args - Invalid Output: >>$message<<"
+        return 1
+    fi
+}
+
+
+test_pa_code()
+{
+    local code_re="$1"
+    shift
+    local args="$(printf "'%s' " "$@")"
+
+    code="$($PA_EXE -s sh "$@" 2>/dev/null)"
+    if echo "$code" | grep -q "$code_re" ; then
+        ok "parseargs $args  - Output matches >>$code_re<<"
+        return 0
+    else
+        failed "parseargs $args - Invalid Output: >>$code<<"
+        return 1
+    fi
+
+    return $?
+}
+#    vim:ft=sh
