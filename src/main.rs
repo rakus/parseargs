@@ -402,9 +402,14 @@ fn main() {
             }
         },
         Err(e) => {
-            eprintln!("{}", e);
-            println!("exit 1;");
-            exit(1);
+            if e.exit_code() == 0 {
+                // help or version output
+                println!("{}", e);
+                exit(0);
+            } else {
+                eprintln!("{}", e);
+                exit(1);
+            }
         }
     }
 }
