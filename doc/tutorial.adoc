@@ -1,0 +1,615 @@
+
+= Parseargs Tutorial
+:author:    Ralf Schandl
+:revnumber: 0.1
+:revdate:   {localdate}
+:copyright-year: 2023
+:doctype: article
+:icons: font
+:toc: left
+:numbered:
+// enable experimental for btn:[...].
+//:experimental:
+
+NOTE: This tutorial is "work in progress".
+
+Parseargs is a command line option parser for shell scripts.
+
+WARNING: Parseargs is in a early state of the development and not yet suitable for serious use.
+
+This tutorial explains the features of Parseargs using examples.
+All examples work with a bourne-compatible shell. One functionality requires arrays and is only supported with _bash_, _ksh_ and _zsh_.
+
+By default Parseargs assumes that the _bash_ shell ist used. Support for other shells can be enabled with `--shell=ksh`, `--shell=zsh` and `--shell=sh`.
+
+
+== Simple Usage
+
+The following script should support two options and arguments.
+The options are:
+
+* `-l`  to enable "long" output.
+* `-o <filename>` to define a file to write to
+
+.Script `example.sh`
+[source,bash]
+----
+#!/bin/sh
+
+eval "$(parseargs -n example.sh -o 'l#long_output,o=outfile' -- "$@")" || exit 1
+
+if [ -n "$long_output" ]; then
+    echo "Long output is enabled"
+fi
+echo "Output file: '$outfile'"
+echo "Arguments: $*"
+----
+
+Before testing lets look at the options and arguments given to Parseargs.
+
+`-n example.sh`::
+This tells Parseargs the name of the calling script.
+The name is used as prefix for error messages.
+
+`-o 'l#long_output,o=outfile'`::
+This defines two options, separated by a comma.
+
+`l#long_output`:::
+This definition defines a simple flag.
+The `#` in the middle is the marker for a flag.
+The part before defines the option character.
+Here `l` defines the option `-l`.
+The part after the `#` is the variable that should be set, when `-l` was found on the command line. The variable gets the value "true" assigned.
+
+`o=outfile`:::
+This definition defines a assignment option.
+A assignment option needs an additional argument.
+The `=` in the middle is the marker for a assignment.
+Again the part before defines the option.
+Here `-o`.
+The part after the marker is the name of the variable.
+This variable gets the option argument assigned.
+
+`--`::
+The double dash separates the Parseargs options from the shell script options.
+
+`"$@"`::
+This is replaced by the script options.
+Always use exactly this notation.
+A simple `$@` (without the quotes) or `$*` might fail.
+See your shell documentation.
+
+NOTE: The option character must be alphanumeric (A-Z, a-z, 0-9).
+
+The trailing `|| exit 1` is just a safety net, in case something goes wrong during eval.
+
+Let's test the script:
+
+----
+$ ./example.sh -l -o out.file in.file other.file
+Long output is enabled
+Output file: 'out.file'
+Arguments: in.file other.file
+----
+
+No space needed between `-o` and the file name:
+
+----
+$ ./example.sh -l -oout.file in.file other.file
+Long output is enabled
+Output file: 'out.file'
+Arguments: in.file other.file
+----
+
+And `-l` and `-o` can be combined into one:
+
+----
+$ ./example.sh -loout.file in.file other.file
+Long output is enabled
+Output file: 'out.file'
+Arguments: in.file other.file
+----
+
+Options and argument order is not relevant:
+
+----
+ ./example.sh -l in.file other.file -oout.file
+Long output is enabled
+Output file: 'out.file'
+Arguments: in.file other.file
+----
+
+Using a unknown option:
+
+----
+$ ./example.sh -X
+example.sh: Unknown option: '-X'
+----
+
+Duplicate options are not allowed:
+
+----
+$ ./example.sh -o out.file -o other-out.file  in.file
+example.sh: Duplicate option: '-o'
+
+$ ./example.sh -l -l -o out.file  in.file
+example.sh: Duplicate option: '-l'
+----
+
+.How does this work?
+****
+To understand how Parseargs works, it can simply be called from the command line.
+
+----
+$ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -l -o out.file in.file other.file
+typeset long_output;
+typeset outfile;
+long_output='true';
+outfile='out.file';
+set -- 'in.file' 'other.file';
+----
+
+First the potentially used variables are defined.
+As `-l` is given, the variable assignment `long_output='true'` is generated.
+And due to `-o out.file` the assignment `outfile='out.file` is added.
+Finally with `set -- ...` the positional parameter (`$1`, `$2` ...) are assigned.
+
+Here is what happens, when an unknown option is found:
+
+----
+$ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -X
+example.sh: Unknown option: -X
+exit 1;
+----
+
+Or here the argument for the option -o is missing:
+
+----
+$ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -o
+example.sh: Missing argument for: -o
+exit 1;
+----
+
+Note that the error messages are printed to STDERR by parseargs.
+Only `exit 1;` is printed to STDOUT and hence evaluated by `eval` when used in a script.
+
+Just play around with Parseargs.
+Use arguments with spaces or special character.
+****
+
+== Long Options
+
+A lot of programs support additional long forms of options.
+Like `-l` and `--long`.
+Parseargs also supports this:
+
+.Script `long-opt.sh`
+[source,bash]
+----
+#!/bin/sh
+
+eval "$(parseargs -n long-opt.sh -o 'l:long#long_output,o:out-file=outfile' -- "$@")" || exit 1
+
+if [ -n "$long_output" ]; then
+    echo "Long output is enabled"
+fi
+echo "Output file: '$outfile'"
+echo "Arguments: $*"
+----
+
+Now we have two colon-separated options before the type marker (`#`, `=`).
+If a option is a single character, it defines a short option (`l` -> `-l`).
+With multiple characters it is a long option, that has two leading dashes (`long` -> `--long`).
+
+
+NOTE: Long options must start with a alphanumeric character and can contain alphanumerics, dashes and underscores.
+
+
+Now our example script enables long output by either using `-l` or `--long` and the output file can be set with `-o out.file` or `--out-file out.file` or even `--out-file=out.file`.
+
+Again some tests:
+
+----
+$ ./long-opt.sh --long --out-file out.file in.file other.file
+Long output is enabled
+Output file: 'out.file'
+Arguments: in.file other.file
+
+$ ./long-opt.sh --long --out-file=out.file in.file other.file
+Long output is enabled
+Output file: 'out.file'
+Arguments: in.file other.file
+----
+
+Duplicate option detection still works:
+
+----
+$ ./long-opt.sh --long -l
+example-1.sh: Duplicate option: '-l/--long'
+----
+
+*Long Options and Optional Arguments*
+
+With long options an optional argument is supported for flag options.
+This optional argument is directly appended to the option with a `=` and the values `true` and `yes` (case-insensitive) are interpreted as boolean true.
+
+So, to reuse the example above:
+
+----
+$ ./long-opt.sh --long=true --out-file=out.file in.file
+Long output is enabled
+Output file: 'out.file'
+Arguments: in.file
+
+$ ./long-opt.sh --long=yes --out-file=out.file in.file
+Long output is enabled
+Output file: 'out.file'
+Arguments: in.file
+
+$ ./long-opt.sh --long=false --out-file=out.file in.file
+Output file: 'out.file'
+Arguments: in.file
+
+$ ./long-opt.sh --long=anything --out-file=out.file in.file
+Output file: 'out.file'
+Arguments: in.file
+----
+
+.By the Way ....
+****
+It is possible to define multiple short and long options.
+
+[source,bash]
+----
+eval "$(parseargs -n long-opt.sh -o 'l:long:D:detailed#long_output,...' -- "$@")" || exit 1
+----
+
+Now `-l`, `--long`, `-D` and `--detailed` all would enable long output.
+I don't know how useful this is, but it is possible.
+****
+
+== Counting Options
+
+Tools sometimes have an option to increase verbosity of the output.
+Example from the ssh man page:
+
+----
+-v      Verbose mode.  Causes ssh to print debugging messages about its
+        progress.  This is helpful in debugging connection, authentica‐
+        tion, and configuration problems.  Multiple -v options increase
+        the verbosity.  The maximum is 3.
+----
+
+Parseargs has an own option type to support this.
+A "Counting Option" is defined using the marker `+`.
+
+The following script only supports the options `-v` and `--verbose`.
+
+.Script `verbosity.sh`
+[source,bash]
+----
+#!/bin/sh
+
+eval "$(parseargs -n verbosity.sh -o 'v:verbose+verbosity' -- "$@")" || exit 1
+
+echo "Verbosity: $verbosity"
+----
+
+
+----
+$ ./verbosity.sh
+Verbosity: 0
+
+$ ./verbosity.sh -v
+Verbosity: 1
+
+$ ./verbosity.sh -vvv
+Verbosity: 3
+
+$ ./verbosity.sh -vvvvvvv
+Verbosity: 7
+----
+
+The long option form additionally supports a optional argument:
+
+----
+$ ./verbosity.sh --verbose
+Verbosity: 1
+
+$ ./verbosity.sh --verbose -v
+Verbosity: 2
+
+$ ./verbosity.sh --verbose=5
+Verbosity: 5
+
+$ ./verbosity.sh --verbose=full
+verbosity.sh: Not a valid count value: "full"
+----
+
+IMPORTANT: The long form with optional argument sets the verbosity, it does not increase it by the given number.
+
+----
+$ ./verbosity.sh -vv --verbose=5
+Verbosity: 5
+----
+
+== Mode Switch Options
+
+A Mode Switch Options are not a new option type, but a extension of a simple flag.
+Mode switches use one variable with different options and assign different values to the variable.
+
+A simple example would be whether something should be copied or moved.
+In that case the option `-c` would request to copy and `-m` would request move.
+
+The definition of such options look like normal flags, but have a equal sign and a value appended.
+
+.Script `mode-switch.sh`
+[source,bash]
+----
+#!/bin/sh
+
+eval "$(parseargs -n mode-switch.sh -o 'c:copy#mode=copy,m:move#mode=move' -- "$@")" || exit 1
+
+echo "Mode: $mode"
+----
+
+And here some tests:
+
+----
+ $ ./mode-switch.sh -c
+Mode: copy
+
+$ ./mode-switch.sh -m
+Mode: move
+
+$ ./mode-switch.sh -cm
+mode-switch.sh: Options are mutual exclusive: -c/--copy, -m/--move
+----
+
+== Required Options
+
+Sometimes a option might be required. Parseargs supports this with a asterisk before the variable name.
+
+.Script `required.sh`
+[source,bash]
+----
+#!/bin/sh
+
+eval "$(parseargs -n required.sh -o 'o=*out_file' -- "$@")" || exit 1
+
+echo "Output file: $out_file"
+----
+
+And now a test:
+
+----
+$ ./required.sh -o output.file
+Output file: output.file
+
+$ ./required.sh
+required.sh: Required option not found: -o
+----
+
+
+== Using Callbacks
+
+Till now we used Parseargs to assign variables for the options found on the command line, but it is also able to work with shell functions.
+
+When using functions, Parseargs also generates code to test for the existence of the function.
+Assuming a function `set_out_file` should be used, the following code will always be generated (here for bash):
+
+[source,bash]
+----
+typeset -f set_out_file >/dev/null 2>&1 || { echo >&2 "ERROR: Function set_out_file does not exist.";exit 127; };
+----
+
+This code will exit the calling script if the function does not exist.
+This check is always done, whether the function is needed in the actually generated code or not.
+
+When calling the callback the exit status of the function must be zero else the calling script is terminated with function exit code.
+The code for this looks like this:
+[source,bash]
+----
+set_out_file 'output.file' || exit $?
+----
+
+=== Callbacks for Options
+
+Instead of assigning variables for options, it is also possible to call a function.
+By adding `()` to the name, it defines the function to call.
+
+.Script `option-cb.sh`
+[source,bash]
+----
+#!/bin/sh
+
+set_long() { echo "set_long($1)"; }
+set_outfile() { echo "set_outfile($1)"; }
+set_verbosity() { echo "set_verbosity($1)"; }
+
+eval "$(parseargs -n option-cb.sh -o 'l:long#set_long(),o=set_outfile(),v+set_verbosity()' -- "$@")" || exit 1
+
+echo "Arguments: $*"
+----
+
+Testing:
+
+----
+$ ./option-cb.sh -v -l -o out.file -vv input
+set_verbosity(1)
+set_long(true)
+set_outfile(out.file)
+set_verbosity(2)
+set_verbosity(3)
+Arguments: input
+
+$ ./option-cb.sh --long=false input
+set_long()
+Arguments: input
+
+----
+
+* For counting options, the callback is called multiple times with the current count value.
+* For flags it is called with a value `'true'`. If the option explicitly is set to `false` using `--option=false`, the callback is called with an empty string.
+* For assignment options the callback is called with the option argument.
+
+[WARNING]
+====
+Using a callback disables checks within Parseargs.
+
+The duplicate usage of options is not checked and also the duplicate usage of mode-switch options are not detected.
+
+With callbacks you have more control and possibilities, but also more responsibilities.
+====
+
+=== Callback for Arguments
+
+In the previous sections we have seen callbacks for options, this is also possible for program arguments.
+
+The callback for program arguments is defined with the Parseargs option `-a` or `--arg-callback`.
+
+.Script `args-cb.sh`
+[source,bash]
+----
+#!/bin/sh
+
+set_argument() { echo "set_argument($1)"; }
+
+eval "$(parseargs -n args-cb.sh -a set_argument -o '' -- "$@")" || exit 1
+----
+
+When the argument callback is used, the positional parameters are always empty.
+So `$1` etc are unset.
+
+=== Callback on Error
+
+Parseargs allows the defition of an error callback.
+This defines a function that is called before Parseargs emits `exit 1` to terminate the calling script.
+
+The following example doesn't support any options and insults you when you give one.
+
+.Script `error-cb.sh`
+[source,bash]
+----
+#!/bin/sh
+
+error_callback() { echo "You did something stupid!"; }
+
+eval "$(parseargs -n error-cb.sh -e error_callback -o '' -- "$@")" || exit 1
+
+echo "OK"
+----
+
+----
+$ ./error-cb.sh
+OK
+
+$ ./error-cb.sh -x
+error-cb.sh: Unknown option: -x
+You did something stupid!
+$
+----
+
+
+== Support for `--help`
+
+First up: Parseargs itself does not support creating help texts.
+By using an option callback it can call a method to display the help message.
+
+This can simply be arcived with the following option definition:
+
+----
+help#?show_help()
+----
+
+THis looks familiar, but has one new character, the `?`.
+This `?` tells Parseargs that this is a help option and that
+
+* only this option should be processed.
+* all other content of the command line should be dropped. (The content before the `--help` must still be valid.)
+* the calling script should be terminated with exit code 0 if the target is a callback.
+
+To make your life simpler, Parseargs has a own option for this. With `-H` the option definition from above will be automatically appended.
+
+
+.Script `help.sh`
+[source,bash]
+----
+#!/bin/sh
+
+show_help()
+{
+    echo "Usage: help.sh OPTIONS <input-file...>"
+    echo "  -l, --long           enable detailed output"
+    echo "  -o, --out-file FILE  file to write result"
+
+}
+
+eval "$(parseargs -n help.sh -H -o 'l:long#detailed,o:out-file=outfile' -- "$@")" || exit 1
+----
+
+Displaying help:
+
+----
+$ ./help.sh --help
+Usage: help.sh OPTIONS <input-file...>
+  -l, --long           enable detailed output
+  -o, --out-file FILE  file to write result
+----
+
+== The Option Argument Separator '--'
+
+Posix defines the `--` as a separator between options and program arguments.
+
+Reusing our first script `example.sh`:
+
+----
+$ ./example.sh -o out.file -X
+example.sh: Unknown option: -X
+
+$ ./example.sh -o out.file -- -X
+Output file: 'out.file'
+Arguments: -X
+----
+
+TODO: Describe `-r` / `--remainder` here.
+
+== Support for Different Shells
+
+Parseargs supports generating code for different shells. The following shells are supported:
+
+`--shell=bash`, `--shell=ksh` and `--shell=zsh`::
+The code generated with this shells are identical, except for array initialization, which is different in ksh.
+
+`--shell=sh`::
+This request code for a plain POSIX shell.
+So the variables are not defined with `typedef` and the option `-r` / `--remainder` is not supported, as it needs array support.
+
+
+== Parseargs and ShellCheck
+
+https://github.com/koalaman/shellcheck[ShellCheck] is a static code analysis
+tool for shell scripts.
+If you don't use it yet, you really should.
+
+As Parseargs is creating and assigning new variables at runtime, ShellCheck can't know about them and will complain.
+For our first example the following output would be created:
+
+----
+In example.sh line 8:
+echo "Output file: '$outfile'"
+                    ^------^ SC2154 (warning): outfile is referenced but not assigned.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2154 -- outfile is referenced but not ass...
+----
+
+
+== Parseargs and Invalid UTF-8
+
+As of today, Parseargs can only handle arguments that are valid UTF-8.
+
+If a invalid UTF-8 character is found, Parseargs will display an error message and exit the calling script.
+
+
+// vim:ft=asciidoc:et:ts=4:spelllang=en_us:spell
