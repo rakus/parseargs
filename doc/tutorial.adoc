@@ -200,7 +200,7 @@ If a option is a single character, it defines a short option (`l` -> `-l`).
 With multiple characters it is a long option, that has two leading dashes (`long` -> `--long`).
 
 
-NOTE: Long options must start with a alphanumeric character and can contain alphanumerics, dashes and underscored.
+NOTE: Long options must start with a alphanumeric character and can contain alphanumerics, dashes and underscores.
 
 
 Now our example script enables long output by either using `-l` or `--long` and the output file can be set with `-o out.file` or `--out-file out.file` or even `--out-file=out.file`.
@@ -385,8 +385,7 @@ example.sh: Required option not found: -o
 
 == Using Callbacks
 
-Till now Parseargs always works with variables, but it is also able to work with shell functions.
-Instead of generating code to assign a variable, it can generate code to call a function.
+Till now we used Parseargs to assign variables for the options found on the command line, but it is also able to work with shell functions.
 
 When using functions, Parseargs also generates code to test for the existence of the function.
 Assuming a function `set_out_file` should be used, the following code will always be generated (here for bash):
@@ -399,7 +398,7 @@ typeset -f set_out_file >/dev/null 2>&1 || { echo >&2 "ERROR: Function set_out_f
 This code will exit the calling script if the function does not exist.
 This check is always done, whether the function is needed in the actually generated code or not.
 
-The exit status of the function is checked and if it is non-zero, the script is terminated with the exit status of the function.
+When calling the callback the exit status of the function must be zero else the calling script is terminated with function exit code.
 The code for this looks like this:
 [source,bash]
 ----
@@ -408,11 +407,143 @@ set_out_file 'output.file' || exit $?
 
 === Callbacks for Options
 
+Instead of assigning variables for options, it is also possible to call a function.
+By adding `()` to the name, it defines the function to call.
+
+[source,bash]
+----
+#!/bin/sh
+
+set_long() { echo "set_long($1)"; }
+set_outfile() { echo "set_outfile($1)"; }
+set_verbosity() { echo "set_verbosity($1)"; }
+
+eval "$(parseargs -n example.sh -o 'l:long#set_long(),o=set_outfile(),v+set_verbosity()' -- "$@")" || exit 1
+
+echo "Arguments: $*"
+----
+
+Testing:
+
+----
+$ ./example.sh -v -l -o out.file -vv input
+set_verbosity(1)
+set_long(true)
+set_outfile(out.file)
+set_verbosity(2)
+set_verbosity(3)
+Arguments: input
+
+$ ./example.sh --long=false input
+set_long()
+Arguments: input
+
+----
+
+* For counting options, the callback is called multiple times with the current count value.
+* For flags it is called with a value `'true'`. If the option explicitly is set to `false` using `--option=false`, the callback is called with an empty string.
+* For assignment options the callback is called with the option argument.
+
+[WARNING]
+====
+Using a callback disables checks within Parseargs.
+
+The duplicate usage of options is not checked and also the duplicate usage of mode-switch options are not detected.
+
+With callbacks you have more control and possibilities, but also more responsibilities.
+====
+
 === Callback for Arguments
+
+In the previous sections we have seen callbacks for options, this is also possible for program arguments.
+
+The callback for program arguments is defined with the Parseargs option `-a` or `--arg-callback`.
+
+[source,bash]
+----
+#!/bin/sh
+
+set_argument() { echo "set_argument($1)"; }
+
+eval "$(parseargs -n example.sh -a set_argument -o '' -- "$@")" || exit 1
+----
+
+When the argument callback is used, the positional parameters are always empty.
+So `$1` etc are unset.
 
 === Callback on Error
 
+Parseargs allows the defition of an error callback.
+This defines a function that is called before Parseargs emits `exit 1` to terminate the calling script.
+
+The following example doesn't support any options and insults you when you give one.
+
+[source,bash]
+----
+#!/bin/sh
+
+error_callback() { echo "You did something stupid!"; }
+
+eval "$(parseargs -n example.sh -e error_callback -o '' -- "$@")" || exit 1
+
+echo "OK"
+----
+
+----
+$ ./example.sh
+OK
+
+$ ./example.sh -x
+example.sh: Unknown option: -x
+You did something stupid!
+$
+----
+
+
 == Support for `--help`
+
+First up: Parseargs itself does not support creating help texts.
+By using an option callback it can call a method to display the help message.
+
+This can simply be arcived with the following option definition:
+
+----
+help#?show_help()
+----
+
+THis looks familiar, but has one new character, the `?`.
+This `?` tells Parseargs that this is a help option and that
+
+* only this option should be processed.
+* all other content of the command line should be dropped. (The content before the `--help` must still be valid.)
+* the calling script should be terminated with exit code 0 if the target is a callback.
+
+To make your life simpler, Parseargs has a own option for this. With `-H` the option definition from above will be automatically appended.
+
+
+[source,bash]
+----
+#!/bin/sh
+
+show_help()
+{
+    echo "Usage: example.sh OPTIONS <input-file...>"
+    echo "  -l, --long           enable detailed output"
+    echo "  -o, --out-file FILE  file to write result"
+
+}
+
+eval "$(parseargs -n example.sh -H -o 'l:long#detailed,o:out-file=outfile' -- "$@")" || exit 1
+----
+
+Displaying help:
+
+----
+$ ./example.sh --help
+Usage: example.sh OPTIONS <input-file...>
+  -l, --long           enable detailed output
+  -o, --out-file FILE  file to write result
+----
 
 == The Option Argument Separator '--'
 
@@ -427,6 +558,11 @@ If you don't use it yet, you really should.
 Problem: Parseargs typesets and assigns variables, but ShellCheck doesn't know
 about it.
 
+== Parseargs and Invalid UTF-8
+
+As of today, Parseargs can only handle arguments that are valid UTF-8.
+
+If a invalid UTF-8 character is found, Parseargs will display an error message and exit the calling script.
 
 
 // vim:ft=asciidoc:et:ts=4:spelllang=en_us:spell
