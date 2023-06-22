@@ -42,40 +42,9 @@ unknown options.
 To investigate the generated code just call parseargs from the
 command line.
 
-## Option definition
+The [Tutorial](https://rakus.github.io/parseargs/) explains all features of
+Parseargs.
 
-Work in progress...
-
-The supported options are defined with the parseargs option
-`-o`/`--options`. Multiple option definitions can be given
-separated by commas. Using `-o ''` means, that the script
-doesn't support any options.
-
-Single Option Definition:
-
-```
-<OPTIONS><TYPE><ATTRIBUTE><TARGET>[=ASSIGN]
-```
-`OPTIONS` is a colon-separated list of option characters and strings
-For single character options (like 'l' for '-l') alphanumeric chars
-are supported.
-String options (like 'long' for '--long') must start with a alphanumeric
-followed by alphanumeric, '_' or '-'.
-
-`TYPE` is either
-* `#` for flags (boolean options)
-* `=` for options that require an additional argument
-* `+` for counting options (counts the occurrences on the command line)
-
-'ATTRIBUTE' is either a '*' to mark an option as required or
-a '?' to mark it as a help option. **'?' NOT IMPLEMENTED YET**
-
-`TARGET` is either a plain variable name or if followed by `()` the
-name of a function to call.
-
-`ASSIGN` is only possible with a flag option (`#`). If the option
-is given, the value is assigned to the target. Multiple options with the
-same variable are possible in this case.
 
 ## TODO
 
@@ -83,7 +52,6 @@ This tool is in an early state and there are areas that need further
 improvements
 
 * Improve README.
-* Consider writing a tutorial.
 * Error messages and error handling.
 * Improve parsing and parsing error messages.
 * Gracefully handle arguments with invalid UTF-8 chars. Today it just error exits.
