@@ -63,11 +63,11 @@ failed()
 
 test_pa()
 {
-    local expect="$1"
+    expect="$1"
     shift
-    local args="$(printf "'%s' " "$@")"
+    args="$(printf "'%s' " "$@")"
     (
-    if eval "$($PA_EXE -s sh "$@")"; then
+    if eval "$($PA_EXE -s$PA_SHELL_OPT "$@")"; then
         if eval "$expect"; then
             ok "parseargs $args"
             exit 0
@@ -84,12 +84,12 @@ test_pa()
 
 test_pa_errmsg()
 {
-    local rc="$1"
-    local msg_re="$2"
+    rc="$1"
+    msg_re="$2"
     shift 2
-    local args="$(printf "'%s' " "$@")"
+    args="$(printf "'%s' " "$@")"
 
-    message="$($PA_EXE "$@" 2>&1 1>/dev/null )"
+    message="$($PA_EXE -s$PA_SHELL_OPT "$@" 2>&1 1>/dev/null )"
 
     if echo "$message" | grep -q "$msg_re" ; then
         ok "parseargs $args  - Output matches >>$msg_re<<"
@@ -103,11 +103,11 @@ test_pa_errmsg()
 
 test_pa_code()
 {
-    local code_re="$1"
+    code_re="$1"
     shift
-    local args="$(printf "'%s' " "$@")"
+    args="$(printf "'%s' " "$@")"
 
-    code="$($PA_EXE -s sh "$@" 2>/dev/null)"
+    code="$($PA_EXE -s$PA_SHELL_OPT "$@" 2>/dev/null)"
     if echo "$code" | grep -q "$code_re" ; then
         ok "parseargs $args  - Output matches >>$code_re<<"
         return 0

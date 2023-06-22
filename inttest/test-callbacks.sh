@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # FILE: test-callbacks.sh
 #
@@ -17,16 +17,17 @@ script_name="$(basename "$0")"
 start_test
 
 (
+
 set_debug()
 {
     debug=$1
 }
 
-eval "$($PA_EXE -o "d#set_debug()" -- -d)"
-echo ">>>$debug<<<"
+
+eval "$($PA_EXE -s$PA_SHELL_OPT -o "d#set_debug()" -- -d)"
 test -n "$debug"
 
-) && ok "OK" || failed "NIX"
+) && ok '$PA_EXE -s$PA_SHELL_OPT -o "d#set_debug()" -- -d' || failed '$PA_EXE -s$PA_SHELL_OPT -o "d#set_debug()" -- -d'
 
 
 

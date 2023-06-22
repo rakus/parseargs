@@ -33,14 +33,14 @@ test_pa 'test "$file" = "test file"' -o "f:file=file" -- -f'test file'
 test_pa 'test "$file" = "test file"' -o "f:file=file" -- --file 'test file'
 test_pa 'test "$file" = "test file"' -o "f:file=file" -- --file='test file'
 
-test_pa 'test $verbosity -eq 0' -o "v:verbose+verbosity" --
-test_pa 'test $verbosity -eq 1' -o "v:verbose+verbosity" -- -v
-test_pa 'test $verbosity -eq 3' -o "v:verbose+verbosity" -- -vvv
+test_pa 'test $verbosity = 0' -o "v:verbose+verbosity" --
+test_pa 'test $verbosity = 1' -o "v:verbose+verbosity" -- -v
+test_pa 'test $verbosity = 3' -o "v:verbose+verbosity" -- -vvv
 
-test_pa 'test $verbosity -eq 1' -o "v:verbose+verbosity" -- --verbose
-test_pa 'test $verbosity -eq 3' -o "v:verbose+verbosity" -- -vv --verbose
-test_pa 'test $verbosity -eq 17' -o "v:verbose+verbosity" -- --verbose=17
-test_pa 'test $verbosity -eq 1 && test $1 = 17' -o "v:verbose+verbosity" -- --verbose 17
+test_pa 'test $verbosity = 1' -o "v:verbose+verbosity" -- --verbose
+test_pa 'test $verbosity = 3' -o "v:verbose+verbosity" -- -vv --verbose
+test_pa 'test $verbosity = 17' -o "v:verbose+verbosity" -- --verbose=17
+test_pa 'test $verbosity = 1 && test $1 = 17' -o "v:verbose+verbosity" -- --verbose 17
 
 
 expect='test $debug = true && test "$long" = true && test "$file" = filename'
