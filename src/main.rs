@@ -408,6 +408,8 @@ fn main() {
                 exit(0);
             } else {
                 eprintln!("{}", e);
+
+                println!("exit 1;");
                 exit(1);
             }
         }
