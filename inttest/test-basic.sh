@@ -54,12 +54,51 @@ test_pa 'test "$mode" = copy' -o "c:copy#mode=copy,m:move#mode=move" -- --copy
 test_pa 'test "$mode" = move' -o "c:copy#mode=copy,m:move#mode=move" -- -m
 test_pa 'test "$mode" = move' -o "c:copy#mode=copy,m:move#mode=move" -- --move
 
+
 test_pa_errmsg 1 "parseargs: Options are mutual exclusive: -c/--copy, -m/--move" -o "c:copy#mode=copy,m:move#mode=move" -- -cm
 
 test_pa_errmsg 1 "parseargs: One of the following options is required: -c/--copy, -m/--move" -o "c:copy#*mode=copy,m:move#mode=move" --
 test_pa_errmsg 1 "parseargs: One of the following options is required: -c/--copy, -m/--move" -o "c:copy#mode=copy,m:move#*mode=move" --
 
 test_pa_errmsg 1 "parseargs: Unknown option: -D" -o "d#debug" -- -D
+
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -a
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -b
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -c
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -d
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -e
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -f
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -g
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -h
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -i
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -j
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -k
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -l
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -m
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -n
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -o
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -p
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -q
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -r
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -s
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -t
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -u
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -v
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -w
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -x
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -y
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -z
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -0
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -1
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -2
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -3
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -4
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -5
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -6
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -7
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -8
+test_pa 'test "$opt" = true' -o "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:0:1:2:3:4:5:6:7:8:9#opt" -- -9
+
 
 end_test
 
