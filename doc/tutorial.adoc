@@ -516,14 +516,14 @@ $
 First up: Parseargs itself does not support creating help texts.
 By using an option callback it can call a method to display the help message.
 
-This can simply be arcived with the following option definition:
+This can simply be archived with the following option definition:
 
 ----
 help#?show_help()
 ----
 
-THis looks familiar, but has one new character, the `?`.
-This `?` tells Parseargs that this is a help option and that
+This looks familiar, but has one new character, the `?`.
+The `?` tells Parseargs that this is a help option and that
 
 * only this option should be processed.
 * all other content of the command line should be dropped. (The content before the `--help` must still be valid.)
