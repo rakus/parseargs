@@ -434,6 +434,77 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 @media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+pre.pygments .hll { background-color: #ffffcc }
+pre.pygments { background: #f8f8f8; }
+pre.pygments .tok-c { color: #3D7B7B; font-style: italic } /* Comment */
+pre.pygments .tok-err { border: 1px solid #FF0000 } /* Error */
+pre.pygments .tok-k { color: #008000; font-weight: bold } /* Keyword */
+pre.pygments .tok-o { color: #666666 } /* Operator */
+pre.pygments .tok-ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+pre.pygments .tok-cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+pre.pygments .tok-cp { color: #9C6500 } /* Comment.Preproc */
+pre.pygments .tok-cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+pre.pygments .tok-c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+pre.pygments .tok-cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+pre.pygments .tok-gd { color: #A00000 } /* Generic.Deleted */
+pre.pygments .tok-ge { font-style: italic } /* Generic.Emph */
+pre.pygments .tok-gr { color: #E40000 } /* Generic.Error */
+pre.pygments .tok-gh { color: #000080; font-weight: bold } /* Generic.Heading */
+pre.pygments .tok-gi { color: #008400 } /* Generic.Inserted */
+pre.pygments .tok-go { color: #717171 } /* Generic.Output */
+pre.pygments .tok-gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+pre.pygments .tok-gs { font-weight: bold } /* Generic.Strong */
+pre.pygments .tok-gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+pre.pygments .tok-gt { color: #0044DD } /* Generic.Traceback */
+pre.pygments .tok-kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+pre.pygments .tok-kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+pre.pygments .tok-kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+pre.pygments .tok-kp { color: #008000 } /* Keyword.Pseudo */
+pre.pygments .tok-kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+pre.pygments .tok-kt { color: #B00040 } /* Keyword.Type */
+pre.pygments .tok-m { color: #666666 } /* Literal.Number */
+pre.pygments .tok-s { color: #BA2121 } /* Literal.String */
+pre.pygments .tok-na { color: #687822 } /* Name.Attribute */
+pre.pygments .tok-nb { color: #008000 } /* Name.Builtin */
+pre.pygments .tok-nc { color: #0000FF; font-weight: bold } /* Name.Class */
+pre.pygments .tok-no { color: #880000 } /* Name.Constant */
+pre.pygments .tok-nd { color: #AA22FF } /* Name.Decorator */
+pre.pygments .tok-ni { color: #717171; font-weight: bold } /* Name.Entity */
+pre.pygments .tok-ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+pre.pygments .tok-nf { color: #0000FF } /* Name.Function */
+pre.pygments .tok-nl { color: #767600 } /* Name.Label */
+pre.pygments .tok-nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+pre.pygments .tok-nt { color: #008000; font-weight: bold } /* Name.Tag */
+pre.pygments .tok-nv { color: #19177C } /* Name.Variable */
+pre.pygments .tok-ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+pre.pygments .tok-w { color: #bbbbbb } /* Text.Whitespace */
+pre.pygments .tok-mb { color: #666666 } /* Literal.Number.Bin */
+pre.pygments .tok-mf { color: #666666 } /* Literal.Number.Float */
+pre.pygments .tok-mh { color: #666666 } /* Literal.Number.Hex */
+pre.pygments .tok-mi { color: #666666 } /* Literal.Number.Integer */
+pre.pygments .tok-mo { color: #666666 } /* Literal.Number.Oct */
+pre.pygments .tok-sa { color: #BA2121 } /* Literal.String.Affix */
+pre.pygments .tok-sb { color: #BA2121 } /* Literal.String.Backtick */
+pre.pygments .tok-sc { color: #BA2121 } /* Literal.String.Char */
+pre.pygments .tok-dl { color: #BA2121 } /* Literal.String.Delimiter */
+pre.pygments .tok-sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+pre.pygments .tok-s2 { color: #BA2121 } /* Literal.String.Double */
+pre.pygments .tok-se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+pre.pygments .tok-sh { color: #BA2121 } /* Literal.String.Heredoc */
+pre.pygments .tok-si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+pre.pygments .tok-sx { color: #008000 } /* Literal.String.Other */
+pre.pygments .tok-sr { color: #A45A77 } /* Literal.String.Regex */
+pre.pygments .tok-s1 { color: #BA2121 } /* Literal.String.Single */
+pre.pygments .tok-ss { color: #19177C } /* Literal.String.Symbol */
+pre.pygments .tok-bp { color: #008000 } /* Name.Builtin.Pseudo */
+pre.pygments .tok-fm { color: #0000FF } /* Name.Function.Magic */
+pre.pygments .tok-vc { color: #19177C } /* Name.Variable.Class */
+pre.pygments .tok-vg { color: #19177C } /* Name.Variable.Global */
+pre.pygments .tok-vi { color: #19177C } /* Name.Variable.Instance */
+pre.pygments .tok-vm { color: #19177C } /* Name.Variable.Magic */
+pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
+</style>
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
@@ -441,7 +512,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="details">
 <span id="author" class="author">Ralf Schandl</span><br>
 <span id="revnumber">version 0.1,</span>
-<span id="revdate">2023-06-22</span>
+<span id="revdate">2023-06-23</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -525,15 +596,15 @@ The options are:</p>
 <div class="listingblock">
 <div class="title">Script <code>example.sh</code></div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">#!/bin/sh
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
 
-eval "$(parseargs -n example.sh -o 'l#long_output,o=outfile' -- "$@")" || exit 1
+<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>example.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;l#long_output,o=outfile&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
 
-if [ -n "$long_output" ]; then
-    echo "Long output is enabled"
-fi
-echo "Output file: '$outfile'"
-echo "Arguments: $*"</code></pre>
+<span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-o">[</span><span class="tok-w"> </span>-n<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$long_output</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">]</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-k">then</span>
+<span class="tok-w">    </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Long output is enabled&quot;</span>
+<span class="tok-k">fi</span>
+<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Output file: &#39;</span><span class="tok-nv">$outfile</span><span class="tok-s2">&#39;&quot;</span>
+<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Arguments: </span><span class="tok-nv">$*</span><span class="tok-s2">&quot;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -730,15 +801,15 @@ Parseargs also supports this:</p>
 <div class="listingblock">
 <div class="title">Script <code>long-opt.sh</code></div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">#!/bin/sh
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
 
-eval "$(parseargs -n long-opt.sh -o 'l:long#long_output,o:out-file=outfile' -- "$@")" || exit 1
+<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>long-opt.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;l:long#long_output,o:out-file=outfile&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
 
-if [ -n "$long_output" ]; then
-    echo "Long output is enabled"
-fi
-echo "Output file: '$outfile'"
-echo "Arguments: $*"</code></pre>
+<span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-o">[</span><span class="tok-w"> </span>-n<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$long_output</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">]</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-k">then</span>
+<span class="tok-w">    </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Long output is enabled&quot;</span>
+<span class="tok-k">fi</span>
+<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Output file: &#39;</span><span class="tok-nv">$outfile</span><span class="tok-s2">&#39;&quot;</span>
+<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Arguments: </span><span class="tok-nv">$*</span><span class="tok-s2">&quot;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -825,7 +896,7 @@ Arguments: in.file</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">eval "$(parseargs -n long-opt.sh -o 'l:long:D:detailed#long_output,...' -- "$@")" || exit 1</code></pre>
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>long-opt.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;l:long:D:detailed#long_output,...&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -861,11 +932,11 @@ A "Counting Option" is defined using the marker <code>+</code>.</p>
 <div class="listingblock">
 <div class="title">Script <code>verbosity.sh</code></div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">#!/bin/sh
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
 
-eval "$(parseargs -n verbosity.sh -o 'v:verbose+verbosity' -- "$@")" || exit 1
+<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>verbosity.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;v:verbose+verbosity&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
 
-echo "Verbosity: $verbosity"</code></pre>
+<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Verbosity: </span><span class="tok-nv">$verbosity</span><span class="tok-s2">&quot;</span></code></pre>
 </div>
 </div>
 <div class="listingblock">
@@ -938,11 +1009,11 @@ In that case the option <code>-c</code> would request to copy and <code>-m</code
 <div class="listingblock">
 <div class="title">Script <code>mode-switch.sh</code></div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">#!/bin/sh
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
 
-eval "$(parseargs -n mode-switch.sh -o 'c:copy#mode=copy,m:move#mode=move' -- "$@")" || exit 1
+<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>mode-switch.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;c:copy#mode=copy,m:move#mode=move&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
 
-echo "Mode: $mode"</code></pre>
+<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Mode: </span><span class="tok-nv">$mode</span><span class="tok-s2">&quot;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -971,11 +1042,11 @@ mode-switch.sh: Options are mutual exclusive: -c/--copy, -m/--move</pre>
 <div class="listingblock">
 <div class="title">Script <code>required.sh</code></div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">#!/bin/sh
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
 
-eval "$(parseargs -n required.sh -o 'o=*out_file' -- "$@")" || exit 1
+<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>required.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;o=*out_file&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
 
-echo "Output file: $out_file"</code></pre>
+<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Output file: </span><span class="tok-nv">$out_file</span><span class="tok-s2">&quot;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1004,7 +1075,7 @@ Assuming a function <code>set_out_file</code> should be used, the following code
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">typeset -f set_out_file &gt;/dev/null 2&gt;&amp;1 || { echo &gt;&amp;2 "ERROR: Function set_out_file does not exist.";exit 127; };</code></pre>
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-nb">typeset</span><span class="tok-w"> </span>-f<span class="tok-w"> </span>set_out_file<span class="tok-w"> </span>&gt;/dev/null<span class="tok-w"> </span><span class="tok-m">2</span>&gt;<span class="tok-p">&amp;</span><span class="tok-m">1</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span>&gt;<span class="tok-p">&amp;</span><span class="tok-m">2</span><span class="tok-w"> </span><span class="tok-s2">&quot;ERROR: Function set_out_file does not exist.&quot;</span><span class="tok-p">;</span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">127</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span><span class="tok-p">;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1017,7 +1088,7 @@ The code for this looks like this:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">set_out_file 'output.file' || exit $?</code></pre>
+<pre class="pygments highlight"><code data-lang="bash"><span></span>set_out_file<span class="tok-w"> </span><span class="tok-s1">&#39;output.file&#39;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-nv">$?</span></code></pre>
 </div>
 </div>
 <div class="sect2">
@@ -1029,15 +1100,15 @@ By adding <code>()</code> to the name, it defines the function to call.</p>
 <div class="listingblock">
 <div class="title">Script <code>option-cb.sh</code></div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">#!/bin/sh
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
 
-set_long() { echo "set_long($1)"; }
-set_outfile() { echo "set_outfile($1)"; }
-set_verbosity() { echo "set_verbosity($1)"; }
+set_long<span class="tok-o">()</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;set_long(</span><span class="tok-nv">$1</span><span class="tok-s2">)&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span>
+set_outfile<span class="tok-o">()</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;set_outfile(</span><span class="tok-nv">$1</span><span class="tok-s2">)&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span>
+set_verbosity<span class="tok-o">()</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;set_verbosity(</span><span class="tok-nv">$1</span><span class="tok-s2">)&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span>
 
-eval "$(parseargs -n option-cb.sh -o 'l:long#set_long(),o=set_outfile(),v+set_verbosity()' -- "$@")" || exit 1
+<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>option-cb.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;l:long#set_long(),o=set_outfile(),v+set_verbosity()&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
 
-echo "Arguments: $*"</code></pre>
+<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Arguments: </span><span class="tok-nv">$*</span><span class="tok-s2">&quot;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1103,11 +1174,11 @@ Arguments: input</pre>
 <div class="listingblock">
 <div class="title">Script <code>args-cb.sh</code></div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">#!/bin/sh
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
 
-set_argument() { echo "set_argument($1)"; }
+set_argument<span class="tok-o">()</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;set_argument(</span><span class="tok-nv">$1</span><span class="tok-s2">)&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span>
 
-eval "$(parseargs -n args-cb.sh -a set_argument -o '' -- "$@")" || exit 1</code></pre>
+<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>args-cb.sh<span class="tok-w"> </span>-a<span class="tok-w"> </span>set_argument<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1127,13 +1198,13 @@ This defines a function that is called before Parseargs emits <code>exit 1</code
 <div class="listingblock">
 <div class="title">Script <code>error-cb.sh</code></div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">#!/bin/sh
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
 
-error_callback() { echo "You did something stupid!"; }
+error_callback<span class="tok-o">()</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;You did something stupid!&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span>
 
-eval "$(parseargs -n error-cb.sh -e error_callback -o '' -- "$@")" || exit 1
+<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>error-cb.sh<span class="tok-w"> </span>-e<span class="tok-w"> </span>error_callback<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
 
-echo "OK"</code></pre>
+<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;OK&quot;</span></code></pre>
 </div>
 </div>
 <div class="listingblock">
@@ -1158,7 +1229,7 @@ $</pre>
 By using an option callback it can call a method to display the help message.</p>
 </div>
 <div class="paragraph">
-<p>This can simply be arcived with the following option definition:</p>
+<p>This can simply be archived with the following option definition:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1166,8 +1237,8 @@ By using an option callback it can call a method to display the help message.</p
 </div>
 </div>
 <div class="paragraph">
-<p>THis looks familiar, but has one new character, the <code>?</code>.
-This <code>?</code> tells Parseargs that this is a help option and that</p>
+<p>This looks familiar, but has one new character, the <code>?</code>.
+The <code>?</code> tells Parseargs that this is a help option and that</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1188,17 +1259,17 @@ This <code>?</code> tells Parseargs that this is a help option and that</p>
 <div class="listingblock">
 <div class="title">Script <code>help.sh</code></div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">#!/bin/sh
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
 
-show_help()
-{
-    echo "Usage: help.sh OPTIONS &lt;input-file...&gt;"
-    echo "  -l, --long           enable detailed output"
-    echo "  -o, --out-file FILE  file to write result"
+show_help<span class="tok-o">()</span>
+<span class="tok-o">{</span>
+<span class="tok-w">    </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Usage: help.sh OPTIONS &lt;input-file...&gt;&quot;</span>
+<span class="tok-w">    </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;  -l, --long           enable detailed output&quot;</span>
+<span class="tok-w">    </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;  -o, --out-file FILE  file to write result&quot;</span>
 
-}
+<span class="tok-o">}</span>
 
-eval "$(parseargs -n help.sh -H -o 'l:long#detailed,o:out-file=outfile' -- "$@")" || exit 1</code></pre>
+<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>help.sh<span class="tok-w"> </span>-H<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;l:long#detailed,o:out-file=outfile&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1298,7 +1369,7 @@ For more information:
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2023-06-22 19:10:08 UTC
+Last updated 2023-06-23 19:53:43 UTC
 </div>
 </div>
 </body>
