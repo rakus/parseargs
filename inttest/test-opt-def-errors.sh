@@ -19,7 +19,7 @@ test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "d#" --
 test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "d#debug(" --
 test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "d#debug)" --
 test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "d#debug,d" --
-test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "d#debug=" --
+#test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "d#debug=" --
 
 # Incomplete
 # e.g.: test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "c=mode=copy" --

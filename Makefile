@@ -22,9 +22,13 @@ ${DEBUG_TGT}: Cargo.toml ${SRCFILES}
 ${RELEASE_TGT}: Cargo.toml ${SRCFILES}
 	cargo build --release
 
-test:                                        ## run Cargo tests and integration tests
+unit-test:                                   ## run Cargo tests
 	cargo test
+
+int-test:                                    ## run integration tests (shell scripts)
 	./inttest/run.sh
+
+test: unit-test int-test                     ## run unit and itegration tests
 
 clean:
 	cargo clean
