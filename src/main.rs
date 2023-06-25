@@ -6,9 +6,8 @@ use crate::shell_code::VarValue;
 use shell_code::CodeChunk;
 use std::collections::HashMap;
 use std::ffi::OsString;
-use regex::Regex;
-use std::process::exit;
 use std::panic::catch_unwind;
+use std::process::exit;
 
 use crate::arg_parser::{CmdLineElement, CmdLineTokenizer};
 use crate::opt_def::{OptConfig, OptTarget, OptType};
@@ -75,15 +74,18 @@ fn die_internal(msg: String) -> ! {
 }
 
 /**
-Used by Clap to validate a given str as shell name and to create a String from it.
+Used by Clap to validate a given str as shell variable/function name and to create a String from it.
 */
 fn parse_shell_name(arg: &str) -> Result<String, String> {
-    let regex: Regex = Regex::new(r"^[A-Za-z][A-Za-z0-9_]*$").unwrap();
-    if regex.is_match(arg) {
-        Ok(arg.to_string())
-    } else {
-        Err(format!("Not a valid shell name"))
+    for (idx, chr) in arg.chars().enumerate() {
+        if idx == 0 && !chr.is_alphabetic() {
+            Err(format!("Not a valid shell variable or function name"))?
+        }
+        if idx > 0 && !chr.is_alphanumeric() && chr != '_' {
+            Err(format!("Not a valid shell variable or function name"))?
+        }
     }
+    Ok(arg.to_string())
 }
 
 /**
