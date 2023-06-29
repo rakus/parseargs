@@ -20,19 +20,19 @@ run_tests()
 test_with_shell()
 {
     unset TEST_SHELL
-    unset PA_SHELL_OPT
+    unset __PARSEARGS_TEST_SHELL__
 
     TEST_SHELL="$1"
 
     if command -v "$TEST_SHELL" >/dev/null 2>&1; then
-        PA_SHELL_OPT="$2"
+        __PARSEARGS_TEST_SHELL__="$2"
 
         echo
-        echo "Testing with $TEST_SHELL (Mode: $PA_SHELL_OPT)"
+        echo "Testing with $TEST_SHELL (Mode: $__PARSEARGS_TEST_SHELL__)"
         echo "============================================================"
 
         export TEST_SHELL
-        export PA_SHELL_OPT
+        export __PARSEARGS_TEST_SHELL__
 
         run_tests
     fi

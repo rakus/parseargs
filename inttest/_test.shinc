@@ -67,7 +67,7 @@ test_pa()
     shift
     args="$(printf "'%s' " "$@")"
     (
-    if eval "$($PA_EXE -s$PA_SHELL_OPT "$@")"; then
+    if eval "$($PA_EXE "$@")"; then
         if eval "$expect"; then
             ok "parseargs $args"
             exit 0
@@ -89,7 +89,7 @@ test_pa_errmsg()
     shift 2
     args="$(printf "'%s' " "$@")"
 
-    message="$($PA_EXE -s$PA_SHELL_OPT "$@" 2>&1 1>/dev/null )"
+    message="$($PA_EXE "$@" 2>&1 1>/dev/null )"
 
     if echo "$message" | grep -q "$msg_re" ; then
         ok "parseargs $args  - Output matches >>$msg_re<<"
@@ -107,7 +107,7 @@ test_pa_code()
     shift
     args="$(printf "'%s' " "$@")"
 
-    code="$($PA_EXE -s$PA_SHELL_OPT "$@" 2>/dev/null)"
+    code="$($PA_EXE "$@" 2>/dev/null)"
     if echo "$code" | grep -q "$code_re" ; then
         ok "parseargs $args  - Output matches >>$code_re<<"
         return 0

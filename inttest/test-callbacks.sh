@@ -24,10 +24,10 @@ set_debug()
 }
 
 
-eval "$($PA_EXE -s$PA_SHELL_OPT -o "d#set_debug()" -- -d)"
+eval "$($PA_EXE -o "d#set_debug()" -- -d)"
 test -n "$debug"
 
-) && ok '$PA_EXE -s$PA_SHELL_OPT -o "d#set_debug()" -- -d' || failed '$PA_EXE -s$PA_SHELL_OPT -o "d#set_debug()" -- -d'
+) && ok '$PA_EXE -o "d#set_debug()" -- -d' || failed '$PA_EXE -o "d#set_debug()" -- -d'
 
 
 

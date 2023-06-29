@@ -15,6 +15,8 @@ use clap::Parser;
 
 const PARSEARGS: &str = env!("CARGO_PKG_NAME");
 
+const TEST_SHELL_VAR: &str = "__PARSEARGS_TEST_SHELL__";
+
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
 struct CmdLineArgs {
@@ -48,19 +50,14 @@ struct CmdLineArgs {
     #[arg(short = 'H', long = "help-opt")]
     help_opt: bool,
 
-    /// Produce code for named shell. Supported: bash, ksh, zsh
-    #[arg(
-        short = 's',
-        long = "shell",
-        value_name = "SHELL",
-        default_value = "bash"
-    )]
-    shell: String,
+    /// Produce code for named shell. Supported: bash, ksh, zsh, sh
+    #[arg(short = 's', long = "shell", value_name = "SHELL")]
+    shell: Option<String>,
 
-    /// enable debug output to STDERR.
-    #[arg(short = 'd', long = "debug")]
-    debug: bool,
-
+    // Disabled for now
+    // /// enable debug output to STDERR.
+    // #[arg(short = 'd', long = "debug")]
+    // debug: bool,
     /// Shell script options
     script_args: Vec<OsString>,
 }
