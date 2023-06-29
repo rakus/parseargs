@@ -485,15 +485,19 @@ fn format_parsing_error(opt_def_str: &String, index: usize, msg: &String) -> Str
 }
 
 pub fn parse(opt_def_str: &String) -> Result<Vec<OptConfig>, String> {
-    let mut ps = ParserSource::new(opt_def_str);
-    match parse_opt_def_list(&mut ps) {
-        Ok(vec) => Ok(vec),
-        Err(ParsingError::Error(msg)) => Err(format_parsing_error(opt_def_str, ps.index, &msg)),
-        _ => Err(format_parsing_error(
-            opt_def_str,
-            ps.index,
-            &"Can't parse".to_string(),
-        )),
+    if opt_def_str.len() == 0 {
+        Ok(Vec::new())
+    } else {
+        let mut ps = ParserSource::new(opt_def_str);
+        match parse_opt_def_list(&mut ps) {
+            Ok(vec) => Ok(vec),
+            Err(ParsingError::Error(msg)) => Err(format_parsing_error(opt_def_str, ps.index, &msg)),
+            _ => Err(format_parsing_error(
+                opt_def_str,
+                ps.index,
+                &"Can't parse".to_string(),
+            )),
+        }
     }
 }
 
