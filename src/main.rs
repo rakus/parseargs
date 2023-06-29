@@ -18,7 +18,8 @@ const PARSEARGS: &str = env!("CARGO_PKG_NAME");
 const TEST_SHELL_VAR: &str = "__PARSEARGS_TEST_SHELL__";
 
 #[derive(Parser, Debug)]
-#[command(author, version, about)]
+//#[clap(disable_help_flag = true, disable_version_flag = true)]
+#[command(version)]
 struct CmdLineArgs {
     /// Definitions of supported shell options
     #[arg(short = 'o', long = "options", value_name = "OPT-DEFs")]
@@ -46,6 +47,15 @@ struct CmdLineArgs {
     #[arg(short = 'p', long = "posix")]
     posix: bool,
 
+    /// Initialize all variables with '', except for counting variables,
+    /// as they are always initialized with 0.
+    #[arg(short = 'i', long = "init-vars")]
+    init_vars: bool,
+
+    /// Create local variables. Not supported with --shell sh.
+    #[arg(short = 'l', long = "local-vars")]
+    local_vars: bool,
+
     /// Enable support for --help as script option. Script must provide the function 'show_help'.
     #[arg(short = 'H', long = "help-opt")]
     help_opt: bool,
@@ -67,6 +77,8 @@ Exit after printing an error message.
 */
 fn die_internal(msg: String) -> ! {
     eprintln!("{}: {}", PARSEARGS, msg);
+    println!("exit 1");
+
     exit(1);
 }
 
@@ -92,7 +104,8 @@ typesetting the variables (if supported by shell).
 fn shell_init_code(
     opt_cfg_list: &Vec<OptConfig>,
     cmd_line_args: &CmdLineArgs,
-    typeset_vars: bool,
+    local_vars: bool,
+    init_vars: bool,
 ) -> Vec<CodeChunk> {
     let mut init_code: Vec<CodeChunk> = vec![];
 
@@ -110,29 +123,43 @@ fn shell_init_code(
         }
     }
     // ... then typset and counter variables
-    for opt_cfg in opt_cfg_list {
-        if typeset_vars {
+    if local_vars {
+        for opt_cfg in opt_cfg_list {
+            let name = opt_cfg.get_target_name();
+
             if opt_cfg.is_target_variable() {
-                let name = opt_cfg.get_target_name();
                 init_code.push(match &opt_cfg.opt_type {
-                    OptType::Counter(_) => CodeChunk::TypesetIntVar(name.clone()),
-                    _ => CodeChunk::TypesetVar(name.clone()),
+                    OptType::Counter(_) => CodeChunk::DeclareLocalIntVar(name.clone()),
+                    _ => CodeChunk::DeclareLocalVar(name.clone()),
                 });
             }
         }
-        if let OptType::Counter(_) = &opt_cfg.opt_type {
-            // only init variables, don't call functions
-            if opt_cfg.is_target_variable() {
-                init_code.push(CodeChunk::AssignVar(
-                    opt_cfg.get_target_name(),
-                    VarValue::IntValue(0),
-                ));
+    }
+
+    for opt_cfg in opt_cfg_list {
+        let name = opt_cfg.get_target_name();
+
+        if opt_cfg.is_target_variable() {
+            if init_vars {
+                match &opt_cfg.opt_type {
+                    OptType::Flag(_) | OptType::Assignment(_) | OptType::ModeSwitch(_, _) => {
+                        init_code.push(CodeChunk::AssignVar(
+                            name.clone(),
+                            VarValue::StringValue("".to_string()),
+                        ))
+                    }
+                    OptType::Counter(_) => {
+                        init_code.push(CodeChunk::AssignVar(name.clone(), VarValue::IntValue(0)));
+                    }
+                }
+            } else if let OptType::Counter(_) = &opt_cfg.opt_type {
+                init_code.push(CodeChunk::AssignVar(name.clone(), VarValue::IntValue(0)));
             }
         }
     }
 
     if let Some(array) = &cmd_line_args.remainder {
-        init_code.push(CodeChunk::TypesetArrayVar(array.clone()));
+        init_code.push(CodeChunk::DeclareArrayVar(array.clone()));
         init_code.push(CodeChunk::AssignEmptyArray(array.clone()));
     }
 
@@ -384,24 +411,41 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
         });
     }
 
+    let shell = cmd_line_args
+        .shell
+        .clone()
+        .unwrap_or(std::env::var(TEST_SHELL_VAR).unwrap_or("bash".to_string()));
+
     // get the shell templates
-    let shell_tmpl = shell_code::get_shell_template(cmd_line_args.shell.as_str());
+    let shell_tmpl = shell_code::get_shell_template(shell.as_str());
     if let None = shell_tmpl {
-        die_internal(format!("Unknown shell '{}'", cmd_line_args.shell));
+        die_internal(format!("Unknown shell '{}'", shell));
     }
     let shell_tmpl = shell_tmpl.unwrap();
 
     if !shell_tmpl.supports_arrays && cmd_line_args.remainder.is_some() {
         die_internal(format!(
-            "Shell {} does not support arrays, so option -r/--remainder not supported",
-            cmd_line_args.shell
+            "Shell {} does not support arrays, so option -r/--remainder is not supported",
+            shell
+        ));
+    }
+
+    if cmd_line_args.local_vars && !shell_tmpl.supports_local_vars {
+        die_internal(format!(
+            "Shell {} does not support local variables, so option -l/--local-vars is not supported",
+            shell
         ));
     }
 
     let mut code: Vec<CodeChunk> = vec![];
 
     // generate initialization code. Check for functions, initialize variables
-    let mut init_code = shell_init_code(&opt_cfg_list, &cmd_line_args, shell_tmpl.supports_typeset);
+    let mut init_code = shell_init_code(
+        &opt_cfg_list,
+        &cmd_line_args,
+        cmd_line_args.local_vars,
+        cmd_line_args.init_vars,
+    );
 
     // let options_code = parse_shell_options(&opt_cfg_list, &cmd_line_args);
     match parse_shell_options(&mut opt_cfg_list, &cmd_line_args) {
@@ -430,7 +474,7 @@ fn main() {
                 // Ok should never be reached, as parseargs exits
                 Ok(_) => exit(97),
                 Err(_) => {
-                    println!("exit 1;");
+                    println!("exit 1");
                     exit(13);
                 }
             }
@@ -443,7 +487,7 @@ fn main() {
             } else {
                 eprintln!("{}", e);
 
-                println!("exit 1;");
+                println!("exit 1");
                 exit(1);
             }
         }

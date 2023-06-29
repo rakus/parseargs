@@ -48,9 +48,9 @@ impl fmt::Display for VarValue {
 pub enum CodeChunk {
     Separator,
 
-    TypesetVar(String),
-    TypesetIntVar(String),
-    TypesetArrayVar(String),
+    DeclareLocalVar(String),
+    DeclareLocalIntVar(String),
+    DeclareArrayVar(String),
 
     AssignVar(String, VarValue),
     AssignEmptyArray(String),
@@ -69,12 +69,13 @@ pub struct CodeTemplates {
     /** Whether the shell supports arrays. */
     pub supports_arrays: bool,
     /** Whether the shell supports typeset. */
-    pub supports_typeset: bool,
+    pub supports_local_vars: bool,
     statement_separator: &'static str,
 
-    typeset_variable: &'static str,
-    typeset_int_variable: &'static str,
-    typeset_array_variable: &'static str,
+    declare_local_variable: &'static str,
+    declare_local_int_variable: &'static str,
+
+    declare_array_variable: &'static str,
 
     assign_variable: &'static str,
 
@@ -93,25 +94,31 @@ pub struct CodeTemplates {
 impl CodeTemplates {
     pub fn format_vector(&self, chunks: &Vec<CodeChunk>) -> String {
         let mut str = String::new();
+        let mut first = true;
+        let separator = CodeChunk::Separator;
         for chunk in chunks.iter() {
+            if ! first {
+                str.push_str(&self.format(&separator));
+            }
             str.push_str(&self.format(chunk));
+            first = false;
         }
         str
     }
 
     pub fn format(&self, chunk: &CodeChunk) -> String {
         match chunk {
-            CodeChunk::TypesetVar(name) => {
-                if !self.supports_typeset { panic!("Typeset not supported") }
-                self.format_code_name(self.typeset_variable, name)
+            CodeChunk::DeclareLocalVar(name) => {
+                if !self.supports_local_vars { panic!("Local variables not supported") }
+                self.format_code_name(self.declare_local_variable, name)
             }
-            CodeChunk::TypesetIntVar(name) => {
-                if !self.supports_typeset { panic!("Typeset not supported") }
-                self.format_code_name(self.typeset_int_variable, name)
+            CodeChunk::DeclareLocalIntVar(name) => {
+                if !self.supports_local_vars { panic!("Local variables not supported") }
+                self.format_code_name(self.declare_local_int_variable, name)
             }
-            CodeChunk::TypesetArrayVar(name) => {
-                if !self.supports_typeset { panic!("Typeset not supported") }
-                self.format_code_name(self.typeset_array_variable, name)
+            CodeChunk::DeclareArrayVar(name) => {
+                if !self.supports_arrays { panic!("Arrays not supported") }
+                self.format_code_name(self.declare_array_variable, name)
             }
             CodeChunk::AssignVar(name, value) => {
                 self.format_code_name_value(self.assign_variable, name, value)
@@ -138,24 +145,20 @@ impl CodeTemplates {
     }
     fn format_code_name(&self, tmpl: &str, name: &String) -> String {
         let mut str = tmpl.replace("{NAME}", name);
-        str.push_str(self.statement_separator());
         str
     }
     fn format_code_name_value(&self, tmpl: &str, name: &String, value: &VarValue) -> String {
         let mut str = tmpl.replace("{NAME}", name);
         str = str.replace("{VALUE}", &value.to_string());
-        str.push_str(self.statement_separator());
         str
     }
     fn format_code_name_int_value(&self, tmpl: &str, name: &String, value: i32) -> String {
         let mut str = tmpl.replace("{NAME}", name);
         str = str.replace("{VALUE}", &value.to_string());
-        str.push_str(self.statement_separator());
         str
     }
     fn format_code_int_value(&self, tmpl: &str, value: i32) -> String {
         let mut str = tmpl.replace("{VALUE}", &value.to_string());
-        str.push_str(self.statement_separator());
         str
     }
     fn format_code_args(&self, tmpl: &str, args: &Vec<String>) -> String {
@@ -167,7 +170,6 @@ impl CodeTemplates {
             args_str.push_str(&VarValue::escape_string(a));
         }
         let mut str = tmpl.replace("{ARGS}", &args_str);
-        str.push_str(self.statement_separator());
         str
     }
     fn statement_separator(&self) -> &str {
@@ -178,13 +180,13 @@ impl CodeTemplates {
 
 const SH_TEMPLATE : CodeTemplates = CodeTemplates {
     supports_arrays : false,
-    supports_typeset: false,
+    supports_local_vars: false,
 
     statement_separator : ";\n",
 
-    typeset_variable : "",
-    typeset_int_variable : "",
-    typeset_array_variable : "",
+    declare_local_variable: "",
+    declare_local_int_variable: "",
+    declare_array_variable: "",
 
     assign_variable : "{NAME}={VALUE}",
 
@@ -201,11 +203,11 @@ const SH_TEMPLATE : CodeTemplates = CodeTemplates {
 
 const BASH_TEMPLATE : CodeTemplates = CodeTemplates {
     supports_arrays : true,
-    supports_typeset: true,
+    supports_local_vars: true,
 
-    typeset_variable : "typeset {NAME}",
-    typeset_int_variable : "typeset -i {NAME}",
-    typeset_array_variable : "typeset -a {NAME}",
+    declare_local_variable: "typeset {NAME}",
+    declare_local_int_variable: "typeset -i {NAME}",
+    declare_array_variable: "typeset -a {NAME}",
 
     assign_empty_array : "{NAME}=()",
     add_to_array : "{NAME}+=({VALUE})",
@@ -321,42 +323,42 @@ mod shell_template_test {
 
         let var_name = "name".to_string();
 
-        let chunk = CodeChunk::TypesetVar(var_name.clone());
+        let chunk = CodeChunk::DeclareLocalVar(var_name.clone());
         assert!(std::panic::catch_unwind(|| shell.format(&chunk)).is_err());
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::StringValue("value".to_string()));
-        assert_eq!("name='value';\n", shell.format(&chunk));
+        assert_eq!("name='value'", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::IntValue(13));
-        assert_eq!("name=13;\n", shell.format(&chunk));
+        assert_eq!("name=13", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::BoolValue(true));
-        assert_eq!("name='true';\n", shell.format(&chunk));
+        assert_eq!("name='true'", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::BoolValue(false));
-        assert_eq!("name='';\n", shell.format(&chunk));
+        assert_eq!("name=''", shell.format(&chunk));
 
         let var_name = "func".to_string();
 
         let chunk = CodeChunk::CallFunction(var_name.clone(), VarValue::StringValue("value".to_string()));
-        assert_eq!("func 'value' || exit $?;\n", shell.format(&chunk));
+        assert_eq!("func 'value' || exit $?", shell.format(&chunk));
 
         let chunk = CodeChunk::CheckForFunction(var_name.clone());
-        assert_eq!("LC_ALL=C type func 2>/dev/null | grep function >/dev/null || (echo >&2 \"ERROR: Function func does not exist.\";exit 1) || exit 127;\n", shell.format(&chunk));
+        assert_eq!("LC_ALL=C type func 2>/dev/null | grep function >/dev/null || (echo >&2 \"ERROR: Function func does not exist.\";exit 1) || exit 127", shell.format(&chunk));
 
         let chunk = CodeChunk::SetArgs(vec!["one".to_string(), "don't".to_string(), "count".to_string()]);
-        assert_eq!("set -- 'one' 'don'\\''t' 'count';\n", shell.format(&chunk));
+        assert_eq!("set -- 'one' 'don'\\''t' 'count'", shell.format(&chunk));
 
         let chunk = CodeChunk::Exit(13);
-        assert_eq!("exit 13;\n", shell.format(&chunk));
+        assert_eq!("exit 13", shell.format(&chunk));
 
         // Unsupported features
 
         // typeset is not supported
-        let chunk = CodeChunk::TypesetIntVar(var_name.clone());
+        let chunk = CodeChunk::DeclareLocalIntVar(var_name.clone());
         assert!(std::panic::catch_unwind(|| shell.format(&chunk)).is_err());
 
-        let chunk = CodeChunk::TypesetArrayVar(var_name.clone());
+        let chunk = CodeChunk::DeclareArrayVar(var_name.clone());
         assert!(std::panic::catch_unwind(|| shell.format(&chunk)).is_err());
 
         // arrays are not supported
@@ -373,44 +375,44 @@ mod shell_template_test {
 
         let var_name = "name".to_string();
 
-        let chunk = CodeChunk::TypesetVar(var_name.clone());
-        assert_eq!("typeset name;\n", shell.format(&chunk));
-        let chunk = CodeChunk::TypesetIntVar(var_name.clone());
-        assert_eq!("typeset -i name;\n", shell.format(&chunk));
-        let chunk = CodeChunk::TypesetArrayVar(var_name.clone());
-        assert_eq!("typeset -a name;\n", shell.format(&chunk));
+        let chunk = CodeChunk::DeclareLocalVar(var_name.clone());
+        assert_eq!("typeset name", shell.format(&chunk));
+        let chunk = CodeChunk::DeclareLocalIntVar(var_name.clone());
+        assert_eq!("typeset -i name", shell.format(&chunk));
+        let chunk = CodeChunk::DeclareArrayVar(var_name.clone());
+        assert_eq!("typeset -a name", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::StringValue("value".to_string()));
-        assert_eq!("name='value';\n", shell.format(&chunk));
+        assert_eq!("name='value'", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::IntValue(13));
-        assert_eq!("name=13;\n", shell.format(&chunk));
+        assert_eq!("name=13", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::BoolValue(true));
-        assert_eq!("name='true';\n", shell.format(&chunk));
+        assert_eq!("name='true'", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::BoolValue(false));
-        assert_eq!("name='';\n", shell.format(&chunk));
+        assert_eq!("name=''", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignEmptyArray(var_name.clone());
-        assert_eq!("name=();\n", shell.format(&chunk));
+        assert_eq!("name=()", shell.format(&chunk));
 
         let chunk = CodeChunk::AddToArray(var_name.clone(), VarValue::StringValue("test".to_string()));
-        assert_eq!("name+=('test');\n", shell.format(&chunk));
+        assert_eq!("name+=('test')", shell.format(&chunk));
 
         let var_name = "func".to_string();
 
         let chunk = CodeChunk::CallFunction(var_name.clone(), VarValue::StringValue("value".to_string()));
-        assert_eq!("func 'value' || exit $?;\n", shell.format(&chunk));
+        assert_eq!("func 'value' || exit $?", shell.format(&chunk));
 
         let chunk = CodeChunk::CheckForFunction(var_name.clone());
-        assert_eq!("typeset -f func >/dev/null 2>&1 || { echo >&2 \"ERROR: Function func does not exist.\";exit 127; };\n", shell.format(&chunk));
+        assert_eq!("typeset -f func >/dev/null 2>&1 || { echo >&2 \"ERROR: Function func does not exist.\";exit 127; }", shell.format(&chunk));
 
         let chunk = CodeChunk::SetArgs(vec!["one".to_string(), "don't".to_string(), "count".to_string()]);
-        assert_eq!("set -- 'one' 'don'\\''t' 'count';\n", shell.format(&chunk));
+        assert_eq!("set -- 'one' 'don'\\''t' 'count'", shell.format(&chunk));
 
         let chunk = CodeChunk::Exit(13);
-        assert_eq!("exit 13;\n", shell.format(&chunk));
+        assert_eq!("exit 13", shell.format(&chunk));
     }
 
     #[test]
@@ -419,43 +421,43 @@ mod shell_template_test {
 
         let var_name = "name".to_string();
 
-        let chunk = CodeChunk::TypesetVar(var_name.clone());
-        assert_eq!("typeset name;\n", shell.format(&chunk));
-        let chunk = CodeChunk::TypesetIntVar(var_name.clone());
-        assert_eq!("typeset -i name;\n", shell.format(&chunk));
-        let chunk = CodeChunk::TypesetArrayVar(var_name.clone());
-        assert_eq!("typeset -a name;\n", shell.format(&chunk));
+        let chunk = CodeChunk::DeclareLocalVar(var_name.clone());
+        assert_eq!("typeset name", shell.format(&chunk));
+        let chunk = CodeChunk::DeclareLocalIntVar(var_name.clone());
+        assert_eq!("typeset -i name", shell.format(&chunk));
+        let chunk = CodeChunk::DeclareArrayVar(var_name.clone());
+        assert_eq!("typeset -a name", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::StringValue("value".to_string()));
-        assert_eq!("name='value';\n", shell.format(&chunk));
+        assert_eq!("name='value'", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::IntValue(13));
-        assert_eq!("name=13;\n", shell.format(&chunk));
+        assert_eq!("name=13", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::BoolValue(true));
-        assert_eq!("name='true';\n", shell.format(&chunk));
+        assert_eq!("name='true'", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::BoolValue(false));
-        assert_eq!("name='';\n", shell.format(&chunk));
+        assert_eq!("name=''", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignEmptyArray(var_name.clone());
-        assert_eq!("set -A name;\n", shell.format(&chunk));
+        assert_eq!("set -A name", shell.format(&chunk));
 
         let chunk = CodeChunk::AddToArray(var_name.clone(), VarValue::StringValue("test".to_string()));
-        assert_eq!("name+=('test');\n", shell.format(&chunk));
+        assert_eq!("name+=('test')", shell.format(&chunk));
 
         let var_name = "func".to_string();
 
         let chunk = CodeChunk::CallFunction(var_name.clone(), VarValue::StringValue("value".to_string()));
-        assert_eq!("func 'value' || exit $?;\n", shell.format(&chunk));
+        assert_eq!("func 'value' || exit $?", shell.format(&chunk));
 
         let chunk = CodeChunk::CheckForFunction(var_name.clone());
-        assert_eq!("typeset -f func >/dev/null 2>&1 || { echo >&2 \"ERROR: Function func does not exist.\";exit 127; };\n", shell.format(&chunk));
+        assert_eq!("typeset -f func >/dev/null 2>&1 || { echo >&2 \"ERROR: Function func does not exist.\";exit 127; }", shell.format(&chunk));
 
         let chunk = CodeChunk::SetArgs(vec!["one".to_string(), "don't".to_string(), "count".to_string()]);
-        assert_eq!("set -- 'one' 'don'\\''t' 'count';\n", shell.format(&chunk));
+        assert_eq!("set -- 'one' 'don'\\''t' 'count'", shell.format(&chunk));
 
         let chunk = CodeChunk::Exit(13);
-        assert_eq!("exit 13;\n", shell.format(&chunk));
+        assert_eq!("exit 13", shell.format(&chunk));
     }
 }

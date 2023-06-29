@@ -142,11 +142,9 @@ To understand how Parseargs works, it can simply be called from the command line
 
 ----
 $ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -l -o out.file in.file other.file
-typeset long_output;
-typeset outfile;
 long_output='true';
 outfile='out.file';
-set -- 'in.file' 'other.file';
+set -- 'in.file' 'other.file'
 ----
 
 First the potentially used variables are defined.
@@ -159,15 +157,17 @@ Here is what happens, when an unknown option is found:
 ----
 $ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -X
 example.sh: Unknown option: -X
-exit 1;
+exit 1
 ----
+
+The error message "example.sh: Unknown option: -X" is written to STDERR.
 
 Or here the argument for the option -o is missing:
 
 ----
 $ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -o
 example.sh: Missing argument for: -o
-exit 1;
+exit 1
 ----
 
 Note that the error messages are printed to STDERR by parseargs.
@@ -225,7 +225,7 @@ Duplicate option detection still works:
 
 ----
 $ ./long-opt.sh --long -l
-example-1.sh: Duplicate option: '-l/--long'
+long-opt.sh: Duplicate option: '-l/--long'
 ----
 
 *Long Options and Optional Arguments*
@@ -573,6 +573,50 @@ Arguments: -X
 ----
 
 TODO: Describe `-r` / `--remainder` here.
+
+== Creating Local Variables
+
+IMPORTANT: Not supported with shell "sh".
+
+If Parseargs is called in a shell function, it might be needed to declare the variables as local to that function.
+By using the option `-l` / `--local-vars` the variables are declared as local.
+The following invocation is for the bash shell, but ksh and zsh would produce the same code3.
+
+----
+$ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell bash --local-vars -- -o out.file -l
+typeset long_output;
+typeset outfile;
+outfile='out.file';
+long_output='true';
+set --
+----
+
+As it is not supported for a plain sh shell, and error message is printed:
+
+----
+$ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell sh --local-vars -- -o out.file -l
+parseargs: Shell sh does not support local variables, so option -l/--local-vars is not supported
+exit 1
+----
+
+== Initializing Variables
+
+With the option `-i` / `--init-vars` the variables can be initialized with their default values.
+Note, that variables of counting options are always initialized to 0.
+This is useful, when the script runs with `set -u` to treat unset variables as error.
+
+Note that this is for variables only. Callbacks are not called.
+
+----
+$ parseargs -n example.sh -o 'l#long,o=outfile,v+verbosity' --init-vars -- -o out.file -l
+long='';
+outfile='';
+verbosity=0;
+outfile='out.file';
+long='true';
+set --
+----
+
 
 == Support for Different Shells
 
