@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Ralf Schandl"]
 description = "A command line options parser for shell scripts"
+license = "MIT"
+homepage = "https://rakus.github.io/parseargs/"
+repository = "https://github.com/rakus/parseargs"
 
 [profile.release]
 opt-level = 'z'     # Optimize for size
@@ -14,3 +17,13 @@ codegen-units = 1   # Reduce number of codegen units to increase optimizations
 
 [dependencies]
 clap = { version = "4.3.0", features = ["derive"] }
+
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/parseargs", dest = "/usr/bin/parseargs", mode = "755" },
+    { source = "LICENSE", dest = "/usr/share/doc/parseargs/", mode = "644" },
+    { source = "doc/target/parseargs.1.gz", dest = "/usr/share/man/man1/", mode = "644" },
+]
+
+
+

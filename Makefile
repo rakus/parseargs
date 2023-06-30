@@ -16,7 +16,6 @@ VERSION := $(shell cargo get version)
 debug-build: ${DEBUG_TGT}                    ## Debug build the application using cargo
 
 release-build: ${RELEASE_TGT}                ## Release build the application using cargo
-	cargo build --release
 
 ${DEBUG_TGT}: Cargo.toml ${SRCFILES}
 	cargo build
@@ -36,6 +35,11 @@ check: clean debug-build test                ## run clean debug build and test
 
 doc:
 	( cd doc && make VERSION=$(VERSION) )
+
+rpm: release-build doc
+	#cargo install cargo-generate-rpm
+	strip -s target/release/parseargs
+	cargo generate-rpm
 
 clean:
 	cargo clean

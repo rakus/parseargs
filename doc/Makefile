@@ -8,11 +8,11 @@
 TGT_DIR := target
 VERSION := $(shell cargo get version)
 
-all: html man
+all: html man site
 
 html: ${TGT_DIR}/tutorial.html ${TGT_DIR}/parseargs.html
 
-man: ${TGT_DIR}/parseargs.1
+man: ${TGT_DIR}/parseargs.1 ${TGT_DIR}/parseargs.1.gz
 
 ${TGT_DIR}/tutorial.html: tutorial.adoc
 	asciidoctor -a source-highlighter=pygments -o $@ $^
@@ -22,6 +22,9 @@ ${TGT_DIR}/parseargs.html: parseargs.1.adoc
 
 ${TGT_DIR}/parseargs.1: parseargs.1.adoc
 	asciidoctor -a "manversion=${VERSION}" -b manpage -o $@ $^
+
+${TGT_DIR}/parseargs.1.gz: ${TGT_DIR}/parseargs.1
+	gzip -9 -k ${TGT_DIR}/parseargs.1
 
 site: html
 	mkdir -p ${TGT_DIR}/site
