@@ -514,22 +514,24 @@ $
 == Support for `--help`
 
 First up: Parseargs itself does not support creating help texts.
-By using an option callback it can call a method to display the help message.
+By using an option callback it can call a method to display the help message or script version.
 
-This can simply be archived with the following option definition:
+This can simply be archived with the following option definitions:
 
 ----
-help#?show_help()
+help#?show_help(),version#?show_version()
 ----
 
 This looks familiar, but has one new character, the `?`.
-The `?` tells Parseargs that this is a help option and that
+The `?` tells Parseargs that this is a help-like option and that
 
 * only this option should be processed.
 * all other content of the command line should be dropped. (The content before the `--help` must still be valid.)
 * the calling script should be terminated with exit code 0 if the target is a callback.
 
-To make your life simpler, Parseargs has a own option for this. With `-H` the option definition from above will be automatically appended.
+To make your life simpler, Parseargs has a own options for this.
+With `-h` / `--help-opt` the help option definition from above will be automatically appended.
+With `-v` / `--version-opt` the help option definition from above will be automatically appended.
 
 
 .Script `help.sh`
@@ -542,20 +544,57 @@ show_help()
     echo "Usage: help.sh OPTIONS <input-file...>"
     echo "  -l, --long           enable detailed output"
     echo "  -o, --out-file FILE  file to write result"
-
 }
 
-eval "$(parseargs -n help.sh -H -o 'l:long#detailed,o:out-file=outfile' -- "$@")" || exit 1
+show_version()
+{
+    echo "help.sh 1.0"
+}
+
+eval "$(parseargs -n help.sh -hv -o 'l:long#detailed,o:out-file=outfile' -- "$@")" || exit 1
 ----
 
-Displaying help:
+Displaying help and version:
 
 ----
 $ ./help.sh --help
-Usage: help.sh OPTIONS <input-file...>
+Usage: example.sh OPTIONS <input-file...>
   -l, --long           enable detailed output
   -o, --out-file FILE  file to write result
+
+$ ./help.sh --version
+help.sh 1.0
 ----
+
+== A Script without Options
+
+Parseargs if even useful in scripts that don't support any options.
+In that use case it would output an error message when a option is given.
+
+.Script `no-opt.sh`
+[source,bash]
+----
+#!/bin/sh
+
+eval "$(parseargs -n no-opt.sh -p -- "$@")" || exit 1
+
+echo "Arguments: $*"
+----
+
+In this script we also use the option `-p` / `--posix`, then Parseargs stopps looking for options as soon as the first program argument is found.
+
+----
+$ ./no-opt.sh first second
+Arguments: first second
+
+$ ./no-opt.sh -X first second
+no-opt.sh: Unknown option: -X
+
+$ ./no-opt.sh  first second -X
+Arguments: first second -X
+----
+
+
 
 == The Option Argument Separator '--'
 

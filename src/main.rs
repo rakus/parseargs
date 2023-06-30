@@ -6,32 +6,37 @@ use crate::shell_code::VarValue;
 use shell_code::CodeChunk;
 use std::collections::HashMap;
 use std::ffi::OsString;
+use std::io::{stdout, IsTerminal};
 use std::panic::catch_unwind;
 use std::process::exit;
 
 use crate::arg_parser::{CmdLineElement, CmdLineTokenizer};
 use crate::opt_def::{OptConfig, OptTarget, OptType};
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 
 const PARSEARGS: &str = env!("CARGO_PKG_NAME");
 
 const TEST_SHELL_VAR: &str = "__PARSEARGS_TEST_SHELL__";
 
 #[derive(Parser, Debug)]
-//#[clap(disable_help_flag = true, disable_version_flag = true)]
+#[clap(
+    disable_help_flag = true,
+    disable_version_flag = true,
+    verbatim_doc_comment
+)]
 #[command(version)]
 struct CmdLineArgs {
     /// Definitions of supported shell options
     #[arg(short = 'o', long = "options", value_name = "OPT-DEFs")]
-    options: String,
+    options: Option<String>,
 
     /// Name of shell script. Used for error messages.
     #[arg(short = 'n', long = "name")]
     name: Option<String>,
 
-    /// Call function SHELL-FUNC to report program arguments. If
-    /// used $# will always be 0 after parseargs call.
-    #[arg(short = 'a', long = "arg-callback", value_name = "SHELL-FUNC", value_parser = parse_shell_name)]
+    /// Call function SHELL-FUNC to report program arguments.
+    /// When used $# will always be 0 after parseargs call.
+    #[arg(short = 'a', long = "arg-callback", value_name = "SHELL-FUNC", value_parser = parse_shell_name, verbatim_doc_comment)]
     arg_callback: Option<String>,
 
     /// On error call this function before exiting the calling script.
@@ -40,7 +45,7 @@ struct CmdLineArgs {
 
     /// Collect all parameter behind a '--' in the named array.
     /// ONLY SUPPORTED WITH --shell bash, ksh, or zsh.
-    #[arg(short = 'r', long = "remainder", value_name = "SHELL-VAR", value_parser = parse_shell_name)]
+    #[arg(short = 'r', long = "remainder", value_name = "SHELL-VAR", value_parser = parse_shell_name, verbatim_doc_comment)]
     remainder: Option<String>,
 
     /// Stop option processing on first none-option
@@ -56,19 +61,34 @@ struct CmdLineArgs {
     #[arg(short = 'l', long = "local-vars")]
     local_vars: bool,
 
-    /// Enable support for --help as script option. Script must provide the function 'show_help'.
-    #[arg(short = 'H', long = "help-opt")]
+    /// Enable support for --help as script option.
+    /// Equivalent to option definition 'help#?show_help()'
+    #[arg(short = 'h', long = "help-opt", verbatim_doc_comment)]
     help_opt: bool,
+
+    /// Enable support for --version as script options.
+    /// Equivalent to option definition 'version#?show_version()'
+    #[arg(short = 'v', long = "version-opt", verbatim_doc_comment)]
+    version_opt: bool,
 
     /// Produce code for named shell. Supported: bash, ksh, zsh, sh
     #[arg(short = 's', long = "shell", value_name = "SHELL")]
     shell: Option<String>,
+
+    /// Print help
+    #[arg(long)]
+    help: bool,
+
+    /// Print version
+    #[arg(long)]
+    version: bool,
 
     // Disabled for now
     // /// enable debug output to STDERR.
     // #[arg(short = 'd', long = "debug")]
     // debug: bool,
     /// Shell script options
+    #[arg(value_name = "SCRIPT-ARGS")]
     script_args: Vec<OsString>,
 }
 
@@ -391,7 +411,12 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
     };
 
     // parse the option definition string
-    let result = opt_def::parse(&cmd_line_args.options);
+    let result = if cmd_line_args.options.is_some() {
+        opt_def::parse(&cmd_line_args.options.clone().unwrap())
+    } else {
+        Ok(Vec::new())
+    };
+
     let mut opt_cfg_list = match result {
         Ok(list) => list,
         Err(error) => {
@@ -404,6 +429,17 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
             opt_chars: "".to_string(),
             opt_strings: vec!["help".to_string()],
             opt_type: OptType::Flag(OptTarget::Function("show_help".to_string())),
+            required: false,
+            singleton: true,
+            assigned: false,
+            count_value: 0,
+        });
+    }
+    if cmd_line_args.version_opt {
+        opt_cfg_list.push(OptConfig {
+            opt_chars: "".to_string(),
+            opt_strings: vec!["version".to_string()],
+            opt_type: OptType::Flag(OptTarget::Function("show_version".to_string())),
             required: false,
             singleton: true,
             assigned: false,
@@ -470,6 +506,17 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
 fn main() {
     match CmdLineArgs::try_parse() {
         Ok(c) => {
+            if c.help {
+                let mut help_str = CmdLineArgs::command().render_help().to_string();
+                help_str = help_str.replace("] [SCRIPT-ARGS]", "] -- [SCRIPT-ARGS]");
+                println!("{}", help_str);
+                exit(0);
+            } else if c.version {
+                let version_str = CmdLineArgs::command().render_version().to_string();
+                println!("Help! {}", version_str);
+                exit(0);
+            }
+
             match catch_unwind(|| parseargs(c)) {
                 // Ok should never be reached, as parseargs exits
                 Ok(_) => exit(97),
@@ -482,7 +529,12 @@ fn main() {
         Err(e) => {
             if e.exit_code() == 0 {
                 // help or version output
-                println!("{}", e);
+                if stdout().is_terminal() {
+                    println!("{}", e);
+                } else {
+                    eprintln!("{}", e);
+                    println!("exit 0");
+                }
                 exit(0);
             } else {
                 eprintln!("{}", e);
