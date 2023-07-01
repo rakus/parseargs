@@ -404,6 +404,80 @@ fn parse_shell_options(
     Ok(shell_code)
 }
 
+fn validate_option_definitions(opt_def_list: &Vec<OptConfig>) {
+    let mut all_short_options = String::new();
+    let mut all_long_options: Vec<&String> = vec![];
+    let mut all_variables: Vec<(String, bool, bool)> = vec![];
+    let mut mode_values_map: HashMap<String, Vec<&String>> = HashMap::new();
+
+    for oc in opt_def_list {
+        for chr in oc.opt_chars.chars() {
+            match all_short_options.find(chr) {
+                Some(_) => {
+                    die_internal(format!("Duplicate definition of option '-{}'", chr));
+                }
+                None => {
+                    all_short_options.push(chr);
+                }
+            }
+        }
+        for lng in &oc.opt_strings {
+            if all_long_options.contains(&&lng) {
+                die_internal(format!("Duplicate definition of option '--{}'", lng));
+            } else {
+                all_long_options.push(&lng);
+            }
+        }
+
+        let name = oc.get_target_name();
+        let is_function = oc.is_target_function();
+        let is_mode_switch = match oc.opt_type {
+            OptType::ModeSwitch(_, _) => true,
+            _ => false,
+        };
+
+        match all_variables.iter().find(|x| x.0 == name) {
+            Some(o) => {
+                if is_mode_switch {
+                    if !o.2 {
+                        die_internal(format!("Duplicate usage of variable/function '{}'", name));
+                    } else if is_function != o.1 {
+                        die_internal(format!(
+                            "Used as variable and function in mod-switch option: '{}'",
+                            name
+                        ));
+                    }
+                } else {
+                    die_internal(format!("Duplicate usage of variable/function '{}'", name));
+                }
+            }
+            None => {
+                all_variables.push((name.clone(), is_function, is_mode_switch));
+            }
+        }
+        match &oc.opt_type {
+            OptType::ModeSwitch(_, value) => {
+                if mode_values_map.contains_key(&name) {
+                    match mode_values_map.get(&name) {
+                        Some(v) => {
+                            if v.contains(&value) {
+                                die_internal(format!(
+                                    "Duplicate value '{}' for mode '{}'",
+                                    value, name
+                                ));
+                            }
+                        }
+                        None => (),
+                    }
+                } else {
+                    mode_values_map.insert(name.clone(), vec![&value]);
+                }
+            }
+            _ => (),
+        }
+    }
+}
+
 fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
     let script_name = match cmd_line_args.name {
         Some(ref n) => n,
@@ -423,6 +497,8 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
             die_internal(format!("Error parsing option definition:\n{}", error));
         }
     };
+
+    validate_option_definitions(&opt_cfg_list);
 
     if cmd_line_args.help_opt {
         opt_cfg_list.push(OptConfig {

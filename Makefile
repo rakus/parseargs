@@ -30,6 +30,8 @@ int-test:                                    ## run integration tests (shell scr
 
 test: unit-test int-test                     ## run unit and itegration tests
 
+check: clean debug-build test                ## run clean debug build and test
+
 clean:
 	cargo clean
 
