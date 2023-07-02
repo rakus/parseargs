@@ -2,12 +2,17 @@ name: Build And Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "rpm" ]
   pull_request:
     branches: [ "main" ]
 
 env:
   CARGO_TERM_COLOR: always
+
+permissions:
+  contents: "write"
+  packages: "write"
+  pull-requests: "read"
 
 jobs:
   build:
@@ -16,13 +21,39 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build
-      run: make
+
     - name: Install Shells
       run: sudo apt-get install -y -qq ksh zsh
     - name: Install MKSH (if available)
       run: sudo apt-get install -y mksh || true
     - name: Install PDKSH (if available)
       run: sudo apt-get install -y pdksh || true
-    - name: Run tests
-      run: make test
+
+    - name: Install cargo extensions
+      run: cargo install cargo-get cargo-generate-rpm
+
+    - name: Build and run tests
+      run: make check
+
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2' # Not needed with a .ruby-version file
+        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+
+    - name: Install AsciiDoctor gems
+      run: gem install asciidoctor pygments.rb
+
+    - name: Build RPM
+      run: make rpm
+
+    - name: Build SNAPSHOT release
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "snapshot"
+        prerelease: true
+        title: "Development Build"
+        files: |
+          target/generate-rpm/parseargs-*.rpm
+          target/release/parseargs
+
