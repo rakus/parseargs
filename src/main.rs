@@ -186,16 +186,16 @@ fn shell_init_code(
     return init_code;
 }
 
-fn some_str_to_bool(ostr: Option<&String>, default: bool) -> bool {
+fn some_str_to_bool(ostr: Option<&String>, default: bool) -> Result<bool, String> {
     match ostr {
         Some(v) => match v.to_lowercase().trim() {
-            "true" => true,
-            "yes" => true,
-            // TODO: Should we check for false & no and produce an error
-            // on invalid boolean values?
-            _ => false,
+            "true" | "yes" => Ok(true),
+            "false" | "no" => Ok(false),
+            _ => {
+                Err(format!("Invalid boolean value: '{}'", v))
+            }
         },
-        None => default,
+        None => Ok(default),
     }
 }
 
@@ -292,16 +292,16 @@ fn parse_shell_options(
 
                 match &oc.opt_type {
                     OptType::Flag(target) => {
-                        let bool_val = VarValue::BoolValue(some_str_to_bool(option.1, true));
+                        let bool_val = VarValue::BoolValue(some_str_to_bool(option.1, true)?);
                         shell_code.push(assign_target(&target, bool_val));
                     }
                     OptType::ModeSwitch(target, value) => {
-                        // Conflict detection is done at end of processing.
-                        let bool_val = some_str_to_bool(option.1, true);
-                        if bool_val {
-                            shell_code
-                                .push(assign_target(&target, VarValue::StringValue(value.clone())));
+                        if option.1.is_some() {
+                            Err(format!("{}: No value supported.", oc.options_string()))?;
                         }
+                        // Conflict detection is done at end of processing.
+                        shell_code
+                            .push(assign_target(&target, VarValue::StringValue(value.clone())));
                     }
                     OptType::Assignment(target) => {
                         let opt_arg = match option.1 {

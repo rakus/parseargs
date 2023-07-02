@@ -21,7 +21,9 @@ test_pa 'test $debug = true' -o "d:debug#debug" -- --debug=yes
 test_pa 'test $debug = true' -o "d:debug#debug" -- --debug=yeS
 test_pa 'test $debug = true' -o "d:debug#debug" -- --debug=YES
 test_pa 'test -z "$debug"' -o "d:debug#debug" -- --debug=false
-test_pa 'test -z "$debug"' -o "d:debug#debug" -- --debug=würzelpfrümpf
+test_pa 'test -z "$debug"' -o "d:debug#debug" -- --debug=False
+test_pa 'test -z "$debug"' -o "d:debug#debug" -- --debug=no
+test_pa 'test -z "$debug"' -o "d:debug#debug" -- --debug=nO
 
 test_pa 'test $file = text' -o "f:file=file" -- -f text
 test_pa 'test $file = text' -o "f:file=file" -- -ftext
