@@ -99,7 +99,7 @@ fn die_internal(msg: String) -> ! {
     eprintln!("{}: {}", PARSEARGS, msg);
     println!("exit 1");
 
-    exit(1);
+    exit(11);
 }
 
 /**
@@ -616,7 +616,7 @@ fn main() {
                 eprintln!("{}", e);
 
                 println!("exit 1");
-                exit(1);
+                exit(11);
             }
         }
     }

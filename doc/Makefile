@@ -3,13 +3,36 @@
 #
 
 # Phony targets represents recipes, not files
-.PHONY: help
+.PHONY: help all html man clean site
 
-TGT_DIR=target
+TGT_DIR := target
+VERSION := $(shell cargo get version)
 
+all: html man
+
+html: ${TGT_DIR}/tutorial.html ${TGT_DIR}/parseargs.html
+
+man: ${TGT_DIR}/parseargs.1
 
 ${TGT_DIR}/tutorial.html: tutorial.adoc
 	asciidoctor -a source-highlighter=pygments -o $@ $^
+
+${TGT_DIR}/parseargs.html: parseargs.1.adoc
+	asciidoctor -a "manversion=${VERSION}" -a source-highlighter=pygments -o $@ $^
+
+${TGT_DIR}/parseargs.1: parseargs.1.adoc
+	asciidoctor -a "manversion=${VERSION}" -b manpage -o $@ $^
+
+site: html
+	mkdir -p ${TGT_DIR}/site
+	cp ${TGT_DIR}/tutorial.html ${TGT_DIR}/parseargs.html ${TGT_DIR}/site
+
+clean:
+	rm -rf ${TGT_DIR}
+
+
+
+
 
 
 help:               ## Prints targets with help text
