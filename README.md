@@ -51,10 +51,10 @@ Parseargs.
 This tool is in an early state and there are areas that need further
 improvements
 
-* Improve README.
+* Improve tutorial and man page
 * Error messages and error handling.
-* Improve parsing and parsing error messages.
 * Gracefully handle arguments with invalid UTF-8 chars. Today it just error exits.
-* Detect duplicate option definitions (e.g. 'd#debug,d#details').
 * To many `clone()` calls -- most likely a general Rust newbie problem.
+
+Still open: Should `sh` be the default shell?
 
