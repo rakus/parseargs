@@ -589,7 +589,7 @@ fn main() {
                 exit(0);
             } else if c.version {
                 let version_str = CmdLineArgs::command().render_version().to_string();
-                println!("Help! {}", version_str);
+                println!("{}", version_str);
                 exit(0);
             }
 
