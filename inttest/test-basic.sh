@@ -1,7 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Test parseargs basic functionallities
-#
 #
 # shellcheck disable=SC2016
 
@@ -11,6 +10,23 @@ script_name="$(basename "$0")"
 . "$script_dir/_test.shinc"
 
 start_test
+
+VERSION="$(cargo get version)"
+
+# Check --help produces output and first line is as expected
+if [ "Usage: parseargs [OPTIONS] -- [SCRIPT-ARGS]..." = "$(parseargs --help | head -n1)" ]; then
+    ok "parseargs --help"
+else
+    failed "parseargs --help"
+fi
+
+# Check --version produces expected output
+if [ "parseargs $VERSION" = "$(parseargs --version)" ]; then
+    ok "parseargs --version"
+else
+    failed "parseargs --version"
+fi
+
 
 test_pa 'test $debug = true' -o "d:debug#debug" -- -d
 test_pa 'test $debug = true' -o "d:debug#debug" -- --debug

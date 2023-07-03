@@ -1,28 +1,42 @@
+#
+# Provides support functions and initializations for test scripts
+#
+# shellcheck shell=sh
 
 if [ -z "$script_dir" ]; then
     echo >&2 "ERROR: variable 'script_dir' not set"
 fi
+if [ -z "$script_name" ]; then
+    echo >&2 "ERROR: variable 'script_name' not set"
+fi
 
-PRJ_DIR="$script_dir/.."
+
+PRJ_DIR="$(dirname "$script_dir")"
 TGT_DIR="$PRJ_DIR/target"
 
 REL_PA_EXE="$TGT_DIR/release/parseargs"
 DBG_PA_EXE="$TGT_DIR/debug/parseargs"
 
 if [ -e "$REL_PA_EXE" ] && [ -e "$DBG_PA_EXE" ]; then
-    if [ "$REL_PA_EXE" -nt "$TGT_DIR/debug/parseargs" ]; then
-        PA_EXE="$REL_PA_EXE"
+    if [ -n "$(find "$REL_PA_EXE"  -newer "$DBG_PA_EXE" )" ]; then
+        PATH_PREFIX="$TGT_DIR/release"
     else
-        PA_EXE="$DBG_PA_EXE"
+        PATH_PREFIX="$TGT_DIR/debug"
     fi
 elif [ -e "$DBG_PA_EXE" ]; then
-        PA_EXE="$DBG_PA_EXE"
+    PATH_PREFIX="$TGT_DIR/debug"
 elif [ -e "$REL_PA_EXE" ]; then
-        PA_EXE="$REL_PA_EXE"
+    PATH_PREFIX="$TGT_DIR/release"
+else
+    echo >&2 "ERROR: Parseargs executable not found - run build"
+    exit 1
 fi
 
-if [ -z "$PA_EXE" ]; then
-    echo >&2 "ERROR: Parseargs executable not found - run cargo build"
+PATH="$PATH_PREFIX:$PATH"
+export PATH
+
+if ! command -v parseargs >/dev/null 2>&1; then
+    echo >&2 "ERROR: Parseargs executable not found"
     exit 1
 fi
 
@@ -32,7 +46,7 @@ error_cnt=0
 start_test()
 {
     echo "Test-Script $script_name"
-    echo "Testing $PA_EXE"
+    echo "Testing $(command -v parseargs)"
 }
 
 end_test()
@@ -67,19 +81,24 @@ test_pa()
     shift
     args="$(printf "'%s' " "$@")"
     (
-    if eval "$($PA_EXE "$@")"; then
+    if eval "$(parseargs "$@")"; then
         if eval "$expect"; then
-            ok "parseargs $args"
             exit 0
         else
-            failed "parseargs $args"
-            exit 0
+            exit 1
         fi
     else
-        failed "parseargs exit code: $?"
+        echo >&2 "parseargs exit code: $?"
     fi
-    ) || failed "parseargs $args"
-    return $?
+    )
+    rc=$?
+    if [ "$rc" = "0" ]; then
+        ok "parseargs $args"
+    else
+        failed "parseargs $args"
+    fi
+
+    return $rc
 }
 
 test_pa_errmsg()
@@ -89,7 +108,13 @@ test_pa_errmsg()
     shift 2
     args="$(printf "'%s' " "$@")"
 
-    message="$($PA_EXE "$@" 2>&1 1>/dev/null )"
+    #
+    # Little bit complicated here. Error message on STDERR could be created by
+    # parseargs itself or by eval while it parses parseargs output (e.g.
+    # function does not exist).  To get all output of the two sub-shells we
+    # introduce an additional file discriptor 3.
+    #
+    message="$(exec 3>&1;eval "$(parseargs "$@" 2>&3)" 2>&3)"
 
     if echo "$message" | grep -q "$msg_re" ; then
         ok "parseargs $args  - Output matches >>$msg_re<<"
@@ -107,7 +132,7 @@ test_pa_code()
     shift
     args="$(printf "'%s' " "$@")"
 
-    code="$($PA_EXE "$@" 2>/dev/null)"
+    code="$(parseargs "$@" 2>/dev/null)"
     if echo "$code" | grep -q "$code_re" ; then
         ok "parseargs $args  - Output matches >>$code_re<<"
         return 0
@@ -115,7 +140,38 @@ test_pa_code()
         failed "parseargs $args - Invalid Output: >>$code<<"
         return 1
     fi
-
-    return $?
 }
+
+
+#
+# Check whether shell supports function local variables.
+# Check by testing for typeset or local command.
+# If PARSEARGS_SHELL = 'sh' always return false
+#
+shell_supports_local_vars()
+{
+    if [ -z "$PARSEARGS_SHELL" ] || [ "$PARSEARGS_SHELL" = "sh" ]; then
+        return 1
+    fi
+    # Typeset & local are undefined in pure sh. Also 'fake_var' is not used.
+    # shellcheck disable=SC3043,SC3044,SC2034
+    typeset fake_var >/dev/null 2>&1 || local fake_var >/dev/null 2>&1
+}
+
+#
+# Whether shell supports arrays.
+# Check by testing for typeset -a command.
+# If PARSEARGS_SHELL = 'sh' always return false
+#
+shell_supports_arrays()
+{
+    if [ -z "$PARSEARGS_SHELL" ] || [ "$PARSEARGS_SHELL" = "sh" ]; then
+        return 1
+    fi
+    # Typeset is undefined in pure sh. Also 'fake_array' is not used.
+    # shellcheck disable=SC3044,SC2034
+    typeset -a fake_array >/dev/null 2>&1
+}
+
+
 #    vim:ft=sh

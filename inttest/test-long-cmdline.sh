@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Test parseargs basic functionallities
+# Test parseargs with large option definition
 #
 # shellcheck disable=SC2016
 

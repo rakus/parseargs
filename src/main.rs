@@ -18,8 +18,7 @@ const PARSEARGS: &str = env!("CARGO_PKG_NAME");
 
 const DEFAULT_SHELL: &str = "sh";
 
-const TEST_SHELL_VAR: &str = "__PARSEARGS_TEST_SHELL__";
-
+const PARSEARGS_SHELL_VAR: &str = "PARSEARGS_SHELL";
 
 
 #[derive(Parser, Debug)]
@@ -546,7 +545,7 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
     let shell = cmd_line_args
         .shell
         .clone()
-        .unwrap_or(std::env::var(TEST_SHELL_VAR).unwrap_or(DEFAULT_SHELL.to_string()));
+        .unwrap_or(std::env::var(PARSEARGS_SHELL_VAR).unwrap_or(DEFAULT_SHELL.to_string()));
 
     // get the shell templates
     let shell_tmpl = shell_code::get_shell_template(shell.as_str());

@@ -32,6 +32,7 @@ int-test:                                    ## run integration tests (shell scr
 test: unit-test int-test                     ## run unit and integration tests
 
 check: clean debug-build test                ## run clean debug build and test
+	( cd inttest && shellcheck -fgcc -x -a *.sh )
 
 doc:
 	( cd doc && make VERSION=$(VERSION) )
