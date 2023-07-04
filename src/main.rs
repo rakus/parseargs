@@ -575,10 +575,11 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
     );
 
     // let options_code = parse_shell_options(&opt_cfg_list, &cmd_line_args);
-    match parse_shell_options(&mut opt_cfg_list, &cmd_line_args) {
+    let rc = match parse_shell_options(&mut opt_cfg_list, &cmd_line_args) {
         Ok(mut c) => {
             code.append(&mut init_code);
             code.append(&mut c);
+            0
         }
         Err(msg) => {
             eprintln!("{}: {}", script_name, msg);
@@ -586,12 +587,13 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
                 code.push(CodeChunk::CallFunction(func.clone(), VarValue::None));
             }
             code.push(CodeChunk::Exit(1));
+            1
         }
-    }
+    };
 
     println!("{}", shell_tmpl.format_vector(&code));
 
-    exit(0);
+    exit(rc);
 }
 
 fn main() {
