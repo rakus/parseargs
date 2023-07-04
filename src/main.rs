@@ -368,7 +368,7 @@ fn parse_shell_options(
         }
     }
 
-    // Check duplicates for FlagAssignments
+    // Check duplicates for ModeSwitches
     // and handle required
     // TODO: Bad implementation
     for name in shell_name_table.keys() {
@@ -400,11 +400,16 @@ fn parse_shell_options(
         }
 
         for oc in &mut *opt_cfg_list {
-            if oc.required && !oc.assigned {
-                return Err(format!(
-                    "Required option not found: {}",
-                    oc.options_string()
-                ));
+            match oc.opt_type {
+                OptType::ModeSwitch(_,_) => (),
+                _ => {
+                    if oc.required && !oc.assigned {
+                        return Err(format!(
+                            "Required option not found: {}",
+                            oc.options_string()
+                        ));
+                    }
+                }
             }
         }
     }
