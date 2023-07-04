@@ -29,7 +29,7 @@ unit-test:                                   ## run Cargo tests
 int-test:                                    ## run integration tests (shell scripts)
 	./inttest/run.sh
 
-test: unit-test int-test                     ## run unit and itegration tests
+test: unit-test int-test                     ## run unit and integration tests
 
 check: clean debug-build test                ## run clean debug build and test
 
@@ -40,6 +40,10 @@ rpm: release-build doc
 	#cargo install cargo-generate-rpm
 	strip -s target/release/parseargs
 	cargo generate-rpm
+
+setup:                                       ## Install needed cargo commands
+	cargo install cargo-get
+	cargo install cargo-generate-rpm
 
 clean:
 	cargo clean

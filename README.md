@@ -45,6 +45,20 @@ command line.
 The [Tutorial](https://rakus.github.io/parseargs/) explains all features of
 Parseargs.
 
+## Building
+
+Build is controlled by a Makefile.  Run `make help` to get a help on the
+available targets.
+
+First step is to install `cargo get` and `cargo generate-rpm`. Run `make setup`
+for this.
+
+If the man-page and the tutorial should be build (required for RPM),
+Asciidoctor must be installed.  See [install
+page](https://docs.asciidoctor.org/asciidoctor/latest/install/). For syntax
+highlighting in the tutorial "Pygments" is used. See [this
+page](https://docs.asciidoctor.org/asciidoctor/latest/syntax-highlighting/pygments/).
+
 
 ## TODO
 
@@ -56,5 +70,4 @@ improvements
 * Gracefully handle arguments with invalid UTF-8 chars. Today it just error exits.
 * To many `clone()` calls -- most likely a general Rust newbie problem.
 
-Still open: Should `sh` be the default shell?
-
+Consider setting `sh` as default shell.
