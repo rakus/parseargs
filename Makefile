@@ -3,7 +3,7 @@
 #
 
 # Phony targets represents recipes, not files
-.PHONY: help debug-build release-build test clean doc
+.PHONY: help debug-build release-build test script-test clean doc
 
 DEBUG_TGT := target/debug/parseargs
 RELEASE_TGT := target/release/parseargs
@@ -26,13 +26,13 @@ ${RELEASE_TGT}: Cargo.toml ${SRCFILES}
 unit-test:                                   ## run Cargo tests
 	cargo test
 
-int-test:                                    ## run integration tests (shell scripts)
-	./inttest/run.sh
+script-test:                                 ## run shell script tests
+	./script-test/run.sh
 
-test: unit-test int-test                     ## run unit and integration tests
+test: unit-test script-test                     ## run unit and shell script tests
 
 check: clean debug-build test                ## run clean debug build and test
-	( cd inttest && shellcheck -fgcc -x -a *.sh )
+	( cd script-test && shellcheck -fgcc -x -a *.sh )
 
 doc:
 	( cd doc && make VERSION=$(VERSION) )
