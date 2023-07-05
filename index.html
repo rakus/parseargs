@@ -512,7 +512,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <div class="details">
 <span id="author" class="author">Ralf Schandl</span><br>
 <span id="revnumber">version 0.1,</span>
-<span id="revdate">2023-07-04</span>
+<span id="revdate">2023-07-05</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -575,7 +575,8 @@ Parseargs is in a early state of the development and not yet suitable for seriou
 All examples work with a bourne-compatible shell. One functionality requires arrays and is only supported with <em>bash</em>, <em>ksh</em> and <em>zsh</em>.</p>
 </div>
 <div class="paragraph">
-<p>By default Parseargs assumes that the <em>bash</em> shell ist used. Support for other shells can be enabled with <code>--shell=ksh</code>, <code>--shell=zsh</code> and <code>--shell=sh</code>.</p>
+<p>By default Parseargs assumes that a simple POSIX shell (aka <code>sh</code>) is used.
+Support for other shells can be enabled with <code>--shell=ksh</code>, <code>--shell=zsh</code> and <code>--shell=sh</code>.</p>
 </div>
 </div>
 </div>
@@ -1366,7 +1367,7 @@ Arguments: -X</pre>
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-Not supported with shell "sh".
+Not supported by default, needs shell <code>bash</code>, <code>ksh</code> or <code>zsh</code>.
 </td>
 </tr>
 </table>
@@ -1482,7 +1483,7 @@ For more information:
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2023-07-04 18:57:04 UTC
+Last updated 2023-07-05 20:28:01 UTC
 </div>
 </div>
 </body>
