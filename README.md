@@ -25,7 +25,7 @@ the options
 Additionally multiple input files can be given as arguments.
 
 ```bash
-#!/bin/bash
+#!/bin/sh
 script_name="$(basename "$0")"
 eval "$(parseargs -n "$script_name" -o 'l:long#details,o:out-file=output' )"
 if [ -n "$details"] ; then
@@ -70,4 +70,3 @@ improvements
 * Gracefully handle arguments with invalid UTF-8 chars. Today it just error exits.
 * To many `clone()` calls -- most likely a general Rust newbie problem.
 
-Consider setting `sh` as default shell.

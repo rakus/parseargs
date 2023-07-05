@@ -20,7 +20,8 @@ WARNING: Parseargs is in a early state of the development and not yet suitable f
 This tutorial explains the features of Parseargs using examples.
 All examples work with a bourne-compatible shell. One functionality requires arrays and is only supported with _bash_, _ksh_ and _zsh_.
 
-By default Parseargs assumes that the _bash_ shell ist used. Support for other shells can be enabled with `--shell=ksh`, `--shell=zsh` and `--shell=sh`.
+By default Parseargs assumes that a simple POSIX shell (aka `sh`) is used.
+Support for other shells can be enabled with `--shell=ksh`, `--shell=zsh` and `--shell=sh`.
 
 
 == Simple Usage
@@ -615,7 +616,7 @@ TODO: Describe `-r` / `--remainder` here.
 
 == Creating Local Variables
 
-IMPORTANT: Not supported with shell "sh".
+IMPORTANT: Not supported by default, needs shell `bash`, `ksh` or `zsh`.
 
 If Parseargs is called in a shell function, it might be needed to declare the variables as local to that function.
 By using the option `-l` / `--local-vars` the variables are declared as local.

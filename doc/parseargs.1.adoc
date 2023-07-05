@@ -65,7 +65,7 @@ Enable support for --version as script options.
 The calling script must provide the function `show_version` that displays the version text.
 
 *-s, --shell* SHELL::
-Produce code for named shell. Supported: `bash`, `ksh`, `zsh`, `sh`. Default: `bash`
+Produce code for named shell. Supported: `bash`, `ksh`, `zsh`, `sh`. Default: `sh`
 
 *--help*::
 Print help.
