@@ -30,7 +30,7 @@ jobs:
       run: sudo apt-get install -y pdksh || true
 
     - name: Install cargo extensions
-      run: cargo install cargo-get cargo-generate-rpm
+      run: cargo install cargo-get cargo-generate-rpm cargo-deb
 
     - name: Build and run tests
       run: make check
@@ -43,8 +43,8 @@ jobs:
     - name: Install AsciiDoctor gems
       run: gem install asciidoctor pygments.rb
 
-    - name: Build RPM
-      run: make rpm
+    - name: Build RPM & DEB
+      run: make pkg
 
     - name: Build SNAPSHOT release
       uses: marvinpinto/action-automatic-releases@latest

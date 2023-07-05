@@ -37,17 +37,17 @@ check: clean debug-build test                ## run clean debug build and test
 doc:
 	( cd doc && make VERSION=$(VERSION) )
 
-rpm: release-build doc
+rpm: release-build doc                       ## Build rpm package
 	#cargo install cargo-generate-rpm
 	strip -s target/release/parseargs
 	cargo generate-rpm
 
-deb: release-build doc
+deb: release-build doc                       ## Build deb package
 	#cargo install cargo-generate-rpm
 	strip -s target/release/parseargs
 	cargo deb
 
-pkg: rpm deb
+pkg: rpm deb                                 ## Build rpm & deb packages
 
 setup:                                       ## Install needed cargo commands
 	cargo install cargo-get
