@@ -24,7 +24,7 @@ ${TGT_DIR}/parseargs.1: parseargs.1.adoc
 	asciidoctor -a "manversion=${VERSION}" -b manpage -o $@ $^
 
 ${TGT_DIR}/parseargs.1.gz: ${TGT_DIR}/parseargs.1
-	gzip -9 -k ${TGT_DIR}/parseargs.1
+	gzip -9 -n -k ${TGT_DIR}/parseargs.1
 
 site: html
 	mkdir -p ${TGT_DIR}/site

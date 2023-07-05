@@ -55,5 +55,6 @@ jobs:
         title: "Development Build"
         files: |
           target/generate-rpm/parseargs-*.rpm
+          target/debian/parseargs_*.deb
           target/release/parseargs
 

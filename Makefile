@@ -3,7 +3,7 @@
 #
 
 # Phony targets represents recipes, not files
-.PHONY: help debug-build release-build test script-test clean doc
+.PHONY: help debug-build release-build test script-test clean doc rpm deb
 
 DEBUG_TGT := target/debug/parseargs
 RELEASE_TGT := target/release/parseargs
@@ -42,9 +42,17 @@ rpm: release-build doc
 	strip -s target/release/parseargs
 	cargo generate-rpm
 
+deb: release-build doc
+	#cargo install cargo-generate-rpm
+	strip -s target/release/parseargs
+	cargo deb
+
+pkg: rpm deb
+
 setup:                                       ## Install needed cargo commands
 	cargo install cargo-get
 	cargo install cargo-generate-rpm
+	cargo install cargo-deb
 
 clean:
 	cargo clean
