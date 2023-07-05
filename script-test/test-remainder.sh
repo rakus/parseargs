@@ -17,6 +17,8 @@ if shell_supports_arrays; then
     else
         test_pa 'test $1 = kirk -a "${team[1]}" = spock -a "${team[2]}" = bones' -r team -- kirk -- spock bones
     fi
+else
+    echo "Skipped '--remainder' tests: Not supported with $TEST_SHELL and/or mode $PARSEARGS_SHELL"
 fi
 
 end_test

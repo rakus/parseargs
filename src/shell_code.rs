@@ -201,6 +201,16 @@ const SH_TEMPLATE : CodeTemplates = CodeTemplates {
     false_return: "false"
 };
 
+const DASH_TEMPLATE : CodeTemplates = CodeTemplates {
+    supports_arrays : false,
+    supports_local_vars: true,
+
+    declare_local_variable: "local {NAME}",
+    declare_local_int_variable: "local {NAME}",
+
+    ..SH_TEMPLATE
+};
+
 const BASH_TEMPLATE : CodeTemplates = CodeTemplates {
     supports_arrays : true,
     supports_local_vars: true,
@@ -228,11 +238,10 @@ pub fn get_shell_template(shell: &str) -> Option<&CodeTemplates> {
         "bash" => Some(&BASH_TEMPLATE),
         "zsh"  => Some(&BASH_TEMPLATE),
         "ksh"  => Some(&KSH_TEMPLATE),
+        "dash" => Some(&DASH_TEMPLATE),
         "sh"   => Some(&SH_TEMPLATE),
         _ => None,
     }
-
-    //SHELLS.get(shell)
 }
 
 #[cfg(test)]

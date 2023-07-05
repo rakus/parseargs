@@ -165,7 +165,7 @@ shell_supports_local_vars()
 #
 shell_supports_arrays()
 {
-    if [ -z "$PARSEARGS_SHELL" ] || [ "$PARSEARGS_SHELL" = "sh" ]; then
+    if [ -z "$PARSEARGS_SHELL" ] || [ "$PARSEARGS_SHELL" = "dash" ] || [ "$PARSEARGS_SHELL" = "sh" ]; then
         return 1
     fi
     # Typeset is undefined in pure sh. Also 'fake_array' is not used.
