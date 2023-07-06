@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use std::{fmt, ascii::escape_default};
+use std::{ascii::escape_default, fmt};
 
 const SHELL_TRUE: &str = "'true'";
 const SHELL_FALSE: &str = "''";
@@ -10,7 +10,7 @@ pub enum VarValue {
     StringValue(String),
     IntValue(i32),
     BoolValue(bool),
-    None
+    None,
 }
 impl VarValue {
     /// Escape a String for usage as shell value
@@ -33,11 +33,17 @@ impl VarValue {
 
 impl fmt::Display for VarValue {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        let s : String = match self {
+        let s: String = match self {
             VarValue::StringValue(s) => VarValue::escape_string(s),
             VarValue::IntValue(i) => i.to_string(),
             //VarValue::BoolValue(b) => if *b { "'true'".to_string() } else { "''".to_string() },
-            VarValue::BoolValue(b) => if *b { SHELL_TRUE.to_string()} else { SHELL_FALSE.to_string() },
+            VarValue::BoolValue(b) => {
+                if *b {
+                    SHELL_TRUE.to_string()
+                } else {
+                    SHELL_FALSE.to_string()
+                }
+            }
             VarValue::None => "".to_string(),
         };
         fmt.write_str(&s)
@@ -86,7 +92,7 @@ pub struct CodeTemplates {
     call_function: &'static str,
     exit: &'static str,
 
-    false_return:  &'static str,
+    false_return: &'static str,
 
     set_args: &'static str,
 }
@@ -97,7 +103,7 @@ impl CodeTemplates {
         let mut first = true;
         let separator = CodeChunk::Separator;
         for chunk in chunks.iter() {
-            if ! first {
+            if !first {
                 str.push_str(&self.format(&separator));
             }
             str.push_str(&self.format(chunk));
@@ -109,26 +115,36 @@ impl CodeTemplates {
     pub fn format(&self, chunk: &CodeChunk) -> String {
         match chunk {
             CodeChunk::DeclareLocalVar(name) => {
-                if !self.supports_local_vars { panic!("Local variables not supported") }
+                if !self.supports_local_vars {
+                    panic!("Local variables not supported")
+                }
                 self.format_code_name(self.declare_local_variable, name)
             }
             CodeChunk::DeclareLocalIntVar(name) => {
-                if !self.supports_local_vars { panic!("Local variables not supported") }
+                if !self.supports_local_vars {
+                    panic!("Local variables not supported")
+                }
                 self.format_code_name(self.declare_local_int_variable, name)
             }
             CodeChunk::DeclareArrayVar(name) => {
-                if !self.supports_arrays { panic!("Arrays not supported") }
+                if !self.supports_arrays {
+                    panic!("Arrays not supported")
+                }
                 self.format_code_name(self.declare_array_variable, name)
             }
             CodeChunk::AssignVar(name, value) => {
                 self.format_code_name_value(self.assign_variable, name, value)
             }
             CodeChunk::AssignEmptyArray(name) => {
-                if !self.supports_arrays { panic!("Arrays not supported") }
+                if !self.supports_arrays {
+                    panic!("Arrays not supported")
+                }
                 self.format_code_name(self.assign_empty_array, name)
             }
             CodeChunk::AddToArray(name, value) => {
-                if !self.supports_arrays { panic!("Arrays not supported") }
+                if !self.supports_arrays {
+                    panic!("Arrays not supported")
+                }
                 self.format_code_name_value(self.add_to_array, name, value)
             }
             CodeChunk::CheckForFunction(name) => {
@@ -175,7 +191,6 @@ impl CodeTemplates {
     fn statement_separator(&self) -> &str {
         self.statement_separator
     }
-
 }
 
 const SH_TEMPLATE : CodeTemplates = CodeTemplates {
@@ -201,8 +216,8 @@ const SH_TEMPLATE : CodeTemplates = CodeTemplates {
     false_return: "false"
 };
 
-const DASH_TEMPLATE : CodeTemplates = CodeTemplates {
-    supports_arrays : false,
+const DASH_TEMPLATE: CodeTemplates = CodeTemplates {
+    supports_arrays: false,
     supports_local_vars: true,
 
     declare_local_variable: "local {NAME}",
@@ -236,10 +251,10 @@ const KSH_TEMPLATE: CodeTemplates = CodeTemplates {
 pub fn get_shell_template(shell: &str) -> Option<&CodeTemplates> {
     match shell {
         "bash" => Some(&BASH_TEMPLATE),
-        "zsh"  => Some(&BASH_TEMPLATE),
-        "ksh"  => Some(&KSH_TEMPLATE),
+        "zsh" => Some(&BASH_TEMPLATE),
+        "ksh" => Some(&KSH_TEMPLATE),
         "dash" => Some(&DASH_TEMPLATE),
-        "sh"   => Some(&SH_TEMPLATE),
+        "sh" => Some(&SH_TEMPLATE),
         _ => None,
     }
 }
@@ -250,32 +265,50 @@ mod var_value_tests {
 
     #[test]
     fn test_string_escape_simple() {
-        assert_eq!("'test'".to_string(), VarValue::StringValue("test".to_string()).to_string());
+        assert_eq!(
+            "'test'".to_string(),
+            VarValue::StringValue("test".to_string()).to_string()
+        );
     }
 
     #[test]
     fn test_string_escape_empty() {
-        assert_eq!("''".to_string(), VarValue::StringValue("".to_string()).to_string());
+        assert_eq!(
+            "''".to_string(),
+            VarValue::StringValue("".to_string()).to_string()
+        );
     }
 
     #[test]
     fn test_string_escape_quote() {
-        assert_eq!("'don'\\''t'".to_string(), VarValue::StringValue("don't".to_string()).to_string());
+        assert_eq!(
+            "'don'\\''t'".to_string(),
+            VarValue::StringValue("don't".to_string()).to_string()
+        );
     }
 
     #[test]
     fn test_string_escape_quote_border() {
-        assert_eq!("''\\''do'\\'''".to_string(), VarValue::StringValue("'do'".to_string()).to_string());
+        assert_eq!(
+            "''\\''do'\\'''".to_string(),
+            VarValue::StringValue("'do'".to_string()).to_string()
+        );
     }
 
     #[test]
     fn test_string_escape_quote_only() {
-        assert_eq!("''\\'''\\'''\\'''".to_string(), VarValue::StringValue("'''".to_string()).to_string());
+        assert_eq!(
+            "''\\'''\\'''\\'''".to_string(),
+            VarValue::StringValue("'''".to_string()).to_string()
+        );
     }
 
     #[test]
     fn test_string_double_quote() {
-        assert_eq!("'\"hello\"'".to_string(), VarValue::StringValue("\"hello\"".to_string()).to_string());
+        assert_eq!(
+            "'\"hello\"'".to_string(),
+            VarValue::StringValue("\"hello\"".to_string()).to_string()
+        );
     }
 
     #[test]
@@ -317,13 +350,25 @@ mod shell_template_test {
     #[test]
     fn get_existing_shell_template() {
         let x = get_shell_template("sh");
-        assert!(if let Some(_) = x { true } else { false }, "shell_template for SH not found");
+        assert!(
+            if let Some(_) = x { true } else { false },
+            "shell_template for SH not found"
+        );
         let x = get_shell_template("bash");
-        assert!(if let Some(_) = x { true } else { false }, "shell_template for BASH not found");
+        assert!(
+            if let Some(_) = x { true } else { false },
+            "shell_template for BASH not found"
+        );
         let x = get_shell_template("ksh");
-        assert!(if let Some(_) = x { true } else { false }, "shell_template for KSH not found");
+        assert!(
+            if let Some(_) = x { true } else { false },
+            "shell_template for KSH not found"
+        );
         let x = get_shell_template("zsh");
-        assert!(if let Some(_) = x { true } else { false }, "shell_template for ZSH not found");
+        assert!(
+            if let Some(_) = x { true } else { false },
+            "shell_template for ZSH not found"
+        );
     }
 
     #[test]
@@ -335,7 +380,8 @@ mod shell_template_test {
         let chunk = CodeChunk::DeclareLocalVar(var_name.clone());
         assert!(std::panic::catch_unwind(|| shell.format(&chunk)).is_err());
 
-        let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::StringValue("value".to_string()));
+        let chunk =
+            CodeChunk::AssignVar(var_name.clone(), VarValue::StringValue("value".to_string()));
         assert_eq!("name='value'", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::IntValue(13));
@@ -349,13 +395,18 @@ mod shell_template_test {
 
         let var_name = "func".to_string();
 
-        let chunk = CodeChunk::CallFunction(var_name.clone(), VarValue::StringValue("value".to_string()));
+        let chunk =
+            CodeChunk::CallFunction(var_name.clone(), VarValue::StringValue("value".to_string()));
         assert_eq!("func 'value' || exit $?", shell.format(&chunk));
 
         let chunk = CodeChunk::CheckForFunction(var_name.clone());
         assert_eq!("LC_ALL=C type func 2>/dev/null | grep function >/dev/null || (echo >&2 \"ERROR: Function 'func' does not exist.\";exit 1) || exit 127", shell.format(&chunk));
 
-        let chunk = CodeChunk::SetArgs(vec!["one".to_string(), "don't".to_string(), "count".to_string()]);
+        let chunk = CodeChunk::SetArgs(vec![
+            "one".to_string(),
+            "don't".to_string(),
+            "count".to_string(),
+        ]);
         assert_eq!("set -- 'one' 'don'\\''t' 'count'", shell.format(&chunk));
 
         let chunk = CodeChunk::Exit(13);
@@ -374,7 +425,8 @@ mod shell_template_test {
         let chunk = CodeChunk::AssignEmptyArray(var_name.clone());
         assert!(std::panic::catch_unwind(|| shell.format(&chunk)).is_err());
 
-        let chunk = CodeChunk::AddToArray(var_name.clone(), VarValue::StringValue("test".to_string()));
+        let chunk =
+            CodeChunk::AddToArray(var_name.clone(), VarValue::StringValue("test".to_string()));
         assert!(std::panic::catch_unwind(|| shell.format(&chunk)).is_err());
     }
 
@@ -391,7 +443,8 @@ mod shell_template_test {
         let chunk = CodeChunk::DeclareArrayVar(var_name.clone());
         assert_eq!("typeset -a name", shell.format(&chunk));
 
-        let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::StringValue("value".to_string()));
+        let chunk =
+            CodeChunk::AssignVar(var_name.clone(), VarValue::StringValue("value".to_string()));
         assert_eq!("name='value'", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::IntValue(13));
@@ -406,18 +459,24 @@ mod shell_template_test {
         let chunk = CodeChunk::AssignEmptyArray(var_name.clone());
         assert_eq!("name=()", shell.format(&chunk));
 
-        let chunk = CodeChunk::AddToArray(var_name.clone(), VarValue::StringValue("test".to_string()));
+        let chunk =
+            CodeChunk::AddToArray(var_name.clone(), VarValue::StringValue("test".to_string()));
         assert_eq!("name+=('test')", shell.format(&chunk));
 
         let var_name = "func".to_string();
 
-        let chunk = CodeChunk::CallFunction(var_name.clone(), VarValue::StringValue("value".to_string()));
+        let chunk =
+            CodeChunk::CallFunction(var_name.clone(), VarValue::StringValue("value".to_string()));
         assert_eq!("func 'value' || exit $?", shell.format(&chunk));
 
         let chunk = CodeChunk::CheckForFunction(var_name.clone());
         assert_eq!("typeset -f func >/dev/null 2>&1 || { echo >&2 \"ERROR: Function 'func' does not exist.\";exit 127; }", shell.format(&chunk));
 
-        let chunk = CodeChunk::SetArgs(vec!["one".to_string(), "don't".to_string(), "count".to_string()]);
+        let chunk = CodeChunk::SetArgs(vec![
+            "one".to_string(),
+            "don't".to_string(),
+            "count".to_string(),
+        ]);
         assert_eq!("set -- 'one' 'don'\\''t' 'count'", shell.format(&chunk));
 
         let chunk = CodeChunk::Exit(13);
@@ -437,7 +496,8 @@ mod shell_template_test {
         let chunk = CodeChunk::DeclareArrayVar(var_name.clone());
         assert_eq!("typeset -a name", shell.format(&chunk));
 
-        let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::StringValue("value".to_string()));
+        let chunk =
+            CodeChunk::AssignVar(var_name.clone(), VarValue::StringValue("value".to_string()));
         assert_eq!("name='value'", shell.format(&chunk));
 
         let chunk = CodeChunk::AssignVar(var_name.clone(), VarValue::IntValue(13));
@@ -452,18 +512,24 @@ mod shell_template_test {
         let chunk = CodeChunk::AssignEmptyArray(var_name.clone());
         assert_eq!("set -A name", shell.format(&chunk));
 
-        let chunk = CodeChunk::AddToArray(var_name.clone(), VarValue::StringValue("test".to_string()));
+        let chunk =
+            CodeChunk::AddToArray(var_name.clone(), VarValue::StringValue("test".to_string()));
         assert_eq!("name+=('test')", shell.format(&chunk));
 
         let var_name = "func".to_string();
 
-        let chunk = CodeChunk::CallFunction(var_name.clone(), VarValue::StringValue("value".to_string()));
+        let chunk =
+            CodeChunk::CallFunction(var_name.clone(), VarValue::StringValue("value".to_string()));
         assert_eq!("func 'value' || exit $?", shell.format(&chunk));
 
         let chunk = CodeChunk::CheckForFunction(var_name.clone());
         assert_eq!("typeset -f func >/dev/null 2>&1 || { echo >&2 \"ERROR: Function 'func' does not exist.\";exit 127; }", shell.format(&chunk));
 
-        let chunk = CodeChunk::SetArgs(vec!["one".to_string(), "don't".to_string(), "count".to_string()]);
+        let chunk = CodeChunk::SetArgs(vec![
+            "one".to_string(),
+            "don't".to_string(),
+            "count".to_string(),
+        ]);
         assert_eq!("set -- 'one' 'don'\\''t' 'count'", shell.format(&chunk));
 
         let chunk = CodeChunk::Exit(13);

@@ -20,7 +20,6 @@ const DEFAULT_SHELL: &str = "sh";
 
 const PARSEARGS_SHELL_VAR: &str = "PARSEARGS_SHELL";
 
-
 #[derive(Parser, Debug)]
 #[clap(
     disable_help_flag = true,
@@ -145,7 +144,7 @@ fn shell_init_code(
     let mut func_name_vec: Vec<&String> = vec![];
     for opt_cfg in opt_cfg_list {
         if let OptTarget::Function(name) = &opt_cfg.get_target() {
-            if ! func_name_vec.contains(&name) {
+            if !func_name_vec.contains(&name) {
                 init_code.push(CodeChunk::CheckForFunction(name.clone()));
                 func_name_vec.push(name);
             }
@@ -157,7 +156,7 @@ fn shell_init_code(
         for opt_cfg in opt_cfg_list {
             let name = opt_cfg.get_target_name();
 
-            if opt_cfg.is_target_variable() && ! handled_vars.contains(&name) {
+            if opt_cfg.is_target_variable() && !handled_vars.contains(&name) {
                 init_code.push(match &opt_cfg.opt_type {
                     OptType::Counter(_) => CodeChunk::DeclareLocalIntVar(name.clone()),
                     _ => CodeChunk::DeclareLocalVar(name.clone()),
@@ -173,7 +172,7 @@ fn shell_init_code(
         let name = opt_cfg.get_target_name();
 
         if opt_cfg.is_target_variable() {
-            if init_vars && ! handled_vars.contains(&name) {
+            if init_vars && !handled_vars.contains(&name) {
                 match &opt_cfg.opt_type {
                     OptType::Flag(_) | OptType::Assignment(_) | OptType::ModeSwitch(_, _) => {
                         init_code.push(CodeChunk::AssignVar(
@@ -205,9 +204,7 @@ fn some_str_to_bool(ostr: Option<&String>, default: bool) -> Result<bool, String
         Some(v) => match v.to_lowercase().trim() {
             "true" | "yes" => Ok(true),
             "false" | "no" => Ok(false),
-            _ => {
-                Err(format!("Invalid boolean value: '{}'", v))
-            }
+            _ => Err(format!("Invalid boolean value: '{}'", v)),
         },
         None => Ok(default),
     }
@@ -405,7 +402,7 @@ fn parse_shell_options(
 
         for oc in &mut *opt_cfg_list {
             match oc.opt_type {
-                OptType::ModeSwitch(_,_) => (),
+                OptType::ModeSwitch(_, _) => (),
                 _ => {
                     if oc.required && !oc.assigned {
                         return Err(format!(

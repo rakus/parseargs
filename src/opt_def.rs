@@ -241,7 +241,6 @@ fn is_valid_opt_char(chr: char, first: bool) -> bool {
     }
 }
 
-
 fn get_option_char(ps: &mut ParserSource, first: bool) -> Option<char> {
     let forbidden = vec![':', '#', '=', '+', '%'];
 
@@ -259,7 +258,7 @@ fn get_option_char(ps: &mut ParserSource, first: bool) -> Option<char> {
                     }
                     None => Some(c),
                 }
-            } else if is_valid_opt_char(c, first) && ! forbidden.contains(&c) {
+            } else if is_valid_opt_char(c, first) && !forbidden.contains(&c) {
                 Some(c)
             } else {
                 ps.back();
@@ -600,7 +599,6 @@ mod unit_tests {
             }
         }
     }
-
 
     #[test]
     fn test_parse_opt_def_mode_switch() {
