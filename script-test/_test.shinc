@@ -103,7 +103,7 @@ test_pa()
 
 test_pa_errmsg()
 {
-    rc="$1"
+    expected_rc="$1"
     msg_re="$2"
     shift 2
     args="$(printf "'%s' " "$@")"
@@ -115,12 +115,17 @@ test_pa_errmsg()
     # introduce an additional file discriptor 3.
     #
     message="$(exec 3>&1;eval "$(parseargs "$@" 2>&3)" 2>&3)"
+    actual_rc=$?
+    if [ "$expected_rc" != "$actual_rc" ]; then
+        failed "parseargs $args - exit code expected: $expected_rc - actual: $actual_rc"
+    fi
+
 
     if echo "$message" | grep -q "$msg_re" ; then
-        ok "parseargs $args  - Output matches >>$msg_re<<"
+        ok "parseargs $args  - Exit-Code OK - Output matches >>$msg_re<<"
         return 0
     else
-        failed "parseargs $args - Invalid Output: >>$message<<"
+        failed "parseargs $args - Exit-Code OK - Invalid Output: >>$message<<"
         return 1
     fi
 }
@@ -161,7 +166,7 @@ shell_supports_local_vars()
 #
 # Whether shell supports arrays.
 # Check by testing for typeset -a command.
-# If PARSEARGS_SHELL = 'sh' always return false
+# If PARSEARGS_SHELL = 'sh' or 'dash' always return false
 #
 shell_supports_arrays()
 {

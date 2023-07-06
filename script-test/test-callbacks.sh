@@ -66,6 +66,6 @@ else
     failed "error callback NOT called"
 fi
 
-test_pa_errmsg 1 "ERROR: Function 'set_unknown' does not exist." -o "l:long#set_unknown()" --
+test_pa_errmsg 127 "ERROR: Function 'set_unknown' does not exist." -o "l:long#set_unknown()" --
 
 end_test
