@@ -33,7 +33,7 @@ See <<OD,*OPTION DEFINITION*>> below.
 *-n, --name* NAME::
 Name of shell script.
 Used as prefix for error messages.
-If not given, used `parseargs`.
+If not given, `parseargs` is used.
 
 *-a, --arg-callback* SHELL-FUNCTION::
 Call function SHELL-FUNCTION to report program arguments.
@@ -45,16 +45,17 @@ The function can be used to echo additional hints (like "Try ... --help") or cha
 
 *-r, --remainder* SHELL-VARIABLE::
 Collect all parameter behind a '--' in the named array.
-ONLY SUPPORTED WITH --shell `bash`, `ksh`, or `zsh`.
+ONLY SUPPORTED WITH --shell `bash`, `ksh` and `zsh`.
 
 *-p, --posix*::
 Behave like recommended by POSIX and stop option processing on first none-option.
 
 *-i, --init-vars*::
-Initialize all variables with '', except for counting variables, as they are always initialized with 0
+Initialize all variables with '' (empty string), except for counting variables, as they are always initialized with 0.
 
 *-l, --local-vars*::
-Create local variables. __Not supported with --shell sh__
+Create local variables.
+ONLY SUPPORTED WITH --shell `dash`, `bash`, `ksh` and `zsh`.
 
 *-h, --help-opt*::
 Enable support for --help as script option.
@@ -65,10 +66,11 @@ Enable support for --version as script options.
 The calling script must provide the function `show_version` that displays the version text.
 
 *-s, --shell* SHELL::
-Produce code for named shell. Supported: `bash`, `ksh`, `zsh`, `sh`. Default: `sh`
+Produce code for named shell. Supported: `bash`, `ksh`, `zsh`, `dash` and `sh`.
+Default: `sh`
 
 *--help*::
-Print help.
+Print Parseargs help.
 
 *--version*::
 Print the Parseargs version.
@@ -84,9 +86,9 @@ The simple single definitions is:
 
 option-names::
 The option-names consist of one or more option chars or strings separated by colons.
-A single char defines an option that is given with a leading dash (e.g. `l` for `-l`). +
+A single char defines an option that is given with one leading dash (e.g. `l` for `-l`). +
 Allowed chars:  `A-Za-z0-9!"$&'()*,./;<>?@[]^_{|}~` and with backslash escape: `#%+:=\`.
-Some of this characters need a backslash escape on the command line.
+Some of this characters need a backslash escape, when used on the command line.
 +
 A string defines a long option that is given with two leading dashes (e.g. `long` for `--long`).
 String may consist of the same chars as the short option. Additional the minus (`-`) is allowed, if it is not the first char.
@@ -95,12 +97,11 @@ option-type::
 Following option types are supported:
 
 `#`:::
- Flag - Variable is set to "`true`" if option given.
+Flag - Variable is set to "`true`" if option given.
 `=`:::
 Assignment - Option needs additional option-argument.
 `+`:::
 Counting variable - Occurrences of option are counted. `-v` results in 1, `-vv` results in 2 ...
-
 
 option-variable::
 Name of the variable to set for the option. This must be a valid shell variable or function name.
@@ -108,7 +109,7 @@ If the name ends with `()` the name identifies a function to call to set the val
 If the option is a flag and variable name contains a `=` (like: "`action=commit`"), the value after the equal sign is assigned to the variable if the option is given. +
 This way the variable name might be used multiple times with different values (see <<MSO, *Mode Switch Options*>>).
 +
-Variable names can be prefixed with a `*` (see <<RQ, REQUIRED OPTIONS>>) or a `?` (see <<HP, OWN HELP OPTIONS>>)
+Variable names can be prefixed with a `*` (see <<RQ, REQUIRED OPTIONS>>) or a `?` (see <<HP, OWN HELP OPTIONS>>).
 
 === Option Definition Examples
 
@@ -120,12 +121,12 @@ Defines the options `-l` and `--long` to set the variable `long`.
 
 o:out-file=outfile::
 Defines the options `-o` and `--out-file` that need an additional argument.
-This argument is assigned to the variable `outfile`.
+This argument is then assigned to the variable `outfile`.
 
 c#mode=copy,m#mode=move::
 Defines the options `-c` and `-m`.
 With `-c` the variable `mode` gets the value "copy" assigned, with `-m` the value "move".
-`-c` and `-m` are mutual exclusive.
+The options `-c` and `-m` are mutual exclusive.
 
 v+verbosity::
 Defines `-v` as a counting option. The occurrences of `-v` on the command line is counted and assigned to the variable `verbosity`.
@@ -153,7 +154,7 @@ The value _does not_ increase the counter value by that amount, but sets the cou
 [[OCB]]
 == OPTION CALLBACK FUNCTIONS
 
-If the variable name in the option definition has `()` appended, it in fact names a function to call when the option is found.
+If the variable name in the option definition has `()` appended, it names a function to call when the option is found.
 So:
 
    parseargs -o 'l:long#set_long()' -- -l
@@ -165,7 +166,7 @@ produces this line (among others):
 It calls the function `set_long` with the value `true` and exits the script if the function returns a non-zero return code.
 The script exit code is the exit code of the function.
 
-As long options for flags support setting it to false the value is given as a argument to the callback function.
+As long options for flags support setting it to false, the value is given as a argument to the callback function.
 Using
 
    parseargs -o 'l:long#set_long()' -- --long=false
@@ -175,7 +176,7 @@ would produce:
     set_long '' || exit $?;
 
 
-IMPORTANT: Using callbacks disables duplicate and mutual exclusion checks of Parseargs.
+WARNING: Using callbacks disables duplicate and mutual exclusion checks of Parseargs.
 Then this is the responsibility of the script author.
 
 [[RQ]]
@@ -211,8 +212,8 @@ If a mode switch option should be marked as required, it is sufficient to mark i
 
 == Supporting `--help` and `--version`
 
-With the option `-h`, Parseargs supports the script option `--help` and calls the function `show_help`.
-That function then displays a help text.
+With the option `-h`, Parseargs supports the script option `--help` and calls the function `show_help` for it.
+That function then can displays a help text.
 
 Similar with `-v`, Parseargs supports the script option `--version` and calls the function `show_version`.
 
@@ -262,7 +263,7 @@ AFAIK this is a POSIX requirement.
 In this call the `-l` triggers setting the variable `long` to "true", but `-x` is handled as a program argument.
 Without the `--` the `-x` would lead to an error due to unknown option.
 
-**Supported with `bash`, `ksh` and `zsh`:**
+**The following is supported with `bash`, `ksh` and `zsh`:**
 
 Parseargs is also able to separate the program arguments given before or after a `--`.
 With the command line option `-r ARRAY_NAME` / `--remainder=ARRAY_NAME`, the arguments behind a `--` are collected in the named array, while the arguments before it are provided as positional parameter.
@@ -271,7 +272,7 @@ With
 
     parseargs -r crew  -- Kirk -- Spock Bones
 
-the value of `$1` is "Kirk", while "Spock" and "Bones" are available as `${crew[0]}` and `${crew[1]}`.
+the value of `$1` is "Kirk", while "Spock" and "Bones" are available as `${crew[0]}` and `${crew[1]}` (in zsh: `${crew[1]}` and `${crew[2]}`).
 
 NOTE: This special handling might collide with the previous description of `--`.
 
@@ -284,22 +285,29 @@ Callback functions are used for
 3. `-e` / `--error-callback`
 
 When any of this callbacks are used, Parseargs first generates code to verify that the named function actually exist.
-If a required function is missing a error message is printed and the script is terminated with exit code 127.
+If a required function is missing an error message is printed and the script is terminated with exit code 127.
 This error should only occur during script development.
 
-The code generated for calling a callback function checks the return code of the function and will exit the script immediately with the same exit code.
+The code generated for calling a callback function checks the return code of the function.
+If not zero the script is terminated immediately with the same exit code.
 
 == SHELL SUPPORT
 
 Parseargs can generate shell code for different shells.
-By default code for `bash` is created.
+By default code for `sh` is created, that is also understood by the other shells named here.
 
 The target shell can be changed with the option `-s` / `--shell`-
 
 `-s sh`::
-This generates code for a simple POSIX shell.
+The default.
+It generates code for a POSIX shell.
 Those shells don't support local variables and array variable.
 Due to this the option `-l` / `--local-vars` and `-r` / `--remainder` are not supported.
+
+`-s dash`::
+Very close to a POSIX shell.
+Only extension is the support for function-local variables.
+As arrays are not supported, `-r` / `--remainder` is not supported.
 
 `-s bash`, `-s ksh` and `-s zsh`::
 With this shells all features of Parseargs are supported.
