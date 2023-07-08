@@ -1,0 +1,32 @@
+name: Verify and Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install cargo-get
+      uses: baptiste0928/cargo-install@v2
+      with:
+        crate: cargo-get
+
+    - name: Install Shells
+      run: sudo apt-get install -y -qq ksh zsh
+
+    - name: Install MKSH (if available)
+      run: sudo apt-get install -y mksh || true
+
+    - name: Run make check
+      run: make check
+

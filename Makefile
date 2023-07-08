@@ -3,7 +3,7 @@
 #
 
 # Phony targets represents recipes, not files
-.PHONY: help debug-build release-build test script-test clean doc rpm deb
+.PHONY: help debug-build release-build test script-test clean doc rpm deb zip
 
 DEBUG_TGT := target/debug/parseargs
 RELEASE_TGT := target/release/parseargs
@@ -31,23 +31,29 @@ script-test:                                 ## run shell script tests
 
 test: unit-test script-test                     ## run unit and shell script tests
 
-check: clean debug-build test                ## run clean debug build and test
+check: clean debug-build test                ## run clean debug build, format check etc
+	cargo fmt --check
 	( cd script-test && shellcheck -fgcc -x -a *.sh )
 
 doc:
+	@test -n "${VERSION}" || ( echo "Error: VERSION not extracted from Cargo.toml. Is 'cargo get' installed?"; exit 1 )
 	( cd doc && make VERSION=$(VERSION) )
 
 rpm: release-build doc                       ## Build rpm package
-	#cargo install cargo-generate-rpm
 	strip -s target/release/parseargs
 	cargo generate-rpm
 
 deb: release-build doc                       ## Build deb package
-	#cargo install cargo-generate-rpm
 	strip -s target/release/parseargs
 	cargo deb
 
 pkg: rpm deb                                 ## Build rpm & deb packages
+
+zip: target/parseargs-$(VERSION).zip
+
+target/parseargs-$(VERSION).zip: release-build doc
+	@test -n "${VERSION}" || ( echo "Error: VERSION not extracted from Cargo.toml. Is 'cargo get' installed?"; exit 1 )
+	zip $@ target/release/parseargs{,.exe} doc/target/parseargs.html
 
 setup:                                       ## Install needed cargo commands
 	cargo install cargo-get

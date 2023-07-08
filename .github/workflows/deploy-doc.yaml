@@ -1,4 +1,4 @@
-name: Deploy Tutorial
+name: Build and Deploy Tutorial
 
 on:
   push:

@@ -6,9 +6,32 @@
 script_name="$(basename "$0")"
 script_dir="$(cd "$(dirname "$0")" && pwd)" || exit 1
 
-test_shells="bash ksh zsh pdksh mksh dash sh"
 
 cd "$script_dir" || exit 1
+
+echo ">>>>$(uname -a)<<<<"
+echo ">>>>$(uname -s)<<<<"
+
+case "$(uname -s | tr '[:upper:]' '[:lower:]')" in
+    *cygwin*)
+        IS_CYGWIN=TRUE
+        export IS_CYGWIN
+        ;;
+    *msys*)
+        IS_MSYS=TRUE
+        export IS_MSYS
+        ;;
+    *mingw*)
+        IS_MSYS=TRUE
+        export IS_MSYS
+        ;;
+esac
+
+if [ -z "$IS_MSYS" ] && [ -z "$IS_CYGWIN" ]; then
+    test_shells="bash ksh zsh pdksh mksh dash sh"
+else
+    test_shells="bash"
+fi
 
 run_tests()
 {
@@ -97,7 +120,7 @@ for sh in $test_shells; do
     if command -v "$sh" >/dev/null 2>&1; then
         shells_tested="$shells_tested $sh"
 
-        native_dialect=$(get_supp_shell_dialects "$sh")
+        native_dialect=$(get_supported_shell_dialects "$sh")
         if [ -n "$native_dialect" ]; then
             # shellcheck disable=SC2086 # native_dialect _should_ split
             test_with_shell "$sh" $native_dialect sh

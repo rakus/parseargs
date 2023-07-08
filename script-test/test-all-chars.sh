@@ -79,7 +79,9 @@ test_pa 'test "$opt" = true' -o '!#opt' -- -!
 test_pa 'test "$opt" = true' -o '$#opt' -- -$
 test_pa 'test "$opt" = true' -o ',#opt' -- -,
 test_pa 'test "$opt" = true' -o '.#opt' -- -.
-test_pa 'test "$opt" = true' -o '/#opt' -- -/
+if [ -z "$IS_MSYS" ]; then
+    test_pa 'test "$opt" = true' -o '/#opt' -- -/
+fi
 test_pa 'test "$opt" = true' -o '@#opt' -- -@
 test_pa 'test "$opt" = true' -o '[#opt' -- -\[   # zsh needs escape here
 test_pa 'test "$opt" = true' -o ']#opt' -- -]
