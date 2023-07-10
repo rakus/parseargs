@@ -12,6 +12,10 @@ SRCFILES := $(wildcard src/*.rs src/**/*.rs)
 
 VERSION := $(shell cargo get version)
 
+OS_NAME := $(shell uname -s | tr A-Z a-z)
+PROC_NAME := $(shell uname -m)
+
+BUILD_ENV := ${PROC_NAME}-${OS_NAME}
 
 debug-build: ${DEBUG_TGT}                    ## Debug build the application using cargo
 
@@ -37,7 +41,7 @@ check: clean debug-build test                ## run clean debug build, format ch
 
 doc:
 	@test -n "${VERSION}" || ( echo "Error: VERSION not extracted from Cargo.toml. Is 'cargo get' installed?"; exit 1 )
-	( cd doc && make VERSION=$(VERSION) )
+	( cd doc && make VERSION=${VERSION} )
 
 rpm: release-build doc                       ## Build rpm package
 	strip -s target/release/parseargs
@@ -49,9 +53,9 @@ deb: release-build doc                       ## Build deb package
 
 pkg: rpm deb                                 ## Build rpm & deb packages
 
-zip: target/parseargs-$(VERSION).zip
+zip: target/parseargs-${VERSION}-${BUILD_ENV}.zip
 
-target/parseargs-$(VERSION).zip: release-build doc
+target/parseargs-${VERSION}-${BUILD_ENV}.zip: release-build doc
 	@test -n "${VERSION}" || ( echo "Error: VERSION not extracted from Cargo.toml. Is 'cargo get' installed?"; exit 1 )
 	zip $@ target/release/parseargs{,.exe} doc/target/parseargs.html
 
@@ -65,4 +69,4 @@ clean:
 	( cd doc && make clean )
 
 help:                                        ## Prints targets with help text
-	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%s\033[0m\n    %s\n", $$1, $$2}'
+	@cat ${MAKEFILE_LIST} | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%s\033[0m\n    %s\n", $$1, $$2}'
