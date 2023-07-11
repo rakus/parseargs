@@ -17,6 +17,13 @@ PROC_NAME := $(shell uname -m)
 
 BUILD_ENV := ${PROC_NAME}-${OS_NAME}
 
+ifneq (,$(findstring windows,$(shell echo $(OS) | tr A-Z a-z)))
+	EXE_EXT := .exe
+else
+	EXE_EXT :=
+endif
+
+
 debug-build: ${DEBUG_TGT}                    ## Debug build the application using cargo
 
 release-build: ${RELEASE_TGT}                ## Release build the application using cargo
@@ -57,7 +64,8 @@ zip: target/parseargs-${VERSION}-${BUILD_ENV}.zip
 
 target/parseargs-${VERSION}-${BUILD_ENV}.zip: release-build doc
 	@test -n "${VERSION}" || ( echo "Error: VERSION not extracted from Cargo.toml. Is 'cargo get' installed?"; exit 1 )
-	zip $@ target/release/parseargs{,.exe} doc/target/parseargs.html
+	rm -f $@
+	zip -j --must-match $@ target/release/parseargs${EXE_EXT} doc/target/parseargs.html
 
 setup:                                       ## Install needed cargo commands
 	cargo install cargo-get
