@@ -53,7 +53,7 @@ end_test()
 {
     rc=0
     if [ $error_cnt -eq 0 ]; then
-        printf >&2 '\033[01;32mALL TESTS OK\033[0m\n'
+        printf '\033[01;32mALL TESTS OK\033[0m\n'
     else
         printf >&2 '\033[01;31mTEST FAILURES\033[0m\n'
         rc=1

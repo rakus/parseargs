@@ -66,6 +66,10 @@ else
     failed "error callback NOT called"
 fi
 
+
+# Test error message on undefined functions
+test_pa_errmsg 127 "ERROR: Function 'arg_nix_cb' does not exist." -a arg_nix_cb -o "l:long#set_unknown()" --
+test_pa_errmsg 127 "ERROR: Function 'err_nix_cb' does not exist." -e err_nix_cb -o "l:long#set_unknown()" --
 test_pa_errmsg 127 "ERROR: Function 'set_unknown' does not exist." -o "l:long#set_unknown()" --
 
 end_test

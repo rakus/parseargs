@@ -9,8 +9,7 @@ script_dir="$(cd "$(dirname "$0")" && pwd)" || exit 1
 
 cd "$script_dir" || exit 1
 
-echo ">>>>$(uname -a)<<<<"
-echo ">>>>$(uname -s)<<<<"
+echo "Test Environment: $(uname -a)"
 
 case "$(uname -s | tr '[:upper:]' '[:lower:]')" in
     *cygwin*)
@@ -131,6 +130,10 @@ for sh in $test_shells; do
     else
         shells_not_found="$shells_not_found $sh"
     fi
+done
+
+for s_test in s-test*.sh; do
+    "./$s_test"
 done
 
 echo "Tested shells:    $shells_tested"
