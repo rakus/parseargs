@@ -168,11 +168,6 @@ impl CodeTemplates {
         str = str.replace("{VALUE}", &value.to_string());
         str
     }
-    fn format_code_name_int_value(&self, tmpl: &str, name: &String, value: i32) -> String {
-        let mut str = tmpl.replace("{NAME}", name);
-        str = str.replace("{VALUE}", &value.to_string());
-        str
-    }
     fn format_code_int_value(&self, tmpl: &str, value: i32) -> String {
         let mut str = tmpl.replace("{VALUE}", &value.to_string());
         str
@@ -312,6 +307,11 @@ mod var_value_tests {
     }
 
     #[test]
+    fn test_var_value_none() {
+        assert_eq!("".to_string(), VarValue::None.to_string());
+    }
+
+    #[test]
     fn test_int_13() {
         assert_eq!("13".to_string(), VarValue::IntValue(13).to_string());
     }
@@ -409,6 +409,9 @@ mod shell_template_test {
         ]);
         assert_eq!("set -- 'one' 'don'\\''t' 'count'", shell.format(&chunk));
 
+        let chunk = CodeChunk::FalseReturn;
+        assert_eq!("false", shell.format(&chunk));
+
         let chunk = CodeChunk::Exit(13);
         assert_eq!("exit 13", shell.format(&chunk));
 
@@ -479,6 +482,9 @@ mod shell_template_test {
         ]);
         assert_eq!("set -- 'one' 'don'\\''t' 'count'", shell.format(&chunk));
 
+        let chunk = CodeChunk::FalseReturn;
+        assert_eq!("false", shell.format(&chunk));
+
         let chunk = CodeChunk::Exit(13);
         assert_eq!("exit 13", shell.format(&chunk));
     }
@@ -532,7 +538,28 @@ mod shell_template_test {
         ]);
         assert_eq!("set -- 'one' 'don'\\''t' 'count'", shell.format(&chunk));
 
+        let chunk = CodeChunk::FalseReturn;
+        assert_eq!("false", shell.format(&chunk));
+
         let chunk = CodeChunk::Exit(13);
         assert_eq!("exit 13", shell.format(&chunk));
+    }
+
+    #[test]
+    fn test_format_vector() {
+        let shell = get_shell_template("sh").unwrap();
+
+        let var_name = "name".to_string();
+
+        let c1 = CodeChunk::AssignVar(var_name.clone(), VarValue::StringValue("value".to_string()));
+        let c2 = CodeChunk::AssignVar(var_name.clone(), VarValue::IntValue(13));
+        let c3 = CodeChunk::AssignVar(var_name.clone(), VarValue::BoolValue(true));
+
+        let cunks = vec![c1, c2, c3];
+
+        assert_eq!(
+            "name='value';\nname=13;\nname='true'".to_string(),
+            shell.format_vector(&cunks)
+        );
     }
 }

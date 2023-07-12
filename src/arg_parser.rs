@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum CmdLineElement {
     /// A short option like '-l' without the leading dash
     ShortOption(char),
@@ -20,9 +20,9 @@ pub enum CmdLineElement {
 impl fmt::Display for CmdLineElement {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            CmdLineElement::ShortOption(c) => write!(f, "-{} ", c),
-            CmdLineElement::LongOption(c) => write!(f, "--{} ", c),
-            CmdLineElement::LongOptionValue(o, v) => write!(f, "--{}={} ", o, v),
+            CmdLineElement::ShortOption(c) => write!(f, "-{}", c),
+            CmdLineElement::LongOption(c) => write!(f, "--{}", c),
+            CmdLineElement::LongOptionValue(o, v) => write!(f, "--{}={}", o, v),
             CmdLineElement::Argument(v) => write!(f, "'{}'", v),
             CmdLineElement::Separator => write!(f, "--"),
         }
@@ -124,5 +124,167 @@ impl CmdLineTokenizer {
         } else {
             self.next_arg()
         }
+    }
+}
+
+#[cfg(test)]
+mod cmd_line_element_tests {
+    use crate::arg_parser::CmdLineElement;
+
+    #[test]
+    fn test_to_string() {
+        assert_eq!("-d", format!("{}", CmdLineElement::ShortOption('d')));
+        assert_eq!(
+            "--debug",
+            format!("{}", CmdLineElement::LongOption("debug".to_string()))
+        );
+        assert_eq!(
+            "--file=output",
+            format!(
+                "{}",
+                CmdLineElement::LongOptionValue("file".to_string(), "output".to_string())
+            )
+        );
+        assert_eq!(
+            "'filename'",
+            format!("{}", CmdLineElement::Argument("filename".to_string()))
+        );
+        assert_eq!("--", format!("{}", CmdLineElement::Separator));
+    }
+}
+#[cfg(test)]
+mod arg_parser_tests {
+    use crate::arg_parser::{CmdLineElement, CmdLineTokenizer};
+
+    #[test]
+    fn test_normal() {
+        let args = [
+            "-d",
+            "-o",
+            "outfile",
+            "--name=parseargs",
+            "--version",
+            "1.0",
+            "one",
+            "two",
+        ]
+        .map(String::from)
+        .to_vec();
+
+        let mut pa = CmdLineTokenizer::build(args, false);
+
+        assert_eq!(Some(CmdLineElement::ShortOption('d')), pa.next());
+        assert_eq!(Some(CmdLineElement::ShortOption('o')), pa.next());
+        assert_eq!(Some("outfile".to_string()), pa.get_option_argument());
+        assert_eq!(
+            Some(CmdLineElement::LongOptionValue(
+                "name".to_string(),
+                "parseargs".to_string()
+            )),
+            pa.next()
+        );
+        assert_eq!(
+            Some(CmdLineElement::LongOption("version".to_string())),
+            pa.next()
+        );
+        assert_eq!(Some("1.0".to_string()), pa.get_option_argument());
+        assert_eq!(Some(CmdLineElement::Argument("one".to_string())), pa.next());
+        assert_eq!(Some(CmdLineElement::Argument("two".to_string())), pa.next());
+        assert_eq!(None, pa.next());
+    }
+
+    #[test]
+    fn test_mixed() {
+        let args = ["one", "-d", "-o", "outfile", "--name=parseargs", "two"]
+            .map(String::from)
+            .to_vec();
+
+        let mut pa = CmdLineTokenizer::build(args, false);
+
+        assert_eq!(Some(CmdLineElement::Argument("one".to_string())), pa.next());
+        assert_eq!(Some(CmdLineElement::ShortOption('d')), pa.next());
+        assert_eq!(Some(CmdLineElement::ShortOption('o')), pa.next());
+        assert_eq!(Some("outfile".to_string()), pa.get_option_argument());
+        assert_eq!(
+            Some(CmdLineElement::LongOptionValue(
+                "name".to_string(),
+                "parseargs".to_string()
+            )),
+            pa.next()
+        );
+        assert_eq!(Some(CmdLineElement::Argument("two".to_string())), pa.next());
+        assert_eq!(None, pa.next());
+    }
+
+    #[test]
+    fn test_combined() {
+        let args = ["-dooutfile", "one"].map(String::from).to_vec();
+
+        let mut pa = CmdLineTokenizer::build(args, false);
+
+        assert_eq!(Some(CmdLineElement::ShortOption('d')), pa.next());
+        assert_eq!(Some(CmdLineElement::ShortOption('o')), pa.next());
+        assert_eq!(Some("outfile".to_string()), pa.get_option_argument());
+        assert_eq!(Some(CmdLineElement::Argument("one".to_string())), pa.next());
+        assert_eq!(None, pa.next());
+    }
+
+    #[test]
+    fn test_dash_dash() {
+
+        let args = ["-d", "--", "-o"].map(String::from).to_vec();
+
+        let mut pa = CmdLineTokenizer::build(args, false);
+
+        assert_eq!(Some(CmdLineElement::ShortOption('d')), pa.next());
+        assert_eq!(Some(CmdLineElement::Separator), pa.next());
+        assert_eq!(Some(CmdLineElement::Argument("-o".to_string())), pa.next());
+        assert_eq!(None, pa.next());
+    }
+
+    #[test]
+    fn test_posix() {
+        let args = ["-d", "one", "-o", "outfile", "--name=parseargs", "two"]
+            .map(String::from)
+            .to_vec();
+
+        let mut pa = CmdLineTokenizer::build(args, true);
+
+        assert_eq!(Some(CmdLineElement::ShortOption('d')), pa.next());
+        assert_eq!(Some(CmdLineElement::Argument("one".to_string())), pa.next());
+        assert_eq!(Some(CmdLineElement::Argument("-o".to_string())), pa.next());
+        assert_eq!(
+            Some(CmdLineElement::Argument("outfile".to_string())),
+            pa.next()
+        );
+        assert_eq!(
+            Some(CmdLineElement::Argument("--name=parseargs".to_string())),
+            pa.next()
+        );
+        assert_eq!(Some(CmdLineElement::Argument("two".to_string())), pa.next());
+        assert_eq!(None, pa.next());
+    }
+
+    #[test]
+    fn test_posix_with_dash() {
+        let args = ["-d", "-", "-o", "outfile", "--name=parseargs", "two"]
+            .map(String::from)
+            .to_vec();
+
+        let mut pa = CmdLineTokenizer::build(args, true);
+
+        assert_eq!(Some(CmdLineElement::ShortOption('d')), pa.next());
+        assert_eq!(Some(CmdLineElement::Argument("-".to_string())), pa.next());
+        assert_eq!(Some(CmdLineElement::Argument("-o".to_string())), pa.next());
+        assert_eq!(
+            Some(CmdLineElement::Argument("outfile".to_string())),
+            pa.next()
+        );
+        assert_eq!(
+            Some(CmdLineElement::Argument("--name=parseargs".to_string())),
+            pa.next()
+        );
+        assert_eq!(Some(CmdLineElement::Argument("two".to_string())), pa.next());
+        assert_eq!(None, pa.next());
     }
 }

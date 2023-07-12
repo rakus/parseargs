@@ -587,6 +587,29 @@ mod unit_tests {
     }
 
     #[test]
+    fn test_opt_config_flag() {
+        let oc = get_od_debug();
+        assert_eq!(true, oc.match_option(&CmdLineElement::ShortOption('d')));
+        assert_eq!(
+            true,
+            oc.match_option(&CmdLineElement::LongOption("debug".to_string()))
+        );
+        assert_eq!(
+            true,
+            oc.match_option(&CmdLineElement::LongOptionValue(
+                "debug".to_string(),
+                "true".to_string()
+            ))
+        );
+        assert_eq!(false, oc.match_option(&CmdLineElement::Separator));
+
+        assert_eq!(false, oc.is_duplicate_allowed());
+        assert_eq!(false, oc.is_target_function());
+        assert_eq!(true, oc.is_target_variable());
+        assert_eq!("debug", oc.get_target_name());
+    }
+
+    #[test]
     fn test_parse_opt_def_flag() {
         let mut ps = ParserSource::new(&"d:debug#debug".to_string());
 
