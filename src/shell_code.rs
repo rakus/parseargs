@@ -16,7 +16,7 @@ impl VarValue {
     /// Escape a String for usage as shell value
     /// The value is enclosed in single quotes and a single quote in the value is replaced with
     /// "'\''".
-    fn escape_string(value: &String) -> String {
+    fn escape_string(value: &str) -> String {
         let mut esc = String::new();
         esc.push('\'');
         for c in value.chars() {
@@ -98,7 +98,7 @@ pub struct CodeTemplates {
 }
 
 impl CodeTemplates {
-    pub fn format_vector(&self, chunks: &Vec<CodeChunk>) -> String {
+    pub fn format_vector(&self, chunks: &[CodeChunk]) -> String {
         let mut str = String::new();
         let mut first = true;
         let separator = CodeChunk::Separator;
@@ -159,20 +159,17 @@ impl CodeTemplates {
             CodeChunk::Separator => self.statement_separator().to_string(),
         }
     }
-    fn format_code_name(&self, tmpl: &str, name: &String) -> String {
-        let mut str = tmpl.replace("{NAME}", name);
-        str
+    fn format_code_name(&self, tmpl: &str, name: &str) -> String {
+        tmpl.replace("{NAME}", name)
     }
-    fn format_code_name_value(&self, tmpl: &str, name: &String, value: &VarValue) -> String {
-        let mut str = tmpl.replace("{NAME}", name);
-        str = str.replace("{VALUE}", &value.to_string());
-        str
+    fn format_code_name_value(&self, tmpl: &str, name: &str, value: &VarValue) -> String {
+        tmpl.replace("{NAME}", name)
+            .replace("{VALUE}", &value.to_string())
     }
     fn format_code_int_value(&self, tmpl: &str, value: i32) -> String {
-        let mut str = tmpl.replace("{VALUE}", &value.to_string());
-        str
+        tmpl.replace("{VALUE}", &value.to_string())
     }
-    fn format_code_args(&self, tmpl: &str, args: &Vec<String>) -> String {
+    fn format_code_args(&self, tmpl: &str, args: &[String]) -> String {
         let mut args_str = String::new();
         for (idx, a) in args.iter().enumerate() {
             if idx > 0 {
@@ -180,8 +177,7 @@ impl CodeTemplates {
             }
             args_str.push_str(&VarValue::escape_string(a));
         }
-        let mut str = tmpl.replace("{ARGS}", &args_str);
-        str
+        tmpl.replace("{ARGS}", &args_str)
     }
     fn statement_separator(&self) -> &str {
         self.statement_separator

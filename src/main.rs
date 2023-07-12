@@ -111,10 +111,10 @@ Used by Clap to validate a given str as shell variable/function name and to crea
 fn parse_shell_name(arg: &str) -> Result<String, String> {
     for (idx, chr) in arg.chars().enumerate() {
         if idx == 0 && !chr.is_alphabetic() {
-            Err(format!("Not a valid shell variable or function name"))?
+            Err("Not a valid shell variable or function name")?
         }
         if idx > 0 && !chr.is_alphanumeric() && chr != '_' {
-            Err(format!("Not a valid shell variable or function name"))?
+            Err("Not a valid shell variable or function name")?
         }
     }
     Ok(arg.to_string())
@@ -196,7 +196,7 @@ fn shell_init_code(
         init_code.push(CodeChunk::AssignEmptyArray(array.clone()));
     }
 
-    return init_code;
+    init_code
 }
 
 fn some_str_to_bool(ostr: Option<&String>, default: bool) -> Result<bool, String> {
@@ -240,13 +240,13 @@ fn parse_shell_options(
     let mut script_args = vec![];
     for oss in &cmd_line_args.script_args {
         let result = OsString::into_string(oss.clone());
-        if result.is_ok() {
-            script_args.push(result.unwrap());
+        if let Ok(utf8) = result {
+            script_args.push(utf8);
         } else {
-            return Err(format!(
+            Err(format!(
                 "Invalid UTF-8 char(s) in {:?}",
                 result.unwrap_err()
-            ));
+            ))?
         }
     }
 
@@ -266,15 +266,13 @@ fn parse_shell_options(
                         VarValue::StringValue(value),
                     ));
                 }
+            } else if let Some(func) = &cmd_line_args.arg_callback {
+                shell_code.push(CodeChunk::CallFunction(
+                    func.clone(),
+                    VarValue::StringValue(value),
+                ));
             } else {
-                if let Some(func) = &cmd_line_args.arg_callback {
-                    shell_code.push(CodeChunk::CallFunction(
-                        func.clone(),
-                        VarValue::StringValue(value),
-                    ));
-                } else {
-                    arguments.push(value);
-                }
+                arguments.push(value);
             }
         } else {
             let opt_value = match &e {
@@ -304,7 +302,7 @@ fn parse_shell_options(
                 match &oc.opt_type {
                     OptType::Flag(target) => {
                         let bool_val = VarValue::BoolValue(some_str_to_bool(option.1, true)?);
-                        shell_code.push(assign_target(&target, bool_val));
+                        shell_code.push(assign_target(target, bool_val));
                     }
                     OptType::ModeSwitch(target, value) => {
                         if option.1.is_some() {
@@ -312,7 +310,7 @@ fn parse_shell_options(
                         }
                         // Conflict detection is done at end of processing.
                         shell_code
-                            .push(assign_target(&target, VarValue::StringValue(value.clone())));
+                            .push(assign_target(target, VarValue::StringValue(value.clone())));
                     }
                     OptType::Assignment(target) => {
                         let opt_arg = match option.1 {
@@ -392,7 +390,7 @@ fn parse_shell_options(
                     used_tab.join(", ")
                 ));
             }
-            if required && used_tab.len() == 0 {
+            if required && used_tab.is_empty() {
                 return Err(format!(
                     "One of the following options is required: {}",
                     all_tab.join(", ")
@@ -438,19 +436,16 @@ fn validate_option_definitions(opt_def_list: &Vec<OptConfig>) {
             }
         }
         for lng in &oc.opt_strings {
-            if all_long_options.contains(&&lng) {
+            if all_long_options.contains(&lng) {
                 die_internal(format!("Duplicate definition of option '--{}'", lng));
             } else {
-                all_long_options.push(&lng);
+                all_long_options.push(lng);
             }
         }
 
         let name = oc.get_target_name();
         let is_function = oc.is_target_function();
-        let is_mode_switch = match oc.opt_type {
-            OptType::ModeSwitch(_, _) => true,
-            _ => false,
-        };
+        let is_mode_switch = matches!(oc.opt_type, OptType::ModeSwitch(_, _));
 
         match all_variables.iter().find(|x| x.0 == name) {
             Some(o) => {
@@ -471,25 +466,16 @@ fn validate_option_definitions(opt_def_list: &Vec<OptConfig>) {
                 all_variables.push((name.clone(), is_function, is_mode_switch));
             }
         }
-        match &oc.opt_type {
-            OptType::ModeSwitch(_, value) => {
-                if mode_values_map.contains_key(&name) {
-                    match mode_values_map.get(&name) {
-                        Some(v) => {
-                            if v.contains(&value) {
-                                die_internal(format!(
-                                    "Duplicate value '{}' for mode '{}'",
-                                    value, name
-                                ));
-                            }
-                        }
-                        None => (),
+        if let OptType::ModeSwitch(_, value) = &oc.opt_type {
+            if mode_values_map.contains_key(&name) {
+                if let Some(v) = mode_values_map.get(&name) {
+                    if v.contains(&value) {
+                        die_internal(format!("Duplicate value '{}' for mode '{}'", value, name));
                     }
-                } else {
-                    mode_values_map.insert(name.clone(), vec![&value]);
                 }
+            } else {
+                mode_values_map.insert(name.clone(), vec![value]);
             }
-            _ => (),
         }
     }
 }
@@ -546,7 +532,7 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
 
     // get the shell templates
     let shell_tmpl = shell_code::get_shell_template(shell.as_str());
-    if let None = shell_tmpl {
+    if shell_tmpl.is_none() {
         die_internal(format!("Unknown shell '{}'", shell));
     }
     let shell_tmpl = shell_tmpl.unwrap();
@@ -585,7 +571,7 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
         Err(msg) => {
             eprintln!("{}: {}", script_name, msg);
             if let Some(func) = cmd_line_args.error_callback {
-                code.push(CodeChunk::CallFunction(func.clone(), VarValue::None));
+                code.push(CodeChunk::CallFunction(func, VarValue::None));
             }
             code.push(CodeChunk::Exit(1));
             1
@@ -606,7 +592,7 @@ fn main() {
                 println!("{}", help_str);
                 exit(0);
             } else if c.version {
-                let version_str = CmdLineArgs::command().render_version().to_string();
+                let version_str = CmdLineArgs::command().render_version();
                 println!("{}", version_str);
                 exit(0);
             }

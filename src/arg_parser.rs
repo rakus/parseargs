@@ -74,10 +74,7 @@ impl CmdLineTokenizer {
             let chr = self.left_over.remove(0);
             Some(CmdLineElement::ShortOption(chr))
         } else if self.args_only {
-            match self.next_arg() {
-                None => None,
-                Some(s) => Some(CmdLineElement::Argument(s.to_string())),
-            }
+            self.next_arg().map(CmdLineElement::Argument)
         } else {
             match self.next_arg() {
                 None => None,
@@ -89,19 +86,19 @@ impl CmdLineTokenizer {
                         if self.posix {
                             self.args_only = true;
                         }
-                        Some(CmdLineElement::Argument(s.to_string()))
-                    } else if s.starts_with("--") {
+                        Some(CmdLineElement::Argument(s))
+                    } else if let Some(opt_str) = s.strip_prefix("--") {
                         // parse long option
-                        if let Some(eq_idx) = s.find("=") {
-                            let name = s[2..eq_idx].to_string();
-                            let value = s[eq_idx + 1..].to_string();
+                        if let Some(eq_idx) = opt_str.find('=') {
+                            let name = opt_str[..eq_idx].to_string();
+                            let value = opt_str[eq_idx + 1..].to_string();
                             Some(CmdLineElement::LongOptionValue(name, value))
                         } else {
-                            Some(CmdLineElement::LongOption(s[2..].to_string()))
+                            Some(CmdLineElement::LongOption(opt_str.to_string()))
                         }
-                    } else if s.starts_with("-") {
+                    } else if let Some(opt_str) = s.strip_prefix('-') {
                         // skip leading '-'
-                        let mut cs = s[1..].chars();
+                        let mut cs = opt_str.chars();
                         let chr = cs.next().unwrap();
                         cs.for_each(|f| self.left_over.push(f));
                         Some(CmdLineElement::ShortOption(chr))
@@ -109,7 +106,7 @@ impl CmdLineTokenizer {
                         if self.posix {
                             self.args_only = true;
                         }
-                        Some(CmdLineElement::Argument(s.to_string()))
+                        Some(CmdLineElement::Argument(s))
                     }
                 }
             }
@@ -231,7 +228,6 @@ mod arg_parser_tests {
 
     #[test]
     fn test_dash_dash() {
-
         let args = ["-d", "--", "-o"].map(String::from).to_vec();
 
         let mut pa = CmdLineTokenizer::build(args, false);

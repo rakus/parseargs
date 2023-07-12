@@ -44,8 +44,8 @@ impl OptConfig {
     pub fn match_option(&self, el: &CmdLineElement) -> bool {
         match el {
             CmdLineElement::ShortOption(c) => self.opt_chars.find(*c).is_some(),
-            CmdLineElement::LongOption(s) => self.opt_strings.contains(&s),
-            CmdLineElement::LongOptionValue(s, _) => self.opt_strings.contains(&s),
+            CmdLineElement::LongOption(s) => self.opt_strings.contains(s),
+            CmdLineElement::LongOptionValue(s, _) => self.opt_strings.contains(s),
             _ => false,
         }
     }
@@ -56,13 +56,13 @@ impl OptConfig {
      */
     pub fn is_duplicate_allowed(&self) -> bool {
         matches!(self.opt_type, OptType::Counter(_))
-            || match self.opt_type {
-                OptType::Flag(OptTarget::Function(_)) => true,
-                OptType::ModeSwitch(OptTarget::Function(_), _) => true,
-                OptType::Assignment(OptTarget::Function(_)) => true,
-                OptType::Counter(OptTarget::Function(_)) => true,
-                _ => false,
-            }
+            || matches!(
+                self.opt_type,
+                OptType::Flag(OptTarget::Function(_))
+                    | OptType::ModeSwitch(OptTarget::Function(_), _)
+                    | OptType::Assignment(OptTarget::Function(_))
+                    | OptType::Counter(OptTarget::Function(_))
+            )
     }
 
     pub fn get_target_name(&self) -> String {
@@ -88,13 +88,13 @@ impl OptConfig {
     }
 
     pub fn is_target_function(&self) -> bool {
-        match &self.opt_type {
+        matches!(
+            &self.opt_type,
             OptType::Flag(OptTarget::Function(_))
-            | OptType::Assignment(OptTarget::Function(_))
-            | OptType::Counter(OptTarget::Function(_))
-            | OptType::ModeSwitch(OptTarget::Function(_), _) => true,
-            _ => false,
-        }
+                | OptType::Assignment(OptTarget::Function(_))
+                | OptType::Counter(OptTarget::Function(_))
+                | OptType::ModeSwitch(OptTarget::Function(_), _)
+        )
     }
 
     pub fn is_target_variable(&self) -> bool {
@@ -135,7 +135,7 @@ pub struct ParserSource {
 }
 
 impl ParserSource {
-    pub fn new(string: &String) -> ParserSource {
+    pub fn new(string: &str) -> ParserSource {
         let array: Vec<char> = string.chars().collect();
         let len = array.len();
         ParserSource {
@@ -183,19 +183,19 @@ impl ParserSource {
     }
 
     /// Step back one character in the source
-    pub fn back(&mut self) -> () {
+    pub fn back(&mut self) {
         if self.index > 0 {
             self.index -= 1;
         }
     }
 
     /// Push the current position on the position stack
-    pub fn push_pos(&mut self) -> () {
+    pub fn push_pos(&mut self) {
         self.position_stack.push(self.index)
     }
 
     /// Pop the top of the position stack
-    pub fn pop_pos(&mut self) -> () {
+    pub fn pop_pos(&mut self) {
         if let Some(idx) = self.position_stack.pop() {
             self.index = idx;
         } else {
@@ -204,7 +204,7 @@ impl ParserSource {
     }
 
     /// Jump to the top of the position stack without popping it
-    pub fn reset_pos(&mut self) -> () {
+    pub fn reset_pos(&mut self) {
         if let Some(idx) = self.position_stack.last() {
             self.index = *idx;
         } else {
@@ -213,13 +213,15 @@ impl ParserSource {
     }
 
     /// Drop the top of the position stack
-    pub fn drop_pos(&mut self) -> () {
-        if let None = self.position_stack.pop() {
+    pub fn drop_pos(&mut self) {
+        if self.position_stack.pop().is_none() {
             panic!("ParserSource.drop_pos: position_stack is empty")
         }
     }
 
-    pub fn reset(&mut self) -> () {
+    // Only used in test
+    #[allow(dead_code)]
+    pub fn reset(&mut self) {
         self.index = 0;
         self.position_stack.clear();
     }
@@ -345,7 +347,7 @@ fn parse_flag_mode(ps: &mut ParserSource) -> Result<(OptType, Option<OptAttribut
         OptTarget::Variable(target_name)
     };
 
-    if ps.next_if(|c| c == '=') == None {
+    if ps.next_if(|c| c == '=').is_none() {
         Ok((OptType::Flag(target), attr))
     } else {
         match parse_value(ps) {
@@ -429,7 +431,7 @@ fn parse_opt_def(ps: &mut ParserSource) -> Result<OptConfig, ParsingError> {
             }
         }
 
-        if ps.next_if(|c| c == ':') == None {
+        if ps.next_if(|c| c == ':').is_none() {
             break;
         }
     }
@@ -440,8 +442,8 @@ fn parse_opt_def(ps: &mut ParserSource) -> Result<OptConfig, ParsingError> {
         Ok(ot) => Some(ot),
         Err(ParsingError::Error(s)) => Err(ParsingError::Error(s))?,
         Err(ParsingError::Empty) => {
-            ps.pop_pos();
-            ps.push_pos();
+            // jump back to the last pushed position
+            ps.reset_pos();
             match parse_assignment(ps) {
                 Ok(ot) => Some(ot),
                 Err(ParsingError::Error(s)) => Err(ParsingError::Error(s))?,
@@ -478,9 +480,9 @@ fn parse_opt_def(ps: &mut ParserSource) -> Result<OptConfig, ParsingError> {
     })
 }
 
-fn format_parsing_error(opt_def_str: &String, index: usize, msg: &String) -> String {
+fn format_parsing_error(opt_def_str: &str, index: usize, msg: &String) -> String {
     let mut msg_list = Vec::new();
-    msg_list.push(opt_def_str.clone());
+    msg_list.push(opt_def_str.to_owned());
     let pre = if index > 0 {
         " ".repeat(index - 1)
     } else {
@@ -493,7 +495,7 @@ fn format_parsing_error(opt_def_str: &String, index: usize, msg: &String) -> Str
 }
 
 pub fn parse(opt_def_str: &String) -> Result<Vec<OptConfig>, String> {
-    if opt_def_str.len() == 0 {
+    if opt_def_str.is_empty() {
         Ok(Vec::new())
     } else {
         let mut ps = ParserSource::new(opt_def_str);
@@ -519,13 +521,13 @@ pub fn parse_opt_def_list(ps: &mut ParserSource) -> Result<Vec<OptConfig>, Parsi
             Err(pe) => Err(pe)?,
         }
 
-        if ps.next_if(|c| c == ',') == None {
+        if ps.next_if(|c| c == ',').is_none() {
             break;
         }
     }
-    match ps.next() {
-        Some(c) => Err(ParsingError::Error(format!("Unexpected character '{}'", c)))?,
-        None => (),
+
+    if let Some(c) = ps.next() {
+        Err(ParsingError::Error(format!("Unexpected character '{}'", c)))?
     }
 
     Ok(opt_def_list)
