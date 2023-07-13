@@ -1,8 +1,5 @@
 #!/bin/sh
 
-script_dir="$(cd "$(dirname "$0")" && pwd)" || exit 1
-export PATH="$script_dir/../../target/debug:$script_dir/../../target/release:$PATH"
-
 set_long() { echo "set_long($1)"; }
 set_outfile() { echo "set_outfile($1)"; }
 set_verbosity() { echo "set_verbosity($1)"; }

@@ -1,0 +1,14 @@
+
+
+__PA_RELEASE_DIR="$(readlink -f '../../target/release')"
+__PA_DEBUG_DIR="$(readlink -f '../../target/debug')"
+
+if [ -d "$__PA_DEBUG_DIR" ] || [ "$__PA_RELEASE_DIR" ]; then
+    export PATH="$__PA_DEBUG_DIR:$__PA_RELEASE_DIR:$PATH"
+else
+    echo >&2 "ERROR: Neither debug nor release target directory found."
+    echo >&2 "       $__PA_DEBUG_DIR"
+    echo >&2 "       $__PA_RELEASE_DIR"
+fi
+
+

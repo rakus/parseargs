@@ -307,8 +307,7 @@ Those shells don't support local variables and array variable.
 Due to this the option `-l` / `--local-vars` and `-r` / `--remainder` are not supported.
 
 `-s dash`::
-Very close to a POSIX shell.
-Only extension is the support for function-local variables.
+Very close to a POSIX shell, but supports function-local variables.
 As arrays are not supported, `-r` / `--remainder` is not supported.
 
 `-s bash`, `-s ksh` and `-s zsh`::
