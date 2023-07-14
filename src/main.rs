@@ -28,7 +28,7 @@ const PARSEARGS_SHELL_VAR: &str = "PARSEARGS_SHELL";
 )]
 #[command(version)]
 struct CmdLineArgs {
-    /// Definitions of supported shell options
+    /// Definition of supported shell options
     #[arg(short = 'o', long = "options", value_name = "OPT-DEFs")]
     options: Option<String>,
 
@@ -59,17 +59,16 @@ struct CmdLineArgs {
     #[arg(short = 'i', long = "init-vars")]
     init_vars: bool,
 
-    /// Create local variables. Not supported with --shell sh.
+    /// Create local variables.
+    /// ONLY SUPPORTED WITH --shell dash, bash, ksh, or zsh.
     #[arg(short = 'l', long = "local-vars")]
     local_vars: bool,
 
     /// Enable support for --help as script option.
-    /// Equivalent to option definition 'help#?show_help()'
     #[arg(short = 'h', long = "help-opt", verbatim_doc_comment)]
     help_opt: bool,
 
     /// Enable support for --version as script options.
-    /// Equivalent to option definition 'version#?show_version()'
     #[arg(short = 'v', long = "version-opt", verbatim_doc_comment)]
     version_opt: bool,
 

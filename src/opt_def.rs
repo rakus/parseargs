@@ -126,23 +126,33 @@ impl OptConfig {
     }
 }
 
+pub struct ParserConfig {
+    allow_utf8_options: bool,
+}
+
 pub struct ParserSource {
     chars: Vec<char>,
     index: usize,
     length: usize,
 
     position_stack: Vec<usize>,
+
+    config: ParserConfig,
 }
 
 impl ParserSource {
     pub fn new(string: &str) -> ParserSource {
         let array: Vec<char> = string.chars().collect();
         let len = array.len();
+        let config = ParserConfig {
+            allow_utf8_options: false,
+        };
         ParserSource {
             chars: array,
             index: 0,
             length: len,
             position_stack: Vec::new(),
+            config,
         }
     }
 
@@ -157,6 +167,7 @@ impl ParserSource {
         }
     }
 
+    // Get next character if it matches the predicate
     pub fn next_if<P>(&mut self, mut predicate: P) -> Option<char>
     where
         P: FnMut(char) -> bool,
@@ -194,7 +205,7 @@ impl ParserSource {
         self.position_stack.push(self.index)
     }
 
-    /// Pop the top of the position stack
+    /// Pop the top of the position stack and jump to that position
     pub fn pop_pos(&mut self) {
         if let Some(idx) = self.position_stack.pop() {
             self.index = idx;
@@ -235,11 +246,19 @@ pub enum ParsingError {
     Error(String),
 }
 
-fn is_valid_opt_char(chr: char, first: bool) -> bool {
-    if first {
-        chr != '-' && (chr.is_alphanumeric() || chr.is_ascii_punctuation())
+fn is_valid_opt_char(chr: char, first: bool, allow_utf8: bool) -> bool {
+    if allow_utf8 {
+        if first {
+            chr != '-' && !chr.is_whitespace() && !chr.is_ascii_control()
+        } else {
+            !chr.is_whitespace() && !chr.is_ascii_control()
+        }
     } else {
-        chr.is_alphanumeric() || chr.is_ascii_punctuation()
+        if first {
+            chr != '-' && chr.is_ascii() && !chr.is_ascii_whitespace() && !chr.is_ascii_control()
+        } else {
+            chr.is_ascii() && !chr.is_ascii_whitespace() && !chr.is_ascii_control()
+        }
     }
 }
 
@@ -251,7 +270,7 @@ fn get_option_char(ps: &mut ParserSource, first: bool) -> Option<char> {
             if c == '\\' {
                 match ps.next() {
                     Some(c2) => {
-                        if is_valid_opt_char(c2, first) {
+                        if is_valid_opt_char(c2, first, ps.config.allow_utf8_options) {
                             Some(c2)
                         } else {
                             ps.back();
@@ -260,7 +279,9 @@ fn get_option_char(ps: &mut ParserSource, first: bool) -> Option<char> {
                     }
                     None => Some(c),
                 }
-            } else if is_valid_opt_char(c, first) && !forbidden.contains(&c) {
+            } else if is_valid_opt_char(c, first, ps.config.allow_utf8_options)
+                && !forbidden.contains(&c)
+            {
                 Some(c)
             } else {
                 ps.back();
@@ -274,6 +295,8 @@ fn get_option_char(ps: &mut ParserSource, first: bool) -> Option<char> {
 fn parse_option(ps: &mut ParserSource) -> Result<String, ParsingError> {
     let mut option = String::new();
 
+    ps.push_pos();
+
     match get_option_char(ps, true) {
         Some(c) => {
             option.push(c);
@@ -283,10 +306,22 @@ fn parse_option(ps: &mut ParserSource) -> Result<String, ParsingError> {
         }
     }
 
+    let mut is_long = false;
+
     while let Some(c) = get_option_char(ps, false) {
+        if c == '=' {
+            return Err(ParsingError::Error("'=' not allowed here".to_string()));
+        }
         option.push(c);
+        is_long = true;
     }
 
+    if is_long && option.starts_with('=') {
+        ps.reset_pos();
+        Err(ParsingError::Error("'=' not allowed here".to_string()))?;
+    }
+
+    ps.drop_pos();
     Ok(option)
 }
 
@@ -420,14 +455,17 @@ fn parse_opt_def(ps: &mut ParserSource) -> Result<OptConfig, ParsingError> {
     loop {
         match parse_option(ps) {
             Ok(o) => {
-                if o.len() == 1 {
+                if o.chars().count() == 1 {
                     short.push(o.chars().next().unwrap());
                 } else {
                     long.push(o);
                 }
             }
-            Err(_) => {
+            Err(ParsingError::Empty) => {
                 return Err(ParsingError::Error("option expected".to_string()));
+            }
+            Err(ParsingError::Error(msg)) => {
+                return Err(ParsingError::Error(msg));
             }
         }
 
@@ -613,7 +651,7 @@ mod unit_tests {
 
     #[test]
     fn test_parse_opt_def_flag() {
-        let mut ps = ParserSource::new(&"d:debug#debug".to_string());
+        let mut ps = ParserSource::new(&"d:debug#debug");
 
         match parse_opt_def(&mut ps) {
             Ok(od) => {
@@ -627,7 +665,7 @@ mod unit_tests {
 
     #[test]
     fn test_parse_opt_def_mode_switch() {
-        let mut ps = ParserSource::new(&"c:copy#mode=copy".to_string());
+        let mut ps = ParserSource::new(&"c:copy#mode=copy");
 
         match parse_opt_def(&mut ps) {
             Ok(od) => {
@@ -641,7 +679,7 @@ mod unit_tests {
 
     #[test]
     fn test_parse_opt_def_assignment() {
-        let mut ps = ParserSource::new(&"o:out-file=output_file".to_string());
+        let mut ps = ParserSource::new(&"o:out-file=output_file");
 
         match parse_opt_def(&mut ps) {
             Ok(od) => {
@@ -655,7 +693,7 @@ mod unit_tests {
 
     #[test]
     fn test_parse_opt_def_counter() {
-        let mut ps = ParserSource::new(&"v:verbose+verbosity".to_string());
+        let mut ps = ParserSource::new(&"v:verbose+verbosity");
 
         match parse_opt_def(&mut ps) {
             Ok(od) => {
@@ -669,9 +707,8 @@ mod unit_tests {
 
     #[test]
     fn test_parse_opt_def_list() {
-        let mut ps = ParserSource::new(
-            &"c:copy#mode=copy,o:out-file=output_file,v:verbose+verbosity".to_string(),
-        );
+        let mut ps =
+            ParserSource::new(&"c:copy#mode=copy,o:out-file=output_file,v:verbose+verbosity");
 
         match parse_opt_def_list(&mut ps) {
             Ok(od_list) => {
@@ -685,19 +722,19 @@ mod unit_tests {
 
     #[test]
     fn test_parse_option_short() {
-        let mut ps = ParserSource::new(&"d#debug".to_string());
+        let mut ps = ParserSource::new(&"d#debug");
         assert_eq!(Ok("d".to_string()), parse_option(&mut ps));
     }
 
     #[test]
     fn test_parse_option_long() {
-        let mut ps = ParserSource::new(&"debug#debug".to_string());
+        let mut ps = ParserSource::new(&"debug#debug");
         assert_eq!(Ok("debug".to_string()), parse_option(&mut ps));
     }
 
     #[test]
     fn test_parse_option_short_long() {
-        let mut ps = ParserSource::new(&"d:debug#debug".to_string());
+        let mut ps = ParserSource::new(&"d:debug#debug");
         assert_eq!(Ok("d".to_string()), parse_option(&mut ps));
         assert_eq!(Some(':'), ps.next());
         assert_eq!(Ok("debug".to_string()), parse_option(&mut ps));
@@ -706,25 +743,37 @@ mod unit_tests {
 
     #[test]
     fn test_parse_option_long_short() {
-        let mut ps = ParserSource::new(&"debug:d#debug".to_string());
+        let mut ps = ParserSource::new(&"debug:d#debug");
         assert_eq!(Ok("debug".to_string()), parse_option(&mut ps));
         assert_eq!(Some(':'), ps.next());
         assert_eq!(Ok("d".to_string()), parse_option(&mut ps));
         assert_eq!(Some('#'), ps.next());
     }
 
-    // #[test]
-    // fn test_parse_unicode() {
-    //     let mut ps = ParserSource::new(&"😀:d#debug".to_string());
-    //     assert_eq!(Ok("😀".to_string()), parse_option(&mut ps));
-    //     assert_eq!(Some(':'), ps.next());
-    //     assert_eq!(Ok("d".to_string()), parse_option(&mut ps));
-    //     assert_eq!(Some('#'), ps.next());
-    // }
+    #[test]
+    fn test_parse_unicode() {
+        // Creating ParserSource manually, to enable UTF-8 support
+        let array: Vec<char> = "😀:d#debug".chars().collect();
+        let len = array.len();
+        let mut ps = ParserSource {
+            chars: array,
+            index: 0,
+            length: len,
+            position_stack: Vec::new(),
+            config: ParserConfig {
+                allow_utf8_options: true,
+            },
+        };
+
+        assert_eq!(Ok("😀".to_string()), parse_option(&mut ps));
+        assert_eq!(Some(':'), ps.next());
+        assert_eq!(Ok("d".to_string()), parse_option(&mut ps));
+        assert_eq!(Some('#'), ps.next());
+    }
 
     #[test]
     fn test_parse_option() {
-        let mut ps = ParserSource::new(&"test-case:debug:d:test\\%case:\\##debug".to_string());
+        let mut ps = ParserSource::new(&"test-case:debug:d:test\\%case:\\##debug");
 
         assert_eq!(Ok("test-case".to_string()), parse_option(&mut ps));
         assert_eq!(Some(':'), ps.next());
@@ -742,7 +791,7 @@ mod unit_tests {
 
     #[test]
     fn test_parser_source() {
-        let mut ps = ParserSource::new(&"ABCD".to_string());
+        let mut ps = ParserSource::new(&"ABCD");
 
         assert_eq!(Some('A'), ps.next());
         assert_eq!(Some('B'), ps.next());
@@ -780,7 +829,7 @@ mod unit_tests {
     #[test]
     #[should_panic]
     fn test_parser_source_pos_stack_empty_pop() {
-        let mut ps = ParserSource::new(&"ABCD".to_string());
+        let mut ps = ParserSource::new(&"ABCD");
 
         ps.pop_pos();
     }
@@ -788,7 +837,7 @@ mod unit_tests {
     #[test]
     #[should_panic]
     fn test_parser_source_pos_stack_empty_drop() {
-        let mut ps = ParserSource::new(&"ABCD".to_string());
+        let mut ps = ParserSource::new(&"ABCD");
 
         ps.drop_pos();
     }

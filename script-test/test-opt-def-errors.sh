@@ -13,12 +13,20 @@ start_test
 
 test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "ddebug" --
 
+test_pa_errmsg 1 "parseargs: Error parsing option definition" -o " #debug" --
+test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "x #debug" --
+test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "l#long,-#debug" --
+
 test_pa_errmsg 1 "parseargs: Error parsing option definition" -o ":#debug" --
 test_pa_errmsg 1 "parseargs: Error parsing option definition" -o ":d#debug" --
 test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "d#" --
 test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "d#debug(" --
 test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "d#debug)" --
 test_pa_errmsg 1 "parseargs: Error parsing option definition" -o "d#debug,d" --
+
+
+test_pa_errmsg 1 "parseargs: Error parsing option definition" -o '\=d#debug' --
+test_pa_errmsg 1 "parseargs: Error parsing option definition" -o 'x\=d#debug' --
 
 test_pa_errmsg 1 "parseargs: Duplicate definition of option '-d'" -o "d#debug,d#dancing" --
 test_pa_errmsg 1 "parseargs: Duplicate definition of option '--debug'" -o "debug#debug,debug#dancing" --

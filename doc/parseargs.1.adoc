@@ -87,11 +87,13 @@ The simple single definitions is:
 option-names::
 The option-names consist of one or more option chars or strings separated by colons.
 A single char defines an option that is given with one leading dash (e.g. `l` for `-l`). +
-Allowed chars:  `A-Za-z0-9!"$&'()*,./;<>?@[]^_{|}~` and with backslash escape: `#%+:=\`.
+Allowed option chars are all ASCII characters, except `-`, whitspace and control-characters.
+The following characters has to be escaped with a backslash in the definition: `#%+:=\`.
 Some of this characters need a backslash escape, when used on the command line.
 +
 A string defines a long option that is given with two leading dashes (e.g. `long` for `--long`).
-String may consist of the same chars as the short option. Additional the minus (`-`) is allowed, if it is not the first char.
+String may consist of any ASCII character, except `=`, whitespace and control characters.
+The minus (`-`) is allowed, as long it isn't the first character.
 
 option-type::
 Following option types are supported:
