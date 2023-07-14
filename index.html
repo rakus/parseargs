@@ -511,38 +511,62 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <h1>Parseargs Tutorial</h1>
 <div class="details">
 <span id="author" class="author">Ralf Schandl</span><br>
-<span id="revnumber">version 0.1,</span>
-<span id="revdate">2023-07-12</span>
+<span id="revnumber">version {version},</span>
+<span id="revdate">2023-07-14</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_simple_usage">1. Simple Usage</a></li>
-<li><a href="#_long_options">2. Long Options</a></li>
-<li><a href="#_counting_options">3. Counting Options</a></li>
-<li><a href="#_mode_switch_options">4. Mode Switch Options</a></li>
-<li><a href="#_required_options">5. Required Options</a></li>
-<li><a href="#_using_callbacks">6. Using Callbacks</a>
+<li><a href="#POSIX">1. POSIX Shells</a>
 <ul class="sectlevel2">
-<li><a href="#_callbacks_for_options">6.1. Callbacks for Options</a></li>
-<li><a href="#_callback_for_arguments">6.2. Callback for Arguments</a></li>
-<li><a href="#_callback_on_error">6.3. Callback on Error</a></li>
+<li><a href="#_simple_usage">1.1. Simple Usage</a></li>
+<li><a href="#_long_options">1.2. Long Options</a></li>
+<li><a href="#_counting_options">1.3. Counting Options</a></li>
+<li><a href="#_mode_switch_options">1.4. Mode Switch Options</a></li>
+<li><a href="#_required_options">1.5. Required Options</a></li>
+<li><a href="#_showing_help_and_version">1.6. Showing Help and Version</a></li>
+<li><a href="#CALLBACKS">1.7. Using Callbacks</a></li>
+<li><a href="#_a_script_without_options">1.8. A Script without Options</a></li>
+<li><a href="#_the_option_argument_separator">1.9. The Option Argument Separator '--'</a></li>
+<li><a href="#_initializing_variables">1.10. Initializing Variables</a></li>
+<li><a href="#SINGLETON_OPTS">1.11. Singleton Options</a></li>
 </ul>
 </li>
-<li><a href="#_support_for_help">7. Support for <code>--help</code></a></li>
-<li><a href="#_a_script_without_options">8. A Script without Options</a></li>
-<li><a href="#_the_option_argument_separator">9. The Option Argument Separator '--'</a></li>
-<li><a href="#_creating_local_variables">10. Creating Local Variables</a></li>
-<li><a href="#_initializing_variables">11. Initializing Variables</a></li>
-<li><a href="#_support_for_different_shells">12. Support for Different Shells</a></li>
-<li><a href="#_parseargs_and_shellcheck">13. Parseargs and ShellCheck</a></li>
-<li><a href="#_parseargs_and_invalid_utf_8">14. Parseargs and Invalid UTF-8</a></li>
+<li><a href="#EXTENDED">2. Extended Shells</a>
+<ul class="sectlevel2">
+<li><a href="#_creating_local_variables">2.1. Creating Local Variables</a></li>
+<li><a href="#_separating_arguments_behind_a">2.2. Separating Arguments behind a <code>--</code></a></li>
+</ul>
+</li>
+<li><a href="#_details">3. Details</a>
+<ul class="sectlevel2">
+<li><a href="#_support_for_different_shells">3.1. Support for Different Shells</a></li>
+<li><a href="#_parseargs_and_shellcheck">3.2. Parseargs and ShellCheck</a></li>
+<li><a href="#_parseargs_and_invalid_utf_8">3.3. Parseargs and Invalid UTF-8</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
+<div class="paragraph">
+<p>Parseargs is a command line option parser for shell scripts.</p>
+</div>
+<div class="paragraph">
+<p>This tutorial explains the features of Parseargs using examples.</p>
+</div>
+<div class="paragraph">
+<p>The first section <a href="#POSIX">POSIX Shells</a> treats all functionality that works in a POSIX compliant shell.
+Also <em>zsh</em> is not POSIX compliant (and never wanted to be), the mentioned features should run with it.</p>
+</div>
+<div class="paragraph">
+<p>The second section <a href="#EXTENDED">Extended Shells</a> handles those few features that need functionality beyond the POSIX standard.
+Here support for function local variables and arrays is needed.
+The shells <em>bash</em>, <em>ksh</em> and <em>zsh</em> provide support for both, while <em>dash</em> only supports function local variables.
+These shells can be enabled by using the option <code>-s</code> / <code>--shell</code> with the shell name.</p>
+</div>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -550,39 +574,19 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-This tutorial is "work in progress".
+When <em>ksh</em> is mentioned in this document, we are talking about <em>ksh92</em> or newer.
+Parseargs was never tested with <em>ksh88_</em>.
 </td>
 </tr>
 </table>
-</div>
-<div class="paragraph">
-<p>Parseargs is a command line option parser for shell scripts.</p>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-Parseargs is in a early state of the development and not yet suitable for serious use.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>This tutorial explains the features of Parseargs using examples.
-All examples work with a bourne-compatible shell. One functionality requires arrays and is only supported with <em>bash</em>, <em>ksh</em> and <em>zsh</em>.</p>
-</div>
-<div class="paragraph">
-<p>By default Parseargs assumes that a simple POSIX shell (aka <code>sh</code>) is used.
-Support for other shells can be enabled with <code>--shell=ksh</code>, <code>--shell=zsh</code> and <code>--shell=sh</code>.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_simple_usage">1. Simple Usage</h2>
+<h2 id="POSIX">1. POSIX Shells</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_simple_usage">1.1. Simple Usage</h3>
 <div class="paragraph">
 <p>The following script should support two options and arguments.
 The options are:</p>
@@ -600,15 +604,24 @@ The options are:</p>
 <div class="listingblock">
 <div class="title">Script <code>example.sh</code></div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span>#!/bin/sh
 
-<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>example.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;l#long_output,o=outfile&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
+eval &quot;$(parseargs -n example.sh -o &#39;l#long_output,o=outfile&#39; -- &quot;$@&quot;)&quot; || exit 1
 
-<span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-o">[</span><span class="tok-w"> </span>-n<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$long_output</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">]</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-k">then</span>
-<span class="tok-w">    </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Long output is enabled&quot;</span>
-<span class="tok-k">fi</span>
-<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Output file: &#39;</span><span class="tok-nv">$outfile</span><span class="tok-s2">&#39;&quot;</span>
-<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Arguments: </span><span class="tok-nv">$*</span><span class="tok-s2">&quot;</span></code></pre>
+if [ -n &quot;$long_output&quot; ]; then
+    echo &quot;Long output is enabled&quot;
+fi
+echo &quot;Output file: &#39;$outfile&#39;&quot;
+echo &quot;Arguments: $*&quot;
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -629,10 +642,10 @@ The name is used as prefix for error messages.</p>
 <dt class="hdlist1"><code>l#long_output</code></dt>
 <dd>
 <p>This definition defines a simple flag.
-The <code><mark></code> in the middle is the marker for a flag.
+The <code>#</code> in the middle is the marker for a flag.
 The part before defines the option character.
 Here <code>l</code> defines the option <code>-l</code>.
-The part after the <code></mark></code> is the variable that should be set, when <code>-l</code> was found on the command line. The variable gets the value "true" assigned.</p>
+The part after the <code>#</code> is the variable that should be set, when <code>-l</code> was found on the command line. The variable gets the value "true" assigned.</p>
 </dd>
 <dt class="hdlist1"><code>o=outfile</code></dt>
 <dd>
@@ -660,14 +673,14 @@ See your shell documentation.</p>
 </dd>
 </dl>
 </div>
-<div class="admonitionblock note">
+<div class="admonitionblock important">
 <table>
 <tr>
 <td class="icon">
-<i class="fa icon-note" title="Note"></i>
+<i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-The option character must be alphanumeric (A-Z, a-z, 0-9).
+The option character may be any ASCII character, except for <code>-</code> (minus), whitespace or control character.
 </td>
 </tr>
 </table>
@@ -713,7 +726,7 @@ Arguments: in.file other.file</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre> ./example.sh -l in.file other.file -oout.file
+<pre>$ ./example.sh -l in.file other.file -oout.file
 Long output is enabled
 Output file: 'out.file'
 Arguments: in.file other.file</pre>
@@ -748,7 +761,7 @@ example.sh: Duplicate option: '-l'</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -l -o out.file in.file other.file
+<pre class="nowrap">$ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -l -o out.file in.file other.file
 long_output='true';
 outfile='out.file';
 set -- 'in.file' 'other.file'</pre>
@@ -794,10 +807,8 @@ Use arguments with spaces or special character.</p>
 </div>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_long_options">2. Long Options</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_long_options">1.2. Long Options</h3>
 <div class="paragraph">
 <p>A lot of programs support additional long forms of options.
 Like <code>-l</code> and <code>--long</code>.
@@ -806,15 +817,26 @@ Parseargs also supports this:</p>
 <div class="listingblock">
 <div class="title">Script <code>long-opt.sh</code></div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span>#!/bin/sh
 
-<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>long-opt.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;l:long#long_output,o:out-file=outfile&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
+eval &quot;$(parseargs -n long-opt.sh -o &#39;l:long#long_output,o:out-file=outfile&#39; -- &quot;$@&quot;)&quot; || exit 1
 
-<span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-o">[</span><span class="tok-w"> </span>-n<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$long_output</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">]</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-k">then</span>
-<span class="tok-w">    </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Long output is enabled&quot;</span>
-<span class="tok-k">fi</span>
-<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Output file: &#39;</span><span class="tok-nv">$outfile</span><span class="tok-s2">&#39;&quot;</span>
-<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Arguments: </span><span class="tok-nv">$*</span><span class="tok-s2">&quot;</span></code></pre>
+if [ -n &quot;$long_output&quot; ]; then
+    echo &quot;Long output is enabled&quot;
+fi
+echo &quot;Output file: &#39;$outfile&#39;&quot;
+echo &quot;Arguments: $*&quot;
+
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -822,14 +844,14 @@ Parseargs also supports this:</p>
 If a option is a single character, it defines a short option (<code>l</code> &#8594; <code>-l</code>).
 With multiple characters it is a long option, that has two leading dashes (<code>long</code> &#8594; <code>--long</code>).</p>
 </div>
-<div class="admonitionblock note">
+<div class="admonitionblock important">
 <table>
 <tr>
 <td class="icon">
-<i class="fa icon-note" title="Note"></i>
+<i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-Long options must start with a alphanumeric character and can contain alphanumerics, dashes and underscores.
+Long options may contain any ASCII character, except for  <code>=</code>, whitespace or control character. The <code>-</code> (minus) is not allowed as the first character.
 </td>
 </tr>
 </table>
@@ -901,7 +923,8 @@ Arguments: in.file</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>long-opt.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;l:long:D:detailed#long_output,...&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span></code></pre>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span>eval &quot;$(parseargs -n long-opt.sh -o &#39;l:long:D:detailed#long_output,...&#39; -- &quot;$@&quot;)&quot; || exit 1
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -911,10 +934,8 @@ I don&#8217;t know how useful this is, but it is possible.</p>
 </div>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_counting_options">3. Counting Options</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_counting_options">1.3. Counting Options</h3>
 <div class="paragraph">
 <p>Tools sometimes have an option to increase verbosity of the output.
 Example from the ssh man page:</p>
@@ -937,11 +958,16 @@ A "Counting Option" is defined using the marker <code>+</code>.</p>
 <div class="listingblock">
 <div class="title">Script <code>verbosity.sh</code></div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span>#!/bin/sh
 
-<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>verbosity.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;v:verbose+verbosity&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
+eval &quot;$(parseargs -n verbosity.sh -o &#39;v:verbose+verbosity&#39; -- &quot;$@&quot;)&quot; || exit 1
 
-<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Verbosity: </span><span class="tok-nv">$verbosity</span><span class="tok-s2">&quot;</span></code></pre>
+echo &quot;Verbosity: $verbosity&quot;
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="listingblock">
@@ -996,10 +1022,8 @@ Verbosity: 5</pre>
 </div>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_mode_switch_options">4. Mode Switch Options</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_mode_switch_options">1.4. Mode Switch Options</h3>
 <div class="paragraph">
 <p>A Mode Switch Options are not a new option type, but a extension of a simple flag.
 Mode switches use one variable with different options and assign different values to the variable.</p>
@@ -1014,11 +1038,16 @@ In that case the option <code>-c</code> would request to copy and <code>-m</code
 <div class="listingblock">
 <div class="title">Script <code>mode-switch.sh</code></div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span>#!/bin/sh
 
-<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>mode-switch.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;c:copy#mode=copy,m:move#mode=move&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
+eval &quot;$(parseargs -n mode-switch.sh -o &#39;c:copy#mode=copy,m:move#mode=move&#39; -- &quot;$@&quot;)&quot; || exit 1
 
-<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Mode: </span><span class="tok-nv">$mode</span><span class="tok-s2">&quot;</span></code></pre>
+echo &quot;Mode: $mode&quot;
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1026,7 +1055,7 @@ In that case the option <code>-c</code> would request to copy and <code>-m</code
 </div>
 <div class="listingblock">
 <div class="content">
-<pre> $ ./mode-switch.sh -c
+<pre>$ ./mode-switch.sh -c
 Mode: copy
 
 $ ./mode-switch.sh -m
@@ -1037,21 +1066,24 @@ mode-switch.sh: Options are mutual exclusive: -c/--copy, -m/--move</pre>
 </div>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_required_options">5. Required Options</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_required_options">1.5. Required Options</h3>
 <div class="paragraph">
 <p>Sometimes a option might be required. Parseargs supports this with a asterisk before the variable name.</p>
 </div>
 <div class="listingblock">
 <div class="title">Script <code>required.sh</code></div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span>#!/bin/sh
 
-<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>required.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;o=*out_file&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
+eval &quot;$(parseargs -n required.sh -o &#39;o=*out_file&#39; -- &quot;$@&quot;)&quot; || exit 1
 
-<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Output file: </span><span class="tok-nv">$out_file</span><span class="tok-s2">&quot;</span></code></pre>
+echo &quot;Output file: $out_file&quot;
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1067,10 +1099,81 @@ required.sh: Required option not found: -o</pre>
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_showing_help_and_version">1.6. Showing Help and Version</h3>
+<div class="paragraph">
+<p>First up: Parseargs itself does not support creating help texts.
+But Parseargs can call a existing shell function that prints some help text.</p>
 </div>
-<div class="sect1">
-<h2 id="_using_callbacks">6. Using Callbacks</h2>
-<div class="sectionbody">
+<div class="paragraph">
+<p>With the Parseargs option <code>-h</code> / <code>--help-opt</code>, the script option <code>--help</code> is supported.
+If the option is given, the shell function <code>show_help</code> is called and the script is terminated with exit code 0.</p>
+</div>
+<div class="paragraph">
+<p>To display the script version, the Parseargs option <code>-v</code> / <code>--version-opt</code> enables support for the script option <code>--version</code>.
+If the option is given, the shell function <code>show_version</code> is called and the script is terminated with exit code 0.</p>
+</div>
+<div class="paragraph">
+<p>The script must define the named <code>show_*</code> functions.
+If they are not defined, a error message is displayed and the script is terminated.</p>
+</div>
+<div class="listingblock">
+<div class="title">Script <code>help.sh</code></div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span>#!/bin/sh
+
+show_help()
+{
+    echo &quot;Usage: example.sh OPTIONS &lt;input-file...&gt;&quot;
+    echo &quot;  -l, --long           enable detailed output&quot;
+    echo &quot;  -o, --out-file FILE  file to write result&quot;
+}
+
+show_version()
+{
+    echo &quot;help.sh 1.0&quot;
+}
+
+
+eval &quot;$(parseargs -n help.sh.sh -hv -o &#39;l:long#detailed,o:out-file=outfile&#39; -- &quot;$@&quot;)&quot; || exit 1
+</pre></div></td></tr></table></div></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Displaying help and version:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ ./help.sh --help
+Usage: example.sh OPTIONS &lt;input-file...&gt;
+  -l, --long           enable detailed output
+  -o, --out-file FILE  file to write result
+
+$ ./help.sh --version
+help.sh 1.0</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To better understand how this works, see the sections <a href="#CALLBACKS">Using Callbacks</a> and <a href="#SINGLETON_OPTS">Singleton Options</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="CALLBACKS">1.7. Using Callbacks</h3>
 <div class="paragraph">
 <p>Till now we used Parseargs to assign variables for the options found on the command line, but it is also able to work with shell functions.</p>
 </div>
@@ -1080,7 +1183,8 @@ Assuming a function <code>set_out_file</code> should be used, the following code
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-nb">typeset</span><span class="tok-w"> </span>-f<span class="tok-w"> </span>set_out_file<span class="tok-w"> </span>&gt;/dev/null<span class="tok-w"> </span><span class="tok-m">2</span>&gt;<span class="tok-p">&amp;</span><span class="tok-m">1</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span>&gt;<span class="tok-p">&amp;</span><span class="tok-m">2</span><span class="tok-w"> </span><span class="tok-s2">&quot;ERROR: Function set_out_file does not exist.&quot;</span><span class="tok-p">;</span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">127</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span><span class="tok-p">;</span></code></pre>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span>typeset -f set_out_file &gt;/dev/null 2&gt;&amp;1 || { echo &gt;&amp;2 &quot;ERROR: Function set_out_file does not exist.&quot;;exit 127; };
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1093,11 +1197,12 @@ The code for this looks like this:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span>set_out_file<span class="tok-w"> </span><span class="tok-s1">&#39;output.file&#39;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-nv">$?</span></code></pre>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span>set_out_file &#39;output.file&#39; || exit $?
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_callbacks_for_options">6.1. Callbacks for Options</h3>
+<div class="sect3">
+<h4 id="_callbacks_for_options">1.7.1. Callbacks for Options</h4>
 <div class="paragraph">
 <p>Instead of assigning variables for options, it is also possible to call a function.
 By adding <code>()</code> to the name, it defines the function to call.</p>
@@ -1105,15 +1210,24 @@ By adding <code>()</code> to the name, it defines the function to call.</p>
 <div class="listingblock">
 <div class="title">Script <code>option-cb.sh</code></div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span>#!/bin/sh
 
-set_long<span class="tok-o">()</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;set_long(</span><span class="tok-nv">$1</span><span class="tok-s2">)&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span>
-set_outfile<span class="tok-o">()</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;set_outfile(</span><span class="tok-nv">$1</span><span class="tok-s2">)&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span>
-set_verbosity<span class="tok-o">()</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;set_verbosity(</span><span class="tok-nv">$1</span><span class="tok-s2">)&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span>
+set_long() { echo &quot;set_long($1)&quot;; }
+set_outfile() { echo &quot;set_outfile($1)&quot;; }
+set_verbosity() { echo &quot;set_verbosity($1)&quot;; }
 
-<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>option-cb.sh<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;l:long#set_long(),o=set_outfile(),v+set_verbosity()&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
+eval &quot;$(parseargs -n option-cb.sh -o &#39;l:long#set_long(),o=set_outfile(),v+set_verbosity()&#39; -- &quot;$@&quot;)&quot; || exit 1
 
-<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Arguments: </span><span class="tok-nv">$*</span><span class="tok-s2">&quot;</span></code></pre>
+echo &quot;Arguments: $*&quot;
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1168,8 +1282,8 @@ Arguments: input</pre>
 </table>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_callback_for_arguments">6.2. Callback for Arguments</h3>
+<div class="sect3">
+<h4 id="_callback_for_arguments">1.7.2. Callback for Arguments</h4>
 <div class="paragraph">
 <p>In the previous sections we have seen callbacks for options, this is also possible for program arguments.</p>
 </div>
@@ -1179,11 +1293,16 @@ Arguments: input</pre>
 <div class="listingblock">
 <div class="title">Script <code>args-cb.sh</code></div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span>#!/bin/sh
 
-set_argument<span class="tok-o">()</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;set_argument(</span><span class="tok-nv">$1</span><span class="tok-s2">)&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span>
+set_argument() { echo &quot;set_argument($1)&quot;; }
 
-<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>args-cb.sh<span class="tok-w"> </span>-a<span class="tok-w"> </span>set_argument<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span></code></pre>
+eval &quot;$(parseargs -n args-cb.sh -a set_argument -o &#39;&#39; -- &quot;$@&quot;)&quot; || exit 1
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1191,8 +1310,8 @@ set_argument<span class="tok-o">()</span><span class="tok-w"> </span><span class
 So <code>$1</code> etc are unset.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_callback_on_error">6.3. Callback on Error</h3>
+<div class="sect3">
+<h4 id="_callback_on_error">1.7.3. Callback on Error</h4>
 <div class="paragraph">
 <p>Parseargs allows the defition of an error callback.
 This defines a function that is called before Parseargs emits <code>exit 1</code> to terminate the calling script.</p>
@@ -1203,13 +1322,20 @@ This defines a function that is called before Parseargs emits <code>exit 1</code
 <div class="listingblock">
 <div class="title">Script <code>error-cb.sh</code></div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span>#!/bin/sh
 
-error_callback<span class="tok-o">()</span><span class="tok-w"> </span><span class="tok-o">{</span><span class="tok-w"> </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;You did something stupid!&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-o">}</span>
+error_callback() { echo &quot;You did something stupid!&quot;; }
 
-<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>error-cb.sh<span class="tok-w"> </span>-e<span class="tok-w"> </span>error_callback<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
+eval &quot;$(parseargs -n error-cb.sh -e error_callback -o &#39;&#39; -- &quot;$@&quot;)&quot; || exit 1
 
-<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;OK&quot;</span></code></pre>
+echo &quot;OK&quot;
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="listingblock">
@@ -1225,25 +1351,102 @@ $</pre>
 </div>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_support_for_help">7. Support for <code>--help</code></h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_a_script_without_options">1.8. A Script without Options</h3>
 <div class="paragraph">
-<p>First up: Parseargs itself does not support creating help texts.
-By using an option callback it can call a method to display the help message or script version.</p>
+<p>Parseargs if even useful in scripts that don&#8217;t support any options.
+In that use case it would output an error message when a option is given.</p>
+</div>
+<div class="listingblock">
+<div class="title">Script <code>no-opt.sh</code></div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span>#!/bin/sh
+
+eval &quot;$(parseargs -n no-opt.sh -p -- &quot;$@&quot;)&quot;
+
+echo &quot;Arguments: $*&quot;
+</pre></div></td></tr></table></div></code></pre>
+</div>
 </div>
 <div class="paragraph">
-<p>This can simply be archived with the following option definitions:</p>
+<p>In this script we also use the option <code>-p</code> / <code>--posix</code>, then Parseargs stops looking for options as soon as the first program argument is found.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>help#?show_help(),version#?show_version()</pre>
+<pre>$ ./no-opt.sh first second
+Arguments: first second
+
+$ ./no-opt.sh -X first second
+no-opt.sh: Unknown option: -X
+
+$ ./no-opt.sh  first second -X
+Arguments: first second -X</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_option_argument_separator">1.9. The Option Argument Separator '--'</h3>
+<div class="paragraph">
+<p>POSIX defines the <code>--</code> as a separator between options and program arguments.</p>
+</div>
+<div class="paragraph">
+<p>Reusing our first script <code>example.sh</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ ./example.sh -o out.file -X
+example.sh: Unknown option: -X
+
+$ ./example.sh -o out.file -- -X
+Output file: 'out.file'
+Arguments: -X</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_initializing_variables">1.10. Initializing Variables</h3>
+<div class="paragraph">
+<p>With the option <code>-i</code> / <code>--init-vars</code> the variables can be initialized with their default values.
+Note, that variables of counting options are always initialized to 0.
+This is useful, when the script runs with <code>set -u</code> to treat unset variables as error.</p>
+</div>
+<div class="paragraph">
+<p>Note that this is for variables only. Callbacks are not called.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ parseargs -n example.sh -o 'l#long,o=outfile,v+verbosity' --init-vars -- -o out.file -l
+long='';
+outfile='';
+verbosity=0;
+outfile='out.file';
+long='true';
+set --</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="SINGLETON_OPTS">1.11. Singleton Options</h3>
+<div class="paragraph">
+<p>A Singleton Option is an option that supersede all other options or arguments on the command line.
+The typical use for this is a help option.
+In fact the support for <code>--help</code> is implemented using this.</p>
+</div>
+<div class="paragraph">
+<p>A option is marked as a by putting a <code>?</code> in front of the function name (variables are rarely used here).
+The following is used to support <code>--help</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>help#?show_help()</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>This looks familiar, but has one new character, the <code>?</code>.
-The <code>?</code> tells Parseargs that this is a help-like option and that</p>
+<p>The <code>?</code> tells Parseargs that this is a singleton option and that</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1259,107 +1462,37 @@ The <code>?</code> tells Parseargs that this is a help-like option and that</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>To make your life simpler, Parseargs has a own options for this.
-With <code>-h</code> / <code>--help-opt</code> the help option definition from above will be automatically appended.
-With <code>-v</code> / <code>--version-opt</code> the help option definition from above will be automatically appended.</p>
+<p>So this can be easily used to implement additional help options.
+Maybe <code>--help-storage#?show_help_storage()</code>.</p>
+</div>
+<div class="paragraph">
+<p>This feature can also be used for other things.
+The following is from a script that is used as an unpacker for arbitrary archives.</p>
 </div>
 <div class="listingblock">
-<div class="title">Script <code>help.sh</code></div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
-
-show_help<span class="tok-o">()</span>
-<span class="tok-o">{</span>
-<span class="tok-w">    </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Usage: help.sh OPTIONS &lt;input-file...&gt;&quot;</span>
-<span class="tok-w">    </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;  -l, --long           enable detailed output&quot;</span>
-<span class="tok-w">    </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;  -o, --out-file FILE  file to write result&quot;</span>
-<span class="tok-o">}</span>
-
-show_version<span class="tok-o">()</span>
-<span class="tok-o">{</span>
-<span class="tok-w">    </span><span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;help.sh 1.0&quot;</span>
-<span class="tok-o">}</span>
-
-<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>help.sh<span class="tok-w"> </span>-hv<span class="tok-w"> </span>-o<span class="tok-w"> </span><span class="tok-s1">&#39;l:long#detailed,o:out-file=outfile&#39;</span><span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span></code></pre>
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span>eval &quot;$(parseargs -hin ERROR -o &quot;l#mode=listMode,L#mode=topLevelList,D#mode=basenameDir,S#mode=singleDir,T#?checkPrograms(),d=tgtDir,v+verbose&quot; -- &quot;$@&quot;)&quot; || exit 1
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Displaying help and version:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>$ ./help.sh --help
-Usage: example.sh OPTIONS &lt;input-file...&gt;
-  -l, --long           enable detailed output
-  -o, --out-file FILE  file to write result
-
-$ ./help.sh --version
-help.sh 1.0</pre>
+<p>The interesting part is <code>T#?checkPrograms()</code>.
+This defines the option <code>-T</code> as a singleton option, that calls the function <code>checkPrograms</code>.
+In the actual script the <code>-T</code> triggers a test whether the needed tools are available and hence which archive types are supported.
+After this test is completed, the script is terminated.
+No other actions is performed, independent of other options given on the command line.</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_a_script_without_options">8. A Script without Options</h2>
+<h2 id="EXTENDED">2. Extended Shells</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Parseargs if even useful in scripts that don&#8217;t support any options.
-In that use case it would output an error message when a option is given.</p>
+<p>This section describes functionalities, that need additional capabilities beyond those defined by POSIX.</p>
 </div>
-<div class="listingblock">
-<div class="title">Script <code>no-opt.sh</code></div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-ch">#!/bin/sh</span>
-
-<span class="tok-nb">eval</span><span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-k">$(</span>parseargs<span class="tok-w"> </span>-n<span class="tok-w"> </span>no-opt.sh<span class="tok-w"> </span>-p<span class="tok-w"> </span>--<span class="tok-w"> </span><span class="tok-s2">&quot;</span><span class="tok-nv">$@</span><span class="tok-s2">&quot;</span><span class="tok-k">)</span><span class="tok-s2">&quot;</span><span class="tok-w"> </span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-nb">exit</span><span class="tok-w"> </span><span class="tok-m">1</span>
-
-<span class="tok-nb">echo</span><span class="tok-w"> </span><span class="tok-s2">&quot;Arguments: </span><span class="tok-nv">$*</span><span class="tok-s2">&quot;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>In this script we also use the option <code>-p</code> / <code>--posix</code>, then Parseargs stopps looking for options as soon as the first program argument is found.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>$ ./no-opt.sh first second
-Arguments: first second
-
-$ ./no-opt.sh -X first second
-no-opt.sh: Unknown option: -X
-
-$ ./no-opt.sh  first second -X
-Arguments: first second -X</pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_the_option_argument_separator">9. The Option Argument Separator '--'</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Posix defines the <code>--</code> as a separator between options and program arguments.</p>
-</div>
-<div class="paragraph">
-<p>Reusing our first script <code>example.sh</code>:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>$ ./example.sh -o out.file -X
-example.sh: Unknown option: -X
-
-$ ./example.sh -o out.file -- -X
-Output file: 'out.file'
-Arguments: -X</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>TODO: Describe <code>-r</code> / <code>--remainder</code> here.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_creating_local_variables">10. Creating Local Variables</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_creating_local_variables">2.1. Creating Local Variables</h3>
 <div class="admonitionblock important">
 <table>
 <tr>
@@ -1367,7 +1500,7 @@ Arguments: -X</pre>
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-Not supported by default, needs shell <code>bash</code>, <code>ksh</code> or <code>zsh</code>.
+Only supported with shells <code>dash</code>, <code>bash</code>, <code>ksh</code> or <code>zsh</code>.
 </td>
 </tr>
 </table>
@@ -1398,55 +1531,87 @@ exit 1</pre>
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_separating_arguments_behind_a">2.2. Separating Arguments behind a <code>--</code></h3>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Only supported with shells <code>bash</code>, <code>ksh</code> or <code>zsh</code>.
+</td>
+</tr>
+</table>
 </div>
-<div class="sect1">
-<h2 id="_initializing_variables">11. Initializing Variables</h2>
-<div class="sectionbody">
 <div class="paragraph">
-<p>With the option <code>-i</code> / <code>--init-vars</code> the variables can be initialized with their default values.
-Note, that variables of counting options are always initialized to 0.
-This is useful, when the script runs with <code>set -u</code> to treat unset variables as error.</p>
+<p>Sometimes it is useful to handle the arguments before and after a <code>--</code> differently.</p>
 </div>
 <div class="paragraph">
-<p>Note that this is for variables only. Callbacks are not called.</p>
+<p>The following command monitors the file <code>tutorial.adoc</code> and executes the command <code>make html</code> as soon as a change is detected.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ parseargs -n example.sh -o 'l#long,o=outfile,v+verbosity' --init-vars -- -o out.file -l
-long='';
-outfile='';
-verbosity=0;
-outfile='out.file';
-long='true';
-set --</pre>
+<pre>$ when-changed tutorial.adoc -- make html</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Here the arguments before the <code>--</code> are different than the arguments behind it.</p>
+</div>
+<div class="paragraph">
+<p>Parseargs is able to collect the arguments behind the <code>--</code> in a shell array and leave the arguments before it as positional parameter (<code>$1</code>&#8230;&#8203;).
+The option <code>-r</code> / <code>--remainder</code> is used to define the name of the array.</p>
+</div>
+<div class="paragraph">
+<p>The Parseargs call for this would look like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span>eval &quot;$(parseargs -s bash --remainder cmd -h -- &quot;$@&quot;)&quot; || exit 1
+</pre></div></td></tr></table></div></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Assuming the call above, the name <code>tutorial.adoc</code> would be available as <code>$1</code> and the words <code>make</code> and <code>html</code> as <code>${cmd[0]}</code> and <code>$cmd[1]}</code>.</p>
+</div>
+<div class="paragraph">
+<p>Note that in <em>zsh</em> it would be <code>${cmd[1]}</code> and <code>$cmd[2]}</code>, as arrays in <em>zsh</em> are 1-based.</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_support_for_different_shells">12. Support for Different Shells</h2>
+<h2 id="_details">3. Details</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_support_for_different_shells">3.1. Support for Different Shells</h3>
 <div class="paragraph">
 <p>Parseargs supports generating code for different shells. The following shells are supported:</p>
 </div>
 <div class="dlist">
 <dl>
+<dt class="hdlist1"><code>--shell=sh</code> (the default)</dt>
+<dd>
+<p>With this setting, code for a POSIX compliant shell is generated.
+This should work with any POSIX compliant shell and with <em>zsh</em>.
+Function-local variables (<code>-l</code> / <code>--local-vars</code>) and <code>-r</code> / <code>--remainder</code> are not supported.</p>
+</dd>
+<dt class="hdlist1"><code>--shell=dash</code></dt>
+<dd>
+<p>The <em>dash</em> shell is POSIX compliant, but additionally supports function-local variables (using the <code>local</code> keyword).
+Code generated for <em>dash</em> also works for <em>bash</em> and <em>ksh</em>.</p>
+</dd>
 <dt class="hdlist1"><code>--shell=bash</code>, <code>--shell=ksh</code> and <code>--shell=zsh</code></dt>
 <dd>
-<p>The code generated with this shells are identical, except for array initialization, which is different in ksh.</p>
-</dd>
-<dt class="hdlist1"><code>--shell=sh</code></dt>
-<dd>
-<p>This request code for a plain POSIX shell.
-So the variables are not defined with <code>typedef</code> and the option <code>-r</code> / <code>--remainder</code> is not supported, as it needs array support.</p>
+<p>This shells support all features of Parseargs, including function-local variables and arrays.
+The code generated is (as of today) identical, except for array initialization, which is different in <em>ksh</em>.</p>
 </dd>
 </dl>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_parseargs_and_shellcheck">13. Parseargs and ShellCheck</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_parseargs_and_shellcheck">3.2. Parseargs and ShellCheck</h3>
 <div class="paragraph">
 <p><a href="https://github.com/koalaman/shellcheck">ShellCheck</a> is a static code analysis
 tool for shell scripts.
@@ -1466,11 +1631,29 @@ For more information:
   https://www.shellcheck.net/wiki/SC2154 -- outfile is referenced but not ass...</pre>
 </div>
 </div>
+<div class="paragraph">
+<p>The best solution is to initialize default values before calling Parseargs.</p>
+</div>
+<div class="paragraph">
+<p>Like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span>#!/bin/sh
+
+long_output=
+outfile=
+eval &quot;$(parseargs -n example.sh -o &#39;l#long_output,o=outfile&#39; -- &quot;$@&quot;)&quot; || exit 1
+</pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
-<div class="sect1">
-<h2 id="_parseargs_and_invalid_utf_8">14. Parseargs and Invalid UTF-8</h2>
-<div class="sectionbody">
+</div>
+<div class="sect2">
+<h3 id="_parseargs_and_invalid_utf_8">3.3. Parseargs and Invalid UTF-8</h3>
 <div class="paragraph">
 <p>As of today, Parseargs can only handle arguments that are valid UTF-8.</p>
 </div>
@@ -1480,10 +1663,11 @@ For more information:
 </div>
 </div>
 </div>
+</div>
 <div id="footer">
 <div id="footer-text">
-Version 0.1<br>
-Last updated 2023-07-12 20:19:19 UTC
+Version {version}<br>
+Last updated 2023-07-14 16:46:16 UTC
 </div>
 </div>
 </body>
