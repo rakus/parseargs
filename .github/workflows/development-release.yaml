@@ -99,9 +99,8 @@ jobs:
       if: ${{ matrix.os=='linux' }}
       run: make pkg
 
-    - name: Build ZIP
-      if: ${{ matrix.os=='windows' }}
-      run: make zip
+    - name: Build tar.gz
+      run: make tar
 
     - name: Upload RPM
       if: ${{ matrix.os=='linux' }}
@@ -123,12 +122,11 @@ jobs:
         overwrite: true
         repo_token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload Windows ZIP
-      if: ${{ matrix.os=='windows' }}
+    - name: Upload tar.gz
       uses: svenstaro/upload-release-action@v2
       with:
         tag: snapshot-release
-        file: ./target/parseargs-*.zip
+        file: ./target/parseargs-*.tar.gz
         file_glob: true
         overwrite: true
         repo_token: ${{ secrets.GITHUB_TOKEN }}
