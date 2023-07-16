@@ -512,7 +512,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <div class="details">
 <span id="author" class="author">Ralf Schandl</span><br>
 <span id="revnumber">version {version},</span>
-<span id="revdate">2023-07-14</span>
+<span id="revdate">2023-07-16</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -693,7 +693,7 @@ The option character may be any ASCII character, except for <code>-</code> (minu
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./example.sh -l -o out.file in.file other.file
+<pre class="nowrap">$ ./example.sh -l -o out.file in.file other.file
 Long output is enabled
 Output file: 'out.file'
 Arguments: in.file other.file</pre>
@@ -704,7 +704,7 @@ Arguments: in.file other.file</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./example.sh -l -oout.file in.file other.file
+<pre class="nowrap">$ ./example.sh -l -oout.file in.file other.file
 Long output is enabled
 Output file: 'out.file'
 Arguments: in.file other.file</pre>
@@ -715,7 +715,7 @@ Arguments: in.file other.file</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./example.sh -loout.file in.file other.file
+<pre class="nowrap">$ ./example.sh -loout.file in.file other.file
 Long output is enabled
 Output file: 'out.file'
 Arguments: in.file other.file</pre>
@@ -726,7 +726,7 @@ Arguments: in.file other.file</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./example.sh -l in.file other.file -oout.file
+<pre class="nowrap">$ ./example.sh -l in.file other.file -oout.file
 Long output is enabled
 Output file: 'out.file'
 Arguments: in.file other.file</pre>
@@ -737,7 +737,7 @@ Arguments: in.file other.file</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./example.sh -X
+<pre class="nowrap">$ ./example.sh -X
 example.sh: Unknown option: '-X'</pre>
 </div>
 </div>
@@ -746,7 +746,7 @@ example.sh: Unknown option: '-X'</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./example.sh -o out.file -o other-out.file  in.file
+<pre class="nowrap">$ ./example.sh -o out.file -o other-out.file  in.file
 example.sh: Duplicate option: '-o'
 
 $ ./example.sh -l -l -o out.file  in.file
@@ -778,7 +778,7 @@ Finally with <code>set&#8201;&#8212;&#8201;&#8230;&#8203;</code> the positional 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -X
+<pre class="nowrap">$ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -X
 example.sh: Unknown option: -X
 exit 1</pre>
 </div>
@@ -791,7 +791,7 @@ exit 1</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -o
+<pre class="nowrap">$ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -o
 example.sh: Missing argument for: -o
 exit 1</pre>
 </div>
@@ -864,7 +864,7 @@ Long options may contain any ASCII character, except for  <code>=</code>, whites
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./long-opt.sh --long --out-file out.file in.file other.file
+<pre class="nowrap">$ ./long-opt.sh --long --out-file out.file in.file other.file
 Long output is enabled
 Output file: 'out.file'
 Arguments: in.file other.file
@@ -896,7 +896,7 @@ This optional argument is directly appended to the option with a <code>=</code> 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./long-opt.sh --long=true --out-file=out.file in.file
+<pre class="nowrap">$ ./long-opt.sh --long=true --out-file=out.file in.file
 Long output is enabled
 Output file: 'out.file'
 Arguments: in.file
@@ -942,7 +942,7 @@ Example from the ssh man page:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>-v      Verbose mode.  Causes ssh to print debugging messages about its
+<pre class="nowrap">-v      Verbose mode.  Causes ssh to print debugging messages about its
         progress.  This is helpful in debugging connection, authentica‐
         tion, and configuration problems.  Multiple -v options increase
         the verbosity.  The maximum is 3.</pre>
@@ -972,7 +972,7 @@ echo &quot;Verbosity: $verbosity&quot;
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./verbosity.sh
+<pre class="nowrap">$ ./verbosity.sh
 Verbosity: 0
 
 $ ./verbosity.sh -v
@@ -990,7 +990,7 @@ Verbosity: 7</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./verbosity.sh --verbose
+<pre class="nowrap">$ ./verbosity.sh --verbose
 Verbosity: 1
 
 $ ./verbosity.sh --verbose -v
@@ -1017,7 +1017,7 @@ The long form with optional argument sets the verbosity, it does not increase it
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./verbosity.sh -vv --verbose=5
+<pre class="nowrap">$ ./verbosity.sh -vv --verbose=5
 Verbosity: 5</pre>
 </div>
 </div>
@@ -1055,7 +1055,7 @@ echo &quot;Mode: $mode&quot;
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./mode-switch.sh -c
+<pre class="nowrap">$ ./mode-switch.sh -c
 Mode: copy
 
 $ ./mode-switch.sh -m
@@ -1091,7 +1091,7 @@ echo &quot;Output file: $out_file&quot;
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./required.sh -o output.file
+<pre class="nowrap">$ ./required.sh -o output.file
 Output file: output.file
 
 $ ./required.sh
@@ -1159,7 +1159,7 @@ eval &quot;$(parseargs -n help.sh.sh -hv -o &#39;l:long#detailed,o:out-file=outf
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./help.sh --help
+<pre class="nowrap">$ ./help.sh --help
 Usage: example.sh OPTIONS &lt;input-file...&gt;
   -l, --long           enable detailed output
   -o, --out-file FILE  file to write result
@@ -1235,7 +1235,7 @@ echo &quot;Arguments: $*&quot;
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./option-cb.sh -v -l -o out.file -vv input
+<pre class="nowrap">$ ./option-cb.sh -v -l -o out.file -vv input
 set_verbosity(1)
 set_long(true)
 set_outfile(out.file)
@@ -1340,7 +1340,7 @@ echo &quot;OK&quot;
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./error-cb.sh
+<pre class="nowrap">$ ./error-cb.sh
 OK
 
 $ ./error-cb.sh -x
@@ -1377,7 +1377,7 @@ echo &quot;Arguments: $*&quot;
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./no-opt.sh first second
+<pre class="nowrap">$ ./no-opt.sh first second
 Arguments: first second
 
 $ ./no-opt.sh -X first second
@@ -1398,7 +1398,7 @@ Arguments: first second -X</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ ./example.sh -o out.file -X
+<pre class="nowrap">$ ./example.sh -o out.file -X
 example.sh: Unknown option: -X
 
 $ ./example.sh -o out.file -- -X
@@ -1419,7 +1419,7 @@ This is useful, when the script runs with <code>set -u</code> to treat unset var
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ parseargs -n example.sh -o 'l#long,o=outfile,v+verbosity' --init-vars -- -o out.file -l
+<pre class="nowrap">$ parseargs -n example.sh -o 'l#long,o=outfile,v+verbosity' --init-vars -- -o out.file -l
 long='';
 outfile='';
 verbosity=0;
@@ -1442,7 +1442,7 @@ The following is used to support <code>--help</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>help#?show_help()</pre>
+<pre class="nowrap">help#?show_help()</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1508,11 +1508,11 @@ Only supported with shells <code>dash</code>, <code>bash</code>, <code>ksh</code
 <div class="paragraph">
 <p>If Parseargs is called in a shell function, it might be needed to declare the variables as local to that function.
 By using the option <code>-l</code> / <code>--local-vars</code> the variables are declared as local.
-The following invocation is for the bash shell, but ksh and zsh would produce the same code3.</p>
+The following invocation is for the bash shell, but ksh and zsh would produce the same code.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell bash --local-vars -- -o out.file -l
+<pre class="nowrap">$ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell bash --local-vars -- -o out.file -l
 typeset long_output;
 typeset outfile;
 outfile='out.file';
@@ -1525,7 +1525,7 @@ set --</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell sh --local-vars -- -o out.file -l
+<pre class="nowrap">$ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell sh --local-vars -- -o out.file -l
 parseargs: Shell sh does not support local variables, so option -l/--local-vars is not supported
 exit 1</pre>
 </div>
@@ -1553,7 +1553,7 @@ Only supported with shells <code>bash</code>, <code>ksh</code> or <code>zsh</cod
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ when-changed tutorial.adoc -- make html</pre>
+<pre class="nowrap">$ when-changed tutorial.adoc -- make html</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1623,7 +1623,7 @@ For our first example the following output would be created:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>In example.sh line 8:
+<pre class="nowrap">In example.sh line 8:
 echo "Output file: '$outfile'"
                     ^------^ SC2154 (warning): outfile is referenced but not assigned.
 
@@ -1667,7 +1667,7 @@ eval &quot;$(parseargs -n example.sh -o &#39;l#long_output,o=outfile&#39; -- &qu
 <div id="footer">
 <div id="footer-text">
 Version {version}<br>
-Last updated 2023-07-14 16:46:16 UTC
+Last updated 2023-07-16 08:14:43 UTC
 </div>
 </div>
 </body>
