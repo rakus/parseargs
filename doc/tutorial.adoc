@@ -84,6 +84,7 @@ The trailing `|| exit 1` is just a safety net, in case something goes wrong duri
 
 Let's test the script:
 
+[%nowrap]
 ----
 $ ./example.sh -l -o out.file in.file other.file
 Long output is enabled
@@ -93,6 +94,7 @@ Arguments: in.file other.file
 
 No space needed between `-o` and the file name:
 
+[%nowrap]
 ----
 $ ./example.sh -l -oout.file in.file other.file
 Long output is enabled
@@ -102,6 +104,7 @@ Arguments: in.file other.file
 
 And `-l` and `-o` can be combined into one:
 
+[%nowrap]
 ----
 $ ./example.sh -loout.file in.file other.file
 Long output is enabled
@@ -111,6 +114,7 @@ Arguments: in.file other.file
 
 Options and argument order is not relevant:
 
+[%nowrap]
 ----
 $ ./example.sh -l in.file other.file -oout.file
 Long output is enabled
@@ -120,6 +124,7 @@ Arguments: in.file other.file
 
 Using a unknown option:
 
+[%nowrap]
 ----
 $ ./example.sh -X
 example.sh: Unknown option: '-X'
@@ -127,6 +132,7 @@ example.sh: Unknown option: '-X'
 
 Duplicate options are not allowed:
 
+[%nowrap]
 ----
 $ ./example.sh -o out.file -o other-out.file  in.file
 example.sh: Duplicate option: '-o'
@@ -154,6 +160,7 @@ Finally with `set -- ...` the positional parameter (`$1`, `$2` ...) are assigned
 
 Here is what happens, when an unknown option is found:
 
+[%nowrap]
 ----
 $ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -X
 example.sh: Unknown option: -X
@@ -164,6 +171,7 @@ The error message "example.sh: Unknown option: -X" is written to STDERR.
 
 Or here the argument for the option -o is missing:
 
+[%nowrap]
 ----
 $ parseargs -n example.sh -o 'l#long_output,o=outfile' -- -o
 example.sh: Missing argument for: -o
@@ -200,6 +208,7 @@ Now our example script enables long output by either using `-l` or `--long` and 
 
 Again some tests:
 
+[%nowrap]
 ----
 $ ./long-opt.sh --long --out-file out.file in.file other.file
 Long output is enabled
@@ -226,6 +235,7 @@ This optional argument is directly appended to the option with a `=` and the val
 
 So, to reuse the example above:
 
+[%nowrap]
 ----
 $ ./long-opt.sh --long=true --out-file=out.file in.file
 Long output is enabled
@@ -264,6 +274,7 @@ I don't know how useful this is, but it is possible.
 Tools sometimes have an option to increase verbosity of the output.
 Example from the ssh man page:
 
+[%nowrap]
 ----
 -v      Verbose mode.  Causes ssh to print debugging messages about its
         progress.  This is helpful in debugging connection, authentica‐
@@ -283,6 +294,7 @@ include::examples/verbosity.sh[]
 ----
 
 
+[%nowrap]
 ----
 $ ./verbosity.sh
 Verbosity: 0
@@ -299,6 +311,7 @@ Verbosity: 7
 
 The long option form additionally supports a optional argument:
 
+[%nowrap]
 ----
 $ ./verbosity.sh --verbose
 Verbosity: 1
@@ -315,6 +328,7 @@ verbosity.sh: Not a valid count value: "full"
 
 IMPORTANT: The long form with optional argument sets the verbosity, it does not increase it by the given number.
 
+[%nowrap]
 ----
 $ ./verbosity.sh -vv --verbose=5
 Verbosity: 5
@@ -338,6 +352,7 @@ include::examples/mode-switch.sh[]
 
 And here some tests:
 
+[%nowrap]
 ----
 $ ./mode-switch.sh -c
 Mode: copy
@@ -361,6 +376,7 @@ include::examples/required.sh[]
 
 And now a test:
 
+[%nowrap]
 ----
 $ ./required.sh -o output.file
 Output file: output.file
@@ -392,6 +408,7 @@ include::examples/help.sh[]
 
 Displaying help and version:
 
+[%nowrap]
 ----
 $ ./help.sh --help
 Usage: example.sh OPTIONS <input-file...>
@@ -423,6 +440,7 @@ This check is always done, whether the function is needed in the actually genera
 
 When calling the callback the exit status of the function must be zero else the calling script is terminated with function exit code.
 The code for this looks like this:
+
 [%nowrap,source,bash]
 ----
 set_out_file 'output.file' || exit $?
@@ -441,6 +459,7 @@ include::examples/option-cb.sh[]
 
 Testing:
 
+[%nowrap]
 ----
 $ ./option-cb.sh -v -l -o out.file -vv input
 set_verbosity(1)
@@ -453,7 +472,6 @@ Arguments: input
 $ ./option-cb.sh --long=false input
 set_long()
 Arguments: input
-
 ----
 
 * For counting options, the callback is called multiple times with the current count value.
@@ -497,6 +515,7 @@ The following example doesn't support any options and insults you when you give 
 include::examples/error-cb.sh[]
 ----
 
+[%nowrap]
 ----
 $ ./error-cb.sh
 OK
@@ -521,6 +540,7 @@ include::examples/no-opt.sh[]
 
 In this script we also use the option `-p` / `--posix`, then Parseargs stops looking for options as soon as the first program argument is found.
 
+[%nowrap]
 ----
 $ ./no-opt.sh first second
 Arguments: first second
@@ -539,6 +559,7 @@ POSIX defines the `--` as a separator between options and program arguments.
 
 Reusing our first script `example.sh`:
 
+[%nowrap]
 ----
 $ ./example.sh -o out.file -X
 example.sh: Unknown option: -X
@@ -556,6 +577,7 @@ This is useful, when the script runs with `set -u` to treat unset variables as e
 
 Note that this is for variables only. Callbacks are not called.
 
+[%nowrap]
 ----
 $ parseargs -n example.sh -o 'l#long,o=outfile,v+verbosity' --init-vars -- -o out.file -l
 long='';
@@ -576,6 +598,7 @@ In fact the support for `--help` is implemented using this.
 A option is marked as a by putting a `?` in front of the function name (variables are rarely used here).
 The following is used to support `--help`
 
+[%nowrap]
 ----
 help#?show_help()
 ----
@@ -615,8 +638,9 @@ IMPORTANT: Only supported with shells `dash`, `bash`, `ksh` or `zsh`.
 
 If Parseargs is called in a shell function, it might be needed to declare the variables as local to that function.
 By using the option `-l` / `--local-vars` the variables are declared as local.
-The following invocation is for the bash shell, but ksh and zsh would produce the same code3.
+The following invocation is for the bash shell, but ksh and zsh would produce the same code.
 
+[%nowrap]
 ----
 $ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell bash --local-vars -- -o out.file -l
 typeset long_output;
@@ -628,6 +652,7 @@ set --
 
 As it is not supported for a plain sh shell, and error message is printed:
 
+[%nowrap]
 ----
 $ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell sh --local-vars -- -o out.file -l
 parseargs: Shell sh does not support local variables, so option -l/--local-vars is not supported
@@ -642,6 +667,7 @@ Sometimes it is useful to handle the arguments before and after a `--` different
 
 The following command monitors the file `tutorial.adoc` and executes the command `make html` as soon as a change is detected.
 
+[%nowrap]
 ----
 $ when-changed tutorial.adoc -- make html
 ----
@@ -692,6 +718,7 @@ If you don't use it yet, you really should.
 As Parseargs is creating and assigning new variables at runtime, ShellCheck can't know about them and will complain.
 For our first example the following output would be created:
 
+[%nowrap]
 ----
 In example.sh line 8:
 echo "Output file: '$outfile'"
