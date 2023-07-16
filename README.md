@@ -4,12 +4,9 @@
 **A command line option parser for shell scripts.**
 
 ---
-:warning: This is in an early state of
-development and not suitable for serious use.
 
-Have a look at section TODO below.
-
-Blahhh
+:warning: This is in an early state of development.
+Have a look at section [TODO](#todo) below.
 
 ---
 
@@ -41,34 +38,45 @@ Parseargs parses the given options and creates shell code to set
 variables. It also prints error messages and exits the script on
 unknown options.
 
-To investigate the generated code just call parseargs from the
+To investigate the generated code just call Parseargs from the
 command line.
 
-The [Tutorial](https://rakus.github.io/parseargs/) explains all features of
-Parseargs.
+The [Tutorial] explains all features of Parseargs.
 
 ## Building
 
 Build is controlled by a Makefile.  Run `make help` to get a help on the
 available targets.
 
-First step is to install `cargo get` and `cargo generate-rpm`. Run `make setup`
-for this.
+### Prerequisites
 
-If the man-page and the tutorial should be build (required for RPM),
-Asciidoctor must be installed.  See [install
-page](https://docs.asciidoctor.org/asciidoctor/latest/install/). For syntax
-highlighting in the tutorial "Pygments" is used. See [this
-page](https://docs.asciidoctor.org/asciidoctor/latest/syntax-highlighting/pygments/).
+Some additional tools are needed for building and testing Parseargs.
 
+**Basics**
+
+* cargo get - To extract info from `Cargo.toml` (`cargo install cargo-get`).
+* ShellCheck - Linter for shell code. Used in tests (install using your package manager).
+
+**Documentation**
+
+* Asciidoctor - Used to build tutorial and man page. See [Asciidoctor install page].
+* Pygments - Syntax highlighting of shell code in tutorial. See [Pygments install page].
+
+**Package Build**
+
+* cargo generate-rpm - Pure Rust RPM builder. `cargo install cargo-generate-rpm`
+* cargo deb - Pure Rust Debian package builder. `cargo install cargo-deb`
 
 ## TODO
 
 This tool is in an early state and there are areas that need further
 improvements
 
-* Improve tutorial and man page
-* Error messages and error handling.
+* Improve error messages from option definition parser.
 * Gracefully handle arguments with invalid UTF-8 chars. Today it just error exits.
 * To many `clone()` calls -- most likely a general Rust newbie problem.
 
+
+[Tutorial]: https://rakus.github.io/parseargs/
+[Asciidoctor install page]: https://docs.asciidoctor.org/asciidoctor/latest/install/
+[Pygments install page]: https://docs.asciidoctor.org/asciidoctor/latest/syntax-highlighting/pygments/
