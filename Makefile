@@ -11,6 +11,9 @@ RELEASE_TGT := target/release/parseargs
 SRCFILES := $(wildcard src/*.rs src/**/*.rs)
 
 VERSION := $(shell cargo get version)
+ifndef VERSION
+$(error VERSION is not set - missing 'cargo get'?)
+endif
 
 OS_NAME := $(shell uname -s | tr A-Z a-z)
 PROC_NAME := $(shell uname -m)
@@ -47,7 +50,6 @@ check: clean debug-build test                ## run clean debug build, format ch
 	( cd script-test && shellcheck -fgcc -x -a *.sh )
 
 doc:
-	@test -n "${VERSION}" || ( echo "Error: VERSION not extracted from Cargo.toml. Is 'cargo get' installed?"; exit 1 )
 	( cd doc && make VERSION=${VERSION} )
 
 rpm: release-build doc                       ## Build rpm package
@@ -63,7 +65,6 @@ pkg: rpm deb                                 ## Build rpm & deb packages
 zip: target/parseargs-${VERSION}-${BUILD_ENV}.zip
 
 target/parseargs-${VERSION}-${BUILD_ENV}.zip: release-build doc
-	@test -n "${VERSION}" || ( echo "Error: VERSION not extracted from Cargo.toml. Is 'cargo get' installed?"; exit 1 )
 	rm -f $@
 	zip -j --must-match $@ target/release/parseargs${EXE_EXT} doc/target/parseargs.html
 
