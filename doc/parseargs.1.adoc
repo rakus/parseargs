@@ -1,8 +1,8 @@
 = parseargs(1)
 :doctype: manpage
-:mansource:  parseargs {manversion}
+:mansource:  parseargs {version}
 :manmanual:  Parseargs Manual
-:manversion: {pa_version}
+:manversion: {version}
 :manpurpose: command line option parser for shell scripts
 
 == NAME

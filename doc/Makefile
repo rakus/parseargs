@@ -18,10 +18,10 @@ ${TGT_DIR}/tutorial.html: tutorial.adoc
 	asciidoctor -a "version=${VERSION}" -a source-highlighter=pygments -o $@ $^
 
 ${TGT_DIR}/parseargs.html: parseargs.1.adoc
-	asciidoctor -a "manversion=${VERSION}" -a source-highlighter=pygments -o $@ $^
+	asciidoctor -a "version=${VERSION}" -a source-highlighter=pygments -o $@ $^
 
 ${TGT_DIR}/parseargs.1: parseargs.1.adoc
-	asciidoctor -a "manversion=${VERSION}" -b manpage -o $@ $^
+	asciidoctor -a "version=${VERSION}" -b manpage -o $@ $^
 
 ${TGT_DIR}/parseargs.1.gz: ${TGT_DIR}/parseargs.1
 	rm -f $@
