@@ -1,3 +1,10 @@
+/*
+ * Part of parseargs - a command line options parser for shell scripts
+ *
+ * Copyright (c) 2023 Ralf Schandl
+ * This code is licensed under MIT license (see LICENSE.txt for details).
+ */
+
 mod arg_parser;
 mod opt_def;
 mod shell_code;
@@ -16,10 +23,22 @@ use clap::{CommandFactory, Parser};
 
 const PARSEARGS: &str = env!("CARGO_PKG_NAME");
 
+/**
+ * The default shell, if '-s' is not given.
+ * Can be overwritten using the environment variable 'PARSEARGS_SHELL'.
+ */
 const DEFAULT_SHELL: &str = "sh";
 
+/**
+ * Environment variable to set the default shell.
+ * If '-s' is not given, this environment variable is checked.
+ * If set, its value will be used as default shell. If not, 'sh' is used.
+ */
 const PARSEARGS_SHELL_VAR: &str = "PARSEARGS_SHELL";
 
+/**
+ * Command line arguments.
+ */
 #[derive(Parser, Debug)]
 #[clap(
     disable_help_flag = true,
@@ -32,7 +51,7 @@ struct CmdLineArgs {
     #[arg(short = 'o', long = "options", value_name = "OPT-DEFs")]
     options: Option<String>,
 
-    /// Name of shell script. Used for error messages.
+    /// Name of calling shell script. Used as prefix for error messages.
     #[arg(short = 'n', long = "name")]
     name: Option<String>,
 
@@ -95,8 +114,8 @@ struct CmdLineArgs {
 }
 
 /**
-Exit after printing an error message.
-*/
+ * Exit after printing an error message.
+ */
 fn die_internal(msg: String) -> ! {
     eprintln!("{}: {}", PARSEARGS, msg);
     println!("exit 1");
@@ -105,8 +124,8 @@ fn die_internal(msg: String) -> ! {
 }
 
 /**
-Used by Clap to validate a given str as shell variable/function name and to create a String from it.
-*/
+ * Used by Clap to validate a given str as shell variable/function name and to create a String from it.
+ */
 fn parse_shell_name(arg: &str) -> Result<String, String> {
     for (idx, chr) in arg.chars().enumerate() {
         if idx == 0 && !chr.is_alphabetic() {
@@ -120,9 +139,9 @@ fn parse_shell_name(arg: &str) -> Result<String, String> {
 }
 
 /**
-Produces the initial shell code. Like checking that required functions really exist and
-typesetting the variables (if supported by shell).
-*/
+ * Produces the initial shell code. Like checking that required functions really exist and
+ * typesetting the variables (if supported by shell).
+ */
 fn shell_init_code(
     opt_cfg_list: &Vec<OptConfig>,
     cmd_line_args: &CmdLineArgs,
@@ -138,6 +157,9 @@ fn shell_init_code(
     if let Some(func) = &cmd_line_args.error_callback {
         init_code.push(CodeChunk::CheckForFunction(func.clone()));
     }
+
+    // Iterating opt_cfg_list multiple time, but I want a certain order of
+    // the generated code.
 
     // prevent multiple checks for same function (ModeSwitch)
     let mut func_name_vec: Vec<&String> = vec![];
@@ -198,6 +220,15 @@ fn shell_init_code(
     init_code
 }
 
+/**
+ * Optional String to bool.
+ *
+ * The values "true" and "yes" result in `true`.
+ * The values "false" and "no" result in `false`.
+ * Check is case-insensitive.
+ *
+ * `None` results in `false`.
+ */
 fn some_str_to_bool(ostr: Option<&String>, default: bool) -> Result<bool, String> {
     match ostr {
         Some(v) => match v.to_lowercase().trim() {
@@ -209,6 +240,10 @@ fn some_str_to_bool(ostr: Option<&String>, default: bool) -> Result<bool, String
     }
 }
 
+/**
+ * Assign a value to an option target.
+ * Return either aCodeChunk for a variable assignment or a function call.
+ */
 fn assign_target(target: &OptTarget, value: VarValue) -> CodeChunk {
     match target {
         OptTarget::Variable(name) => CodeChunk::AssignVar(name.clone(), value),
@@ -216,6 +251,10 @@ fn assign_target(target: &OptTarget, value: VarValue) -> CodeChunk {
     }
 }
 
+/**
+ * Parses the shell arguments based on the given option definition.
+ * Returns a vector of CodeChunks.
+ */
 fn parse_shell_options(
     opt_cfg_list: &mut Vec<OptConfig>,
     cmd_line_args: &CmdLineArgs,
@@ -223,7 +262,8 @@ fn parse_shell_options(
     let mut shell_code: Vec<CodeChunk> = vec![];
     let mut arguments: Vec<String> = vec![];
 
-    // Lookup table from target name to position in vector. Needed for FlagAssignments
+    // Lookup table from target name to position in vector.
+    // Needed for duplication checks of Mode-Switches.
     let mut shell_name_table: HashMap<String, Vec<usize>> = HashMap::new();
 
     for (pos, e) in opt_cfg_list.iter().enumerate() {
@@ -368,7 +408,6 @@ fn parse_shell_options(
 
     // Check duplicates for ModeSwitches
     // and handle required
-    // TODO: Bad implementation
     for name in shell_name_table.keys() {
         if shell_name_table.get(name).unwrap().len() > 1 {
             let mut used_tab = vec![];
@@ -417,6 +456,18 @@ fn parse_shell_options(
     Ok(shell_code)
 }
 
+/**
+ * Validate the option definitions.
+ *
+ * Check for:
+ *
+ * * duplicate options
+ * * duplicate usage of variables/functions (only allowed for ModeSwitch)
+ * * ModeSwitch with same value
+ *
+ * Does not allow function and variable with same name. For a shell script
+ * this should work, but in our context it is most likely an error.
+ */
 fn validate_option_definitions(opt_def_list: &Vec<OptConfig>) {
     let mut all_short_options = String::new();
     let mut all_long_options: Vec<&String> = vec![];
@@ -479,6 +530,11 @@ fn validate_option_definitions(opt_def_list: &Vec<OptConfig>) {
     }
 }
 
+/**
+ * The actual parseargs logic.
+ *
+ * The function does not return but exit.
+ */
 fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
     let script_name = match cmd_line_args.name {
         Some(ref n) => n,
@@ -501,6 +557,8 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
 
     validate_option_definitions(&opt_cfg_list);
 
+    // Add support for `--help` if requested.
+    // As this is added to the end of the list, a custom '--help' has precedence.
     if cmd_line_args.help_opt {
         opt_cfg_list.push(OptConfig {
             opt_chars: "".to_string(),
@@ -512,6 +570,8 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
             count_value: 0,
         });
     }
+    // Add support for `--version` if requested.
+    // As this is added to the end of the list, a custom '--version' has precedence.
     if cmd_line_args.version_opt {
         opt_cfg_list.push(OptConfig {
             opt_chars: "".to_string(),
@@ -524,6 +584,7 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
         });
     }
 
+    // Determine shell. Either from option, environment var or the default.
     let shell = cmd_line_args
         .shell
         .clone()
@@ -586,6 +647,9 @@ fn main() {
     match CmdLineArgs::try_parse() {
         Ok(c) => {
             if c.help {
+                // insert an additional '--' in the help output.
+                // Didn't find a way to tell Clap to insert it, so we do it manually.
+                // This is fragile.
                 let mut help_str = CmdLineArgs::command().render_help().to_string();
                 help_str = help_str.replace("] [SCRIPT-ARGS]", "] -- [SCRIPT-ARGS]");
                 println!("{}", help_str);
@@ -596,6 +660,7 @@ fn main() {
                 exit(0);
             }
 
+            // Catch a panic and print `exit 1` to exit the calling script.
             match catch_unwind(|| parseargs(c)) {
                 // Ok should never be reached, as parseargs exits
                 Ok(_) => exit(97),

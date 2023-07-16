@@ -1,5 +1,15 @@
+/*
+ * Part of parseargs - a command line options parser for shell scripts
+ *
+ * Copyright (c) 2023 Ralf Schandl
+ * This code is licensed under MIT license (see LICENSE.txt for details).
+ */
+
 use std::fmt;
 
+/**
+ * Element extracted from the command line.
+ */
 #[derive(Debug, PartialEq)]
 pub enum CmdLineElement {
     /// A short option like '-l' without the leading dash
@@ -11,8 +21,8 @@ pub enum CmdLineElement {
     /// A program argument.
     Argument(String),
     /**
-    The option/arguments separator "--". Used by caller if the arguments before a '--' should
-    be handled differently than after it or it is just ignored.
+     * The option/arguments separator "--". Used by caller if the arguments before a '--' should
+     * be handled differently than after it or it is just ignored.
      */
     Separator,
 }
@@ -37,13 +47,13 @@ pub struct CmdLineTokenizer {
     /// Whether to stop option processing on the first non-option.
     posix: bool,
     /**
-    Whether to only returns Arguments. Switched to true when '--' is found
-    or on the first non-option if posix == true
+     * Whether to only returns Arguments. Switched to true when '--' is found
+     * or on the first non-option if posix == true
      */
     args_only: bool,
     /**
-    Left over characters from combined short options. With -abc, this will
-    hold ['b', 'c'].
+     * Left over characters from combined short options. With -abc, this will
+     * hold ['b', 'c'].
      */
     left_over: Vec<char>,
 }
@@ -59,7 +69,8 @@ impl CmdLineTokenizer {
         }
     }
 
-    fn next_arg(&mut self) -> Option<String> {
+    // Internal: get next part (seperated string) from the command line.
+    fn next_part(&mut self) -> Option<String> {
         if self.cmd_line_args_idx >= self.cmd_line_args.len() {
             None
         } else {
@@ -69,14 +80,18 @@ impl CmdLineTokenizer {
         }
     }
 
+    /**
+     * Returns the next command line element.
+     */
     pub fn next(&mut self) -> Option<CmdLineElement> {
         if !self.left_over.is_empty() {
+            // next character from combined short options (-xyz)
             let chr = self.left_over.remove(0);
             Some(CmdLineElement::ShortOption(chr))
         } else if self.args_only {
-            self.next_arg().map(CmdLineElement::Argument)
+            self.next_part().map(CmdLineElement::Argument)
         } else {
-            match self.next_arg() {
+            match self.next_part() {
                 None => None,
                 Some(s) => {
                     if s.eq("--") {
@@ -113,13 +128,17 @@ impl CmdLineTokenizer {
         }
     }
 
+    /**
+     * Returns an argument for a previous option.
+     * Also handles combined options like `-ooutfile`.
+     */
     pub fn get_option_argument(&mut self) -> Option<String> {
         if !self.left_over.is_empty() {
             let ret = Some(self.left_over.clone().into_iter().collect());
             self.left_over.clear();
             ret
         } else {
-            self.next_arg()
+            self.next_part()
         }
     }
 }

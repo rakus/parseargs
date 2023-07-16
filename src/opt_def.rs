@@ -1,30 +1,55 @@
+/*
+ * Part of parseargs - a command line options parser for shell scripts
+ *
+ * Copyright (c) 2023 Ralf Schandl
+ * This code is licensed under MIT license (see LICENSE.txt for details).
+ */
+
 use crate::arg_parser::CmdLineElement;
 
+/**
+ * Target for a option. Parseargs either assigns a variable or calls
+ * a function.
+ */
 #[derive(Debug, PartialEq)]
 pub enum OptTarget {
     Variable(String),
     Function(String),
 }
 
+/**
+ * Option attributes. The `*` or `?` before the option target.
+ */
 #[derive(Debug, PartialEq)]
 enum OptAttribute {
     Required,
     Singleton,
 }
 
+/**
+ * Type of the option.
+ */
 #[derive(Debug, PartialEq)]
 pub enum OptType {
+    /// Simple flag to set something to true (false is the default)
     Flag(OptTarget),
+    /// Assign a value to a variable. Multiple ModeSwitches use the same
+    /// variable with different values.
     ModeSwitch(OptTarget, String),
+    /// Assignment option that requires an argument. Like `-o outfile`.
     Assignment(OptTarget),
+    /// Counting occuences on the command line. Like -v, -vvv, -v  -vvv,...
     Counter(OptTarget),
 }
 
+/**
+ * Describes a supported option.
+ */
 #[derive(Debug, PartialEq)]
 pub struct OptConfig {
-    // Every character in this string is a short option
+    /// Every character in this string is a short option.
     pub opt_chars: String,
-    // Every string is a long option
+    /// Every string in this vector is a long option.
     pub opt_strings: Vec<String>,
     // type of option
     pub opt_type: OptType,
@@ -41,6 +66,12 @@ pub struct OptConfig {
 }
 
 impl OptConfig {
+    /**
+     * Returns whether this option is matched by the given command line element.
+     *
+     * TODO: This is the only reason why we import CmdLineElement. Could also
+     *       be implemented for char or string.
+     */
     pub fn match_option(&self, el: &CmdLineElement) -> bool {
         match el {
             CmdLineElement::ShortOption(c) => self.opt_chars.find(*c).is_some(),
@@ -51,8 +82,8 @@ impl OptConfig {
     }
 
     /**
-    Check whether duplicate usage of this option is allowed.
-    This allowed for Counter options and options with a target type Function.
+     * Returns whether duplicate usage of this option is allowed.
+     * This is allowed for Counter options and options with a target type Function.
      */
     pub fn is_duplicate_allowed(&self) -> bool {
         matches!(self.opt_type, OptType::Counter(_))
@@ -65,6 +96,10 @@ impl OptConfig {
             )
     }
 
+    /**
+     * Returns the name of the option target. The name could represent a
+     * variable or a function.
+     */
     pub fn get_target_name(&self) -> String {
         match &self.opt_type {
             OptType::Flag(OptTarget::Function(name))
@@ -78,6 +113,9 @@ impl OptConfig {
         }
     }
 
+    /**
+     * Returns the option target
+     */
     pub fn get_target(&self) -> &OptTarget {
         match &self.opt_type {
             OptType::Flag(ot)
@@ -87,6 +125,9 @@ impl OptConfig {
         }
     }
 
+    /**
+     * Returns whether the option target is a function.
+     */
     pub fn is_target_function(&self) -> bool {
         matches!(
             &self.opt_type,
@@ -97,10 +138,18 @@ impl OptConfig {
         )
     }
 
+    /**
+     * Returns whether the option target is a variable.
+     */
     pub fn is_target_variable(&self) -> bool {
         !self.is_target_function()
     }
 
+    /**
+     * Formats the option for display. Most likely in error messages.
+     * If the short option is `-l` and long `--long` it will return
+     * something like `-l/--long`.
+     */
     pub fn options_string(&self) -> String {
         let mut sb = String::new();
 
@@ -126,33 +175,53 @@ impl OptConfig {
     }
 }
 
+/**
+ * Configuration of the option definition parser.
+ */
 pub struct ParserConfig {
+    /// Whether UTF-8 characters are allowed as option characters.
     allow_utf8_options: bool,
 }
 
+/**
+ * The source for parsing option definitions.
+ */
 pub struct ParserSource {
+    /// Sequence of characters to parse.
     chars: Vec<char>,
+    /// The index of the next character to read.
     index: usize,
+    /// Number of characters in `chars`.
     length: usize,
 
+    /// Stack to push/pop a position in the character sequence.
     position_stack: Vec<usize>,
 
+    /// Configuration of the parser
     config: ParserConfig,
 }
 
 impl ParserSource {
+    /**
+     * Creates a new ParserSource.
+     */
     pub fn new(string: &str) -> ParserSource {
         let array: Vec<char> = string.chars().collect();
         let len = array.len();
-        let config = ParserConfig {
-            allow_utf8_options: false,
-        };
         ParserSource {
             chars: array,
             index: 0,
             length: len,
             position_stack: Vec::new(),
-            config,
+            config: ParserConfig {
+                /*
+                 * Don't allow UTF-8 chars in options. This would most likely
+                 * result in portability problems. What if the parseargs option
+                 * defines a smiley as option char, but the current system is
+                 * configured with a single-byte character set?
+                 */
+                allow_utf8_options: false,
+            },
         }
     }
 
@@ -230,7 +299,8 @@ impl ParserSource {
         }
     }
 
-    // Only used in test
+    /// Reset the ParserSource toi start parsing from the beginning again.
+    /// Currently only used in test.
     #[allow(dead_code)]
     pub fn reset(&mut self) {
         self.index = 0;
@@ -238,14 +308,24 @@ impl ParserSource {
     }
 }
 
+/**
+ * Errors of the parser.
+ */
 #[derive(Debug, PartialEq)]
 pub enum ParsingError {
-    // Nothing parsable found at all
+    /// Nothing parsable found at all
     Empty,
-    // Error with Message
+    /// Error with Message
     Error(String),
 }
 
+/**
+ * Check whether the given character is a valid character for an option.
+ *
+ * * `chr` - The character to check
+ * * `first` - whether this is the first character of an option
+ * * `allow_utf8` - whether characters outside the ASCII range are allowed
+ */
 fn is_valid_opt_char(chr: char, first: bool, allow_utf8: bool) -> bool {
     if allow_utf8 {
         if first {
@@ -253,15 +333,17 @@ fn is_valid_opt_char(chr: char, first: bool, allow_utf8: bool) -> bool {
         } else {
             !chr.is_whitespace() && !chr.is_ascii_control()
         }
+    } else if first {
+        chr != '-' && chr.is_ascii() && !chr.is_ascii_whitespace() && !chr.is_ascii_control()
     } else {
-        if first {
-            chr != '-' && chr.is_ascii() && !chr.is_ascii_whitespace() && !chr.is_ascii_control()
-        } else {
-            chr.is_ascii() && !chr.is_ascii_whitespace() && !chr.is_ascii_control()
-        }
+        chr.is_ascii() && !chr.is_ascii_whitespace() && !chr.is_ascii_control()
     }
 }
 
+/**
+ * Gets the next character for an option from the source.
+ * This handles backslash-escapes for certain characters.
+ */
 fn get_option_char(ps: &mut ParserSource, first: bool) -> Option<char> {
     let forbidden = vec![':', '#', '=', '+', '%'];
 
@@ -292,6 +374,10 @@ fn get_option_char(ps: &mut ParserSource, first: bool) -> Option<char> {
     }
 }
 
+/**
+ * Parses an option. The resulting string either contains a single character
+ * for short options or a multiple for long options.
+ */
 fn parse_option(ps: &mut ParserSource) -> Result<String, ParsingError> {
     let mut option = String::new();
 
@@ -325,6 +411,9 @@ fn parse_option(ps: &mut ParserSource) -> Result<String, ParsingError> {
     Ok(option)
 }
 
+/**
+ * Parses a name. A name is a valid name for a shell variable or function.
+ */
 fn parse_name(ps: &mut ParserSource) -> Result<String, ParsingError> {
     let mut name = String::new();
 
@@ -344,13 +433,20 @@ fn parse_name(ps: &mut ParserSource) -> Result<String, ParsingError> {
     Ok(name)
 }
 
+/**
+ * Parses a value. Currently a value is the same as a name.
+ *
+ */
 fn parse_value(ps: &mut ParserSource) -> Result<String, ParsingError> {
     /*
-     * This should be extended to also parse strings delimited by single or double quote.
+     * TODO: This should be extended to also parse strings delimited by single or double quote.
      */
     parse_name(ps)
 }
 
+/**
+ * Parse the option attribute `*` (required) or `?` (singleton).
+ */
 fn parse_option_attribute(ps: &mut ParserSource) -> Option<OptAttribute> {
     match ps.next_if(|c| c == '*' || c == '?') {
         Some('*') => Some(OptAttribute::Required),
@@ -359,7 +455,11 @@ fn parse_option_attribute(ps: &mut ParserSource) -> Option<OptAttribute> {
     }
 }
 
+/**
+ * Parse a Flag or a Mode-Option.
+ */
 fn parse_flag_mode(ps: &mut ParserSource) -> Result<(OptType, Option<OptAttribute>), ParsingError> {
+    // must start with `#`
     match ps.next() {
         Some('#') => (),
         _ => Err(ParsingError::Empty)?,
@@ -393,6 +493,9 @@ fn parse_flag_mode(ps: &mut ParserSource) -> Result<(OptType, Option<OptAttribut
     }
 }
 
+/**
+ * Parse an assignment.
+ */
 fn parse_assignment(
     ps: &mut ParserSource,
 ) -> Result<(OptType, Option<OptAttribute>), ParsingError> {
@@ -421,6 +524,9 @@ fn parse_assignment(
     Ok((OptType::Assignment(target), attr))
 }
 
+/**
+ * Parse a counting option.
+ */
 fn parse_counter(ps: &mut ParserSource) -> Result<(OptType, Option<OptAttribute>), ParsingError> {
     match ps.next() {
         Some('+') => (),
@@ -447,6 +553,9 @@ fn parse_counter(ps: &mut ParserSource) -> Result<(OptType, Option<OptAttribute>
     Ok((OptType::Counter(target), attr))
 }
 
+/**
+ * Parse a single option definition.
+ */
 fn parse_opt_def(ps: &mut ParserSource) -> Result<OptConfig, ParsingError> {
     let mut short = String::new();
     let mut long: Vec<String> = Vec::new();
@@ -518,6 +627,10 @@ fn parse_opt_def(ps: &mut ParserSource) -> Result<OptConfig, ParsingError> {
     })
 }
 
+/**
+ * Format a parsing error to give the user a hint where something got wrong.
+ * Returns a multi-line string.
+ */
 fn format_parsing_error(opt_def_str: &str, index: usize, msg: &String) -> String {
     let mut msg_list = Vec::new();
     msg_list.push(opt_def_str.to_owned());
@@ -532,6 +645,11 @@ fn format_parsing_error(opt_def_str: &str, index: usize, msg: &String) -> String
     msg_list.join("\n")
 }
 
+/**
+ * Entry function to parse a comma-separated list of option definitions.
+ *
+ * Returns a (possibly empty) vector of OptConfig on success.
+ */
 pub fn parse(opt_def_str: &String) -> Result<Vec<OptConfig>, String> {
     if opt_def_str.is_empty() {
         Ok(Vec::new())
@@ -549,7 +667,10 @@ pub fn parse(opt_def_str: &String) -> Result<Vec<OptConfig>, String> {
     }
 }
 
-pub fn parse_opt_def_list(ps: &mut ParserSource) -> Result<Vec<OptConfig>, ParsingError> {
+/**
+ * Parses a list of option definitions from a ParserSource.
+ */
+fn parse_opt_def_list(ps: &mut ParserSource) -> Result<Vec<OptConfig>, ParsingError> {
     let mut opt_def_list: Vec<OptConfig> = Vec::new();
     loop {
         match parse_opt_def(ps) {
@@ -629,29 +750,23 @@ mod unit_tests {
     #[test]
     fn test_opt_config_flag() {
         let oc = get_od_debug();
-        assert_eq!(true, oc.match_option(&CmdLineElement::ShortOption('d')));
-        assert_eq!(
-            true,
-            oc.match_option(&CmdLineElement::LongOption("debug".to_string()))
-        );
-        assert_eq!(
-            true,
-            oc.match_option(&CmdLineElement::LongOptionValue(
-                "debug".to_string(),
-                "true".to_string()
-            ))
-        );
-        assert_eq!(false, oc.match_option(&CmdLineElement::Separator));
+        assert!(oc.match_option(&CmdLineElement::ShortOption('d')));
+        assert!(oc.match_option(&CmdLineElement::LongOption("debug".to_string())));
+        assert!(oc.match_option(&CmdLineElement::LongOptionValue(
+            "debug".to_string(),
+            "true".to_string()
+        )));
+        assert!(!oc.match_option(&CmdLineElement::Separator));
 
-        assert_eq!(false, oc.is_duplicate_allowed());
-        assert_eq!(false, oc.is_target_function());
-        assert_eq!(true, oc.is_target_variable());
+        assert!(!oc.is_duplicate_allowed());
+        assert!(!oc.is_target_function());
+        assert!(oc.is_target_variable());
         assert_eq!("debug", oc.get_target_name());
     }
 
     #[test]
     fn test_parse_opt_def_flag() {
-        let mut ps = ParserSource::new(&"d:debug#debug");
+        let mut ps = ParserSource::new("d:debug#debug");
 
         match parse_opt_def(&mut ps) {
             Ok(od) => {
@@ -665,7 +780,7 @@ mod unit_tests {
 
     #[test]
     fn test_parse_opt_def_mode_switch() {
-        let mut ps = ParserSource::new(&"c:copy#mode=copy");
+        let mut ps = ParserSource::new("c:copy#mode=copy");
 
         match parse_opt_def(&mut ps) {
             Ok(od) => {
@@ -679,7 +794,7 @@ mod unit_tests {
 
     #[test]
     fn test_parse_opt_def_assignment() {
-        let mut ps = ParserSource::new(&"o:out-file=output_file");
+        let mut ps = ParserSource::new("o:out-file=output_file");
 
         match parse_opt_def(&mut ps) {
             Ok(od) => {
@@ -693,7 +808,7 @@ mod unit_tests {
 
     #[test]
     fn test_parse_opt_def_counter() {
-        let mut ps = ParserSource::new(&"v:verbose+verbosity");
+        let mut ps = ParserSource::new("v:verbose+verbosity");
 
         match parse_opt_def(&mut ps) {
             Ok(od) => {
@@ -708,7 +823,7 @@ mod unit_tests {
     #[test]
     fn test_parse_opt_def_list() {
         let mut ps =
-            ParserSource::new(&"c:copy#mode=copy,o:out-file=output_file,v:verbose+verbosity");
+            ParserSource::new("c:copy#mode=copy,o:out-file=output_file,v:verbose+verbosity");
 
         match parse_opt_def_list(&mut ps) {
             Ok(od_list) => {
@@ -722,19 +837,19 @@ mod unit_tests {
 
     #[test]
     fn test_parse_option_short() {
-        let mut ps = ParserSource::new(&"d#debug");
+        let mut ps = ParserSource::new("d#debug");
         assert_eq!(Ok("d".to_string()), parse_option(&mut ps));
     }
 
     #[test]
     fn test_parse_option_long() {
-        let mut ps = ParserSource::new(&"debug#debug");
+        let mut ps = ParserSource::new("debug#debug");
         assert_eq!(Ok("debug".to_string()), parse_option(&mut ps));
     }
 
     #[test]
     fn test_parse_option_short_long() {
-        let mut ps = ParserSource::new(&"d:debug#debug");
+        let mut ps = ParserSource::new("d:debug#debug");
         assert_eq!(Ok("d".to_string()), parse_option(&mut ps));
         assert_eq!(Some(':'), ps.next());
         assert_eq!(Ok("debug".to_string()), parse_option(&mut ps));
@@ -743,7 +858,7 @@ mod unit_tests {
 
     #[test]
     fn test_parse_option_long_short() {
-        let mut ps = ParserSource::new(&"debug:d#debug");
+        let mut ps = ParserSource::new("debug:d#debug");
         assert_eq!(Ok("debug".to_string()), parse_option(&mut ps));
         assert_eq!(Some(':'), ps.next());
         assert_eq!(Ok("d".to_string()), parse_option(&mut ps));
@@ -773,7 +888,7 @@ mod unit_tests {
 
     #[test]
     fn test_parse_option() {
-        let mut ps = ParserSource::new(&"test-case:debug:d:test\\%case:\\##debug");
+        let mut ps = ParserSource::new("test-case:debug:d:test\\%case:\\##debug");
 
         assert_eq!(Ok("test-case".to_string()), parse_option(&mut ps));
         assert_eq!(Some(':'), ps.next());
@@ -791,7 +906,7 @@ mod unit_tests {
 
     #[test]
     fn test_parser_source() {
-        let mut ps = ParserSource::new(&"ABCD");
+        let mut ps = ParserSource::new("ABCD");
 
         assert_eq!(Some('A'), ps.next());
         assert_eq!(Some('B'), ps.next());
@@ -829,7 +944,7 @@ mod unit_tests {
     #[test]
     #[should_panic]
     fn test_parser_source_pos_stack_empty_pop() {
-        let mut ps = ParserSource::new(&"ABCD");
+        let mut ps = ParserSource::new("ABCD");
 
         ps.pop_pos();
     }
@@ -837,7 +952,7 @@ mod unit_tests {
     #[test]
     #[should_panic]
     fn test_parser_source_pos_stack_empty_drop() {
-        let mut ps = ParserSource::new(&"ABCD");
+        let mut ps = ParserSource::new("ABCD");
 
         ps.drop_pos();
     }
