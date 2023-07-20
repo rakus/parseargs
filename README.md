@@ -1,5 +1,5 @@
 
-# Playing with GitHub Actions using Parseargs
+# Parseargs
 
 **A command line option parser for shell scripts.**
 
