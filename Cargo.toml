@@ -22,7 +22,7 @@ clap = { version = "4.3.0", features = ["derive"] }
 assets = [
     { source = "target/release/parseargs", dest = "/usr/bin/parseargs", mode = "755" },
     { source = "LICENSE", dest = "/usr/share/doc/parseargs/", mode = "644", doc = true },
-    { source = "doc/target/parseargs.1.gz", dest = "/usr/share/man/man1/", mode = "644", doc = true },
+    { source = "target/doc/parseargs.1.gz", dest = "/usr/share/man/man1/", mode = "644", doc = true },
 ]
 
 [package.metadata.deb]
@@ -33,6 +33,6 @@ priority = "optional"
 assets = [
     [ "target/release/parseargs", "/usr/bin/", "755" ],
     [ "LICENSE", "/usr/share/doc/parseargs/", "644" ],
-    [ "doc/target/parseargs.1.gz", "/usr/share/man/man1/", "644" ],
+    [ "target/doc/parseargs.1.gz", "/usr/share/man/man1/", "644" ],
 ]
 
