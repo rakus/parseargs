@@ -12,6 +12,8 @@ script_name="$(basename "$0")"
 # shellcheck source=_test.shinc
 . "${script_dir}/_test.shinc"
 
+start_test
+
 # check whether shellcheck is available at all
 if ! command -v shellcheck >/dev/null; then
     echo "Skipped as shellcheck is not available"
@@ -106,4 +108,4 @@ check_shell_array -r team -o 'd#debug,f=file,v+verbose' -- Kirk -- Spock Bones
 check_shell_array -lr team -o 'd#debug,f=file,v+verbose' -- Kirk -- Spock Bones
 check_shell_array -lir team -o 'd#debug,f=file,v+verbose' -- Kirk -- Spock Bones
 
-
+end_test

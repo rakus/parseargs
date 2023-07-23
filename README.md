@@ -3,6 +3,8 @@
 
 **A command line option parser for shell scripts.**
 
+[![Build and Test](https://github.com/rakus/parseargs/actions/workflows/verify.yaml/badge.svg)](https://github.com/rakus/parseargs/actions/workflows/verify.yaml)
+
 ---
 
 :warning: This is in an early state of development.

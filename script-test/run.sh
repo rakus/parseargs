@@ -26,11 +26,7 @@ case "$(uname -s | tr '[:upper:]' '[:lower:]')" in
         ;;
 esac
 
-if [ -z "$IS_MSYS" ] && [ -z "$IS_CYGWIN" ]; then
-    test_shells="bash ksh zsh pdksh mksh dash sh"
-else
-    test_shells="bash"
-fi
+test_shells="bash ksh zsh pdksh mksh dash sh"
 
 run_tests()
 {
@@ -39,6 +35,18 @@ run_tests()
             exit 1
         fi
     done
+}
+
+#
+# Get version of shell
+#
+get_shell_version()
+{
+    # shellcheck disable=SC2016 # single quotes intended
+    case "$1" in
+        mksh | pdksh) "$1" -c 'echo $KSH_VERSION' ;;
+        *) "$1" --version 2>&1  | head -n1;;
+    esac
 }
 
 test_with_shell()
@@ -56,6 +64,8 @@ test_with_shell()
             echo
             echo "Testing with $TEST_SHELL (Mode: $PARSEARGS_SHELL)"
             echo "============================================================"
+            echo "Shell version: $(get_shell_version "$TEST_SHELL")"
+            echo
 
             export TEST_SHELL
             export PARSEARGS_SHELL
@@ -131,6 +141,9 @@ for sh in $test_shells; do
         shells_not_found="$shells_not_found $sh"
     fi
 done
+
+unset TEST_SHELL
+unset PARSEARGS_SHELL
 
 for s_test in s-test*.sh; do
     "./$s_test"
