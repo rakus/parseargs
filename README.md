@@ -38,10 +38,7 @@ Parseargs parses the given options and creates shell code to set
 variables. It also prints error messages and exits the script on
 unknown options.
 
-To investigate the generated code just call Parseargs from the
-command line.
-
-The [Tutorial] explains all features of Parseargs.
+The [Tutorial] explains all features using examples.
 
 ## Building
 
@@ -54,8 +51,8 @@ Some additional tools are needed for building and testing Parseargs.
 
 **Basics**
 
-* cargo get - To extract info from `Cargo.toml` (`cargo install cargo-get`).
-* ShellCheck - Linter for shell code. Used in tests (install using your package manager).
+* cargo get - To extract info from `Cargo.toml`. (`cargo install cargo-get`).
+* [ShellCheck] - Linter for shell code. Used in tests. Install using your package manager. As a shell programmer you should use it anyway.
 
 **Documentation**
 
@@ -64,8 +61,8 @@ Some additional tools are needed for building and testing Parseargs.
 
 **Package Build**
 
-* cargo generate-rpm - Pure Rust RPM builder. `cargo install cargo-generate-rpm`
-* cargo deb - Pure Rust Debian package builder. `cargo install cargo-deb`
+* cargo generate-rpm - Pure Rust RPM builder. (`cargo install cargo-generate-rpm`)
+* cargo deb - Pure Rust Debian package builder. (`cargo install cargo-deb`)
 
 ## TODO
 
@@ -78,5 +75,6 @@ improvements
 
 
 [Tutorial]: https://rakus.github.io/parseargs/
+[ShellCheck]: https://www.shellcheck.net/
 [Asciidoctor install page]: https://docs.asciidoctor.org/asciidoctor/latest/install/
 [Pygments install page]: https://docs.asciidoctor.org/asciidoctor/latest/syntax-highlighting/pygments/
