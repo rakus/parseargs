@@ -45,8 +45,11 @@ error_cnt=0
 
 start_test()
 {
-    echo "Test-Script $script_name"
-    echo "Testing $(command -v parseargs)"
+    echo "Test-Script: $script_name"
+    if [ -n "$TEST_SHELL" ]; then
+        echo "Shell:       $TEST_SHELL ($PARSEARGS_SHELL)"
+    fi
+    echo "Testing:     $(command -v parseargs)"
 }
 
 end_test()

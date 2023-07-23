@@ -142,6 +142,9 @@ for sh in $test_shells; do
     fi
 done
 
+unset TEST_SHELL
+unset PARSEARGS_SHELL
+
 for s_test in s-test*.sh; do
     "./$s_test"
 done
