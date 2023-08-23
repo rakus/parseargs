@@ -11,10 +11,10 @@ script_name="$(basename "$0")"
 
 start_test
 
-VERSION="$(cargo get version)"
+VERSION="$(cargo get package.version)"
 
 # Check --help produces output and first line is as expected
-if [ "Usage: parseargs [OPTIONS] -- [SCRIPT-ARGS]..." = "$(parseargs --help | head -n1)" ]; then
+if [ "Usage: parseargs [OPTIONS] -- [SCRIPT-ARGS]..." = "$(parseargs --help | grep '^Usage')" ]; then
     ok "parseargs --help"
 else
     failed "parseargs --help"

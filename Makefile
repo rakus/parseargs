@@ -17,7 +17,7 @@ endif
 
 ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-VERSION := $(shell cargo get version)
+VERSION := $(shell cargo get package.version)
 ifndef VERSION
 $(error VERSION is not set - missing 'cargo get'?)
 endif
