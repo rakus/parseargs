@@ -71,7 +71,6 @@ Some additional tools are needed for building and testing Parseargs.
 This tool is in an early state and there are areas that need further
 improvements
 
-* Improve error messages from option definition parser.
 * Gracefully handle arguments with invalid UTF-8 chars. Today it just error exits.
 * To many `clone()` calls -- most likely a general Rust newbie problem.
 
