@@ -512,7 +512,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <div class="details">
 <span id="author" class="author">Ralf Schandl</span><br>
 <span id="revnumber">version {version},</span>
-<span id="revdate">2023-08-23</span>
+<span id="revdate">2023-08-25</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -534,8 +534,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </li>
 <li><a href="#EXTENDED">2. Extended Shells</a>
 <ul class="sectlevel2">
-<li><a href="#_creating_local_variables">2.1. Creating Local Variables</a></li>
-<li><a href="#_separating_arguments_behind_a">2.2. Separating Arguments behind a <code>--</code></a></li>
+<li><a href="#_separating_arguments_behind_a">2.1. Separating Arguments behind a <code>--</code></a></li>
 </ul>
 </li>
 <li><a href="#_details">3. Details</a>
@@ -563,8 +562,8 @@ Also <em>zsh</em> is not POSIX compliant (and never wanted to be), the mentioned
 </div>
 <div class="paragraph">
 <p>The second section <a href="#EXTENDED">Extended Shells</a> handles those few features that need functionality beyond the POSIX standard.
-Here support for function local variables and arrays is needed.
-The shells <em>bash</em>, <em>ksh</em> and <em>zsh</em> provide support for both, while <em>dash</em> only supports function local variables.
+Currently there is only on feature, that requires the support of array variables.
+The shells <em>bash</em>, <em>ksh</em> and <em>zsh</em> provide this.
 These shells can be enabled by using the option <code>-s</code> / <code>--shell</code> with the shell name.</p>
 </div>
 <div class="admonitionblock note">
@@ -1492,47 +1491,7 @@ No other actions is performed, independent of other options given on the command
 <p>This section describes functionalities, that need additional capabilities beyond those defined by POSIX.</p>
 </div>
 <div class="sect2">
-<h3 id="_creating_local_variables">2.1. Creating Local Variables</h3>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-Only supported with shells <code>dash</code>, <code>bash</code>, <code>ksh</code> or <code>zsh</code>.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>If Parseargs is called in a shell function, it might be needed to declare the variables as local to that function.
-By using the option <code>-l</code> / <code>--local-vars</code> the variables are declared as local.
-The following invocation is for the bash shell, but ksh and zsh would produce the same code.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="nowrap">$ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell bash --local-vars -- -o out.file -l
-typeset long_output;
-typeset outfile;
-outfile='out.file';
-long_output='true';
-set --</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>As it is not supported for a plain sh shell, and error message is printed:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="nowrap">$ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell sh --local-vars -- -o out.file -l
-parseargs: Shell sh does not support local variables, so option -l/--local-vars is not supported
-exit 1</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_separating_arguments_behind_a">2.2. Separating Arguments behind a <code>--</code></h3>
+<h3 id="_separating_arguments_behind_a">2.1. Separating Arguments behind a <code>--</code></h3>
 <div class="admonitionblock important">
 <table>
 <tr>
@@ -1595,16 +1554,11 @@ The option <code>-r</code> / <code>--remainder</code> is used to define the name
 <dd>
 <p>With this setting, code for a POSIX compliant shell is generated.
 This should work with any POSIX compliant shell and with <em>zsh</em>.
-Function-local variables (<code>-l</code> / <code>--local-vars</code>) and <code>-r</code> / <code>--remainder</code> are not supported.</p>
-</dd>
-<dt class="hdlist1"><code>--shell=dash</code></dt>
-<dd>
-<p>The <em>dash</em> shell is POSIX compliant, but additionally supports function-local variables (using the <code>local</code> keyword).
-Code generated for <em>dash</em> also works for <em>bash</em> and <em>ksh</em>.</p>
+The option <code>-r</code> / <code>--remainder</code> is not supported.</p>
 </dd>
 <dt class="hdlist1"><code>--shell=bash</code>, <code>--shell=ksh</code> and <code>--shell=zsh</code></dt>
 <dd>
-<p>This shells support all features of Parseargs, including function-local variables and arrays.
+<p>This shells support all features of Parseargs.
 The code generated is (as of today) identical, except for array initialization, which is different in <em>ksh</em>.</p>
 </dd>
 </dl>
@@ -1667,7 +1621,7 @@ eval &quot;$(parseargs -n example.sh -o &#39;l#long_output,o=outfile&#39; -- &qu
 <div id="footer">
 <div id="footer-text">
 Version {version}<br>
-Last updated 2023-08-23 21:20:36 UTC
+Last updated 2023-08-25 14:41:52 UTC
 </div>
 </div>
 </body>
