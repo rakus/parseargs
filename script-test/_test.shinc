@@ -150,30 +150,14 @@ test_pa_code()
     fi
 }
 
-
-#
-# Check whether shell supports function local variables.
-# Check by testing for typeset or local command.
-# If PARSEARGS_SHELL = 'sh' always return false
-#
-shell_supports_local_vars()
-{
-    if [ -z "$PARSEARGS_SHELL" ] || [ "$PARSEARGS_SHELL" = "sh" ]; then
-        return 1
-    fi
-    # Typeset & local are undefined in pure sh. Also 'fake_var' is not used.
-    # shellcheck disable=SC3043,SC3044,SC2034
-    typeset fake_var >/dev/null 2>&1 || local fake_var >/dev/null 2>&1
-}
-
 #
 # Whether shell supports arrays.
 # Check by testing for typeset -a command.
-# If PARSEARGS_SHELL = 'sh' or 'dash' always return false
+# If PARSEARGS_SHELL = 'sh' always return false
 #
 shell_supports_arrays()
 {
-    if [ -z "$PARSEARGS_SHELL" ] || [ "$PARSEARGS_SHELL" = "dash" ] || [ "$PARSEARGS_SHELL" = "sh" ]; then
+    if [ -z "$PARSEARGS_SHELL" ] || [ "$PARSEARGS_SHELL" = "sh" ]; then
         return 1
     fi
     # Typeset is undefined in pure sh. Also 'fake_array' is not used.
