@@ -82,16 +82,13 @@ get_supported_shell_dialects()
 
     case $bn_sh in
         bash*)
-            echo "bash dash"
+            echo "bash"
             ;;
         ksh*|mksh*)
-            echo "ksh dash"
+            echo "ksh"
             ;;
         zsh*)
-            echo "zsh dash"
-            ;;
-        dash*)
-            echo "dash"
+            echo "zsh"
             ;;
         *)
             # Default: no native dialect

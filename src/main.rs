@@ -78,11 +78,6 @@ struct CmdLineArgs {
     #[arg(short = 'i', long = "init-vars")]
     init_vars: bool,
 
-    /// Create local variables.
-    /// ONLY SUPPORTED WITH --shell dash, bash, ksh, or zsh.
-    #[arg(short = 'l', long = "local-vars")]
-    local_vars: bool,
-
     /// Enable support for --help as script option.
     #[arg(short = 'h', long = "help-opt", verbatim_doc_comment)]
     help_opt: bool,
@@ -145,7 +140,6 @@ fn parse_shell_name(arg: &str) -> Result<String, String> {
 fn shell_init_code(
     opt_cfg_list: &Vec<OptConfig>,
     cmd_line_args: &CmdLineArgs,
-    local_vars: bool,
     init_vars: bool,
 ) -> Vec<CodeChunk> {
     let mut init_code: Vec<CodeChunk> = vec![];
@@ -173,21 +167,6 @@ fn shell_init_code(
     }
     // ... then typset and counter variables
     let mut handled_vars: Vec<String> = vec![];
-    if local_vars {
-        for opt_cfg in opt_cfg_list {
-            let name = opt_cfg.get_target_name();
-
-            if opt_cfg.is_target_variable() && !handled_vars.contains(&name) {
-                init_code.push(match &opt_cfg.opt_type {
-                    OptType::Counter(_) => CodeChunk::DeclareLocalIntVar(name.clone()),
-                    _ => CodeChunk::DeclareLocalVar(name.clone()),
-                });
-                handled_vars.push(name.clone());
-            }
-        }
-    }
-
-    handled_vars.clear();
 
     for opt_cfg in opt_cfg_list {
         let name = opt_cfg.get_target_name();
@@ -604,22 +583,10 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
         ));
     }
 
-    if cmd_line_args.local_vars && !shell_tmpl.supports_local_vars {
-        die_internal(format!(
-            "Shell {} does not support local variables, so option -l/--local-vars is not supported",
-            shell
-        ));
-    }
-
     let mut code: Vec<CodeChunk> = vec![];
 
     // generate initialization code. Check for functions, initialize variables
-    let mut init_code = shell_init_code(
-        &opt_cfg_list,
-        &cmd_line_args,
-        cmd_line_args.local_vars,
-        cmd_line_args.init_vars,
-    );
+    let mut init_code = shell_init_code(&opt_cfg_list, &cmd_line_args, cmd_line_args.init_vars);
 
     // let options_code = parse_shell_options(&opt_cfg_list, &cmd_line_args);
     let rc = match parse_shell_options(&mut opt_cfg_list, &cmd_line_args) {

@@ -19,8 +19,8 @@ The first section <<POSIX>> treats all functionality that works in a POSIX compl
 Also _zsh_ is not POSIX compliant (and never wanted to be), the mentioned features should run with it.
 
 The second section <<EXTENDED>> handles those few features that need functionality beyond the POSIX standard.
-Here support for function local variables and arrays is needed.
-The shells _bash_, _ksh_ and _zsh_ provide support for both, while _dash_ only supports function local variables.
+Currently there is only on feature, that requires the support of array variables.
+The shells _bash_, _ksh_ and _zsh_ provide this.
 These shells can be enabled by using the option `-s` / `--shell` with the shell name.
 
 NOTE: When _ksh_ is mentioned in this document, we are talking about _ksh92_ or newer.
@@ -632,33 +632,6 @@ No other actions is performed, independent of other options given on the command
 
 This section describes functionalities, that need additional capabilities beyond those defined by POSIX.
 
-=== Creating Local Variables
-
-IMPORTANT: Only supported with shells `dash`, `bash`, `ksh` or `zsh`.
-
-If Parseargs is called in a shell function, it might be needed to declare the variables as local to that function.
-By using the option `-l` / `--local-vars` the variables are declared as local.
-The following invocation is for the bash shell, but ksh and zsh would produce the same code.
-
-[%nowrap]
-----
-$ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell bash --local-vars -- -o out.file -l
-typeset long_output;
-typeset outfile;
-outfile='out.file';
-long_output='true';
-set --
-----
-
-As it is not supported for a plain sh shell, and error message is printed:
-
-[%nowrap]
-----
-$ parseargs -n example.sh -o 'l#long_output,o=outfile' --shell sh --local-vars -- -o out.file -l
-parseargs: Shell sh does not support local variables, so option -l/--local-vars is not supported
-exit 1
-----
-
 === Separating Arguments behind a `--`
 
 IMPORTANT: Only supported with shells `bash`, `ksh` or `zsh`.
@@ -698,14 +671,10 @@ Parseargs supports generating code for different shells. The following shells ar
 `--shell=sh` (the default)::
 With this setting, code for a POSIX compliant shell is generated.
 This should work with any POSIX compliant shell and with _zsh_.
-Function-local variables (`-l` / `--local-vars`) and `-r` / `--remainder` are not supported.
-
-`--shell=dash`::
-The _dash_ shell is POSIX compliant, but additionally supports function-local variables (using the `local` keyword).
-Code generated for _dash_ also works for _bash_ and _ksh_.
+The option `-r` / `--remainder` is not supported.
 
 `--shell=bash`, `--shell=ksh` and `--shell=zsh`::
-This shells support all features of Parseargs, including function-local variables and arrays.
+This shells support all features of Parseargs.
 The code generated is (as of today) identical, except for array initialization, which is different in _ksh_.
 
 

@@ -33,10 +33,6 @@ fi
 #     shell use: 'shell/shell-for-shellcheck' (e.g. 'sh/dash', generates code
 #     for 'sh' and shellcheck checks with the 'dash' rules)
 # $*: parseargs options/arguments
-#
-# Supports global variables PRE and POST to surround the parseargs code. Needed
-# to check function-local variables in DASH, as it only supports the 'local'
-# keyword in functions.
 sc_shell_code()
 {
     shell="${1%%/*}"
@@ -45,7 +41,7 @@ sc_shell_code()
     if [ -z "$sc_support_dash" ] && [ "$sc_shell" = "dash" ]; then
         return
     fi
-    if ( echo "${PRE:-}"; parseargs -s "$shell" "$@";echo "${POST:-}" ) | shellcheck -s"$sc_shell" -fgcc -eSC2034 -; then
+    if parseargs -s "$shell" "$@" | shellcheck -s"$sc_shell" -fgcc -eSC2034 -; then
         ok "shellcheck($sc_shell): parseargs -s $shell $*"
     else
         failed "shellcheck($sc_shell): parseargs -s $shell $*"
@@ -56,22 +52,9 @@ sc_shell_code()
 # Also test sh output with bash, ksh and dash shellcheck rules
 check_shells()
 {
-    for shell in bash ksh dash sh sh/bash sh/ksh sh/dash; do
+    for shell in bash ksh sh sh/bash sh/ksh sh/dash; do
         sc_shell_code $shell "$@"
     done
-}
-
-# check local variables bash, ksh and dash, but NOT sh
-check_shell_local()
-{
-    # Use PRE and POST to enclose the parseargs generated code. Needed for
-    # dash, as it only supports local variables in a function.
-    PRE='test() {'
-    POST='}'
-    for shell in bash ksh dash; do
-        sc_shell_code $shell "$@"
-    done
-    unset PRE POST
 }
 
 # check arrays with bash and ksh, but NOT sh or dash
@@ -102,10 +85,7 @@ check_shells -o 'c#mode=copy,m#mode=move,d#mode=drop_it' -- -m
 check_shells -o 'c#mode=copy,m#mode=move,d#mode=drop_it' -- -d
 check_shells -o 'c#mode=copy,n#mode=' -- -n
 
-check_shell_local -lo 'd#debug,f=file,v+verbose' -- -d -f file -vvv in1.txt in2.txt
-check_shell_local -lio 'd#debug,f=file,v+verbose' -- -d -f file -vvv in1.txt in2.txt
 check_shell_array -r team -o 'd#debug,f=file,v+verbose' -- Kirk -- Spock Bones
-check_shell_array -lr team -o 'd#debug,f=file,v+verbose' -- Kirk -- Spock Bones
-check_shell_array -lir team -o 'd#debug,f=file,v+verbose' -- Kirk -- Spock Bones
+check_shell_array -ir team -o 'd#debug,f=file,v+verbose' -- Kirk -- Spock Bones
 
 end_test

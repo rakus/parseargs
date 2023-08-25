@@ -53,10 +53,6 @@ Behave like recommended by POSIX and stop option processing on first none-option
 *-i, --init-vars*::
 Initialize all variables with '' (empty string), except for counting variables, as they are always initialized with 0.
 
-*-l, --local-vars*::
-Create local variables.
-ONLY SUPPORTED WITH --shell `dash`, `bash`, `ksh` and `zsh`.
-
 *-h, --help-opt*::
 Enable support for --help as script option.
 The calling script must provide the function `show_help` that displays the help text.
@@ -66,7 +62,7 @@ Enable support for --version as script options.
 The calling script must provide the function `show_version` that displays the version text.
 
 *-s, --shell* SHELL::
-Produce code for named shell. Supported: `bash`, `ksh`, `zsh`, `dash` and `sh`.
+Produce code for named shell. Supported: `bash`, `ksh`, `zsh` and `sh`.
 Default: `sh`
 
 *--help*::
@@ -303,12 +299,8 @@ The target shell can be changed with the option `-s` / `--shell`-
 `-s sh`::
 The default.
 It generates code for a POSIX shell.
-Those shells don't support local variables and array variable.
-Due to this the option `-l` / `--local-vars` and `-r` / `--remainder` are not supported.
-
-`-s dash`::
-Very close to a POSIX shell, but supports function-local variables.
-As arrays are not supported, `-r` / `--remainder` is not supported.
+Those shells don't support array variables.
+Due to this the option `-r` / `--remainder` are not supported.
 
 `-s bash`, `-s ksh` and `-s zsh`::
 With this shells all features of Parseargs are supported.
