@@ -315,14 +315,11 @@ fn parse_shell_options(
                 _ => None,
             };
 
-            let option = (
-                opt_cfg_list.iter_mut().find(|cfg| cfg.match_option(&e)),
-                opt_value,
-            );
+            let opt_config = opt_cfg_list.iter_mut().find(|cfg| cfg.match_option(&e));
 
-            if option.0.is_none() {
+            if opt_config.is_none() {
                 return Err(format!("Unknown option: {}", e));
-            } else if let Some(oc) = option.0 {
+            } else if let Some(oc) = opt_config {
                 // Check duplicate options. Counter options and options that trigger a function call
                 // can be used multiple times.
                 if oc.assigned && !oc.is_duplicate_allowed() {
@@ -336,11 +333,11 @@ fn parse_shell_options(
 
                 match &oc.opt_type {
                     OptType::Flag(target) => {
-                        let bool_val = VarValue::BoolValue(optional_str_to_bool(option.1, true)?);
+                        let bool_val = VarValue::BoolValue(optional_str_to_bool(opt_value, true)?);
                         shell_code.push(assign_target(target, bool_val));
                     }
                     OptType::ModeSwitch(target, value) => {
-                        if option.1.is_some() {
+                        if opt_value.is_some() {
                             Err(format!("{}: No value supported.", oc.options_string()))?;
                         }
                         // Conflict detection is done at end of processing.
@@ -348,7 +345,7 @@ fn parse_shell_options(
                             .push(assign_target(target, VarValue::StringValue(value.clone())));
                     }
                     OptType::Assignment(target) => {
-                        let opt_arg = match option.1 {
+                        let opt_arg = match opt_value {
                             Some(v) => Some(v.clone()),
                             None => cl_tok.get_option_argument(),
                         };
@@ -359,7 +356,7 @@ fn parse_shell_options(
                         }
                     }
                     OptType::Counter(target) => {
-                        let value = optional_string_to_optional_u16(option.1)?;
+                        let value = optional_string_to_optional_u16(opt_value)?;
                         oc.count_value = value.unwrap_or(oc.count_value + 1);
 
                         /*
