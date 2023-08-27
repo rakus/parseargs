@@ -71,8 +71,8 @@ Some additional tools are needed for building and testing Parseargs.
 This tool is in an early state and there are areas that need further
 improvements
 
-* Gracefully handle arguments with invalid UTF-8 chars. Today it just error exits.
-* To many `clone()` calls -- most likely a general Rust newbie problem.
+* Handle arguments with invalid UTF-8 chars. Today it just error exits.
+* To many Strings where string slices should be used -- most likely a general Rust newbie problem.
 
 
 [Tutorial]: https://rakus.github.io/parseargs/
