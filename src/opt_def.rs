@@ -346,7 +346,7 @@ fn is_valid_opt_char(chr: char, first: bool, allow_utf8: bool) -> bool {
  * This handles backslash-escapes for certain characters.
  */
 fn get_option_char(ps: &mut ParserSource, first: bool) -> Option<char> {
-    let need_escape = vec![':', '#', '=', '+', '%'];
+    let need_escape = [':', '#', '=', '+', '%'];
 
     match ps.next() {
         Some(c) => {

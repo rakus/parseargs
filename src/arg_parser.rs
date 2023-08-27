@@ -69,7 +69,7 @@ impl CmdLineTokenizer {
         }
     }
 
-    // Internal: get next part (seperated string) from the command line.
+    // Internal: get next part (separated string) from the command line.
     fn next_part(&mut self) -> Option<String> {
         if self.cmd_line_args_idx >= self.cmd_line_args.len() {
             None
@@ -80,9 +80,7 @@ impl CmdLineTokenizer {
         }
     }
 
-    /**
-     * Returns the next command line element.
-     */
+    /// Returns the next command line element or `None`.
     pub fn next(&mut self) -> Option<CmdLineElement> {
         if !self.left_over.is_empty() {
             // next character from combined short options (-xyz)
@@ -95,8 +93,12 @@ impl CmdLineTokenizer {
                 None => None,
                 Some(s) => {
                     if s.eq("--") {
-                        self.args_only = true;
-                        Some(CmdLineElement::Separator)
+                        if self.args_only {
+                            Some(CmdLineElement::Argument(s))
+                        } else {
+                            self.args_only = true;
+                            Some(CmdLineElement::Separator)
+                        }
                     } else if s.eq("-") {
                         if self.posix {
                             self.args_only = true;
@@ -128,10 +130,8 @@ impl CmdLineTokenizer {
         }
     }
 
-    /**
-     * Returns an argument for a previous option.
-     * Also handles combined options like `-ooutfile`.
-     */
+    /// Returns an argument for a previous option.
+    /// Also handles combined options like `-ooutfile`.
     pub fn get_option_argument(&mut self) -> Option<String> {
         if !self.left_over.is_empty() {
             let ret = Some(self.left_over.clone().into_iter().collect());

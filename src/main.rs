@@ -124,10 +124,10 @@ fn die_internal(msg: String) -> ! {
  */
 fn parse_shell_name(arg: &str) -> Result<String, String> {
     for (idx, chr) in arg.chars().enumerate() {
-        if idx == 0 && !chr.is_alphabetic() {
+        if idx == 0 && !chr.is_ascii_alphabetic() {
             Err("Not a valid shell variable or function name")?
         }
-        if idx > 0 && !chr.is_alphanumeric() && chr != '_' {
+        if idx > 0 && !chr.is_ascii_alphanumeric() && chr != '_' {
             Err("Not a valid shell variable or function name")?
         }
     }
