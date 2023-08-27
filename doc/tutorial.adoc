@@ -465,7 +465,6 @@ $ ./option-cb.sh -v -l -o out.file -vv input
 set_verbosity(1)
 set_long(true)
 set_outfile(out.file)
-set_verbosity(2)
 set_verbosity(3)
 Arguments: input
 
@@ -474,8 +473,9 @@ set_long()
 Arguments: input
 ----
 
-* For counting options, the callback is called multiple times with the current count value.
-* For flags it is called with a value `'true'`. If the option explicitly is set to `false` using `--option=false`, the callback is called with an empty string.
+* For counting options, the callback might be called multiple times with the current count value.
+* For flags it is called with a value `'true'`.
+  If the option explicitly is set to `false` using `--option=false`, the callback is called with an empty string.
 * For assignment options the callback is called with the option argument.
 
 [WARNING]
