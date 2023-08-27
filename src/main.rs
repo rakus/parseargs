@@ -296,13 +296,11 @@ fn parse_shell_options(
             after_separator = true;
             continue;
         } else if let CmdLineElement::Argument(value) = e {
-            if after_separator && cmd_line_args.remainder.is_some() {
-                if let Some(array) = &cmd_line_args.remainder {
-                    shell_code.push(CodeChunk::AddToArray(
-                        array.clone(),
-                        VarValue::StringValue(value),
-                    ));
-                }
+            if let (true, Some(array)) = (after_separator, &cmd_line_args.remainder) {
+                shell_code.push(CodeChunk::AddToArray(
+                    array.clone(),
+                    VarValue::StringValue(value),
+                ));
             } else if let Some(func) = &cmd_line_args.arg_callback {
                 shell_code.push(CodeChunk::CallFunction(
                     func.clone(),
