@@ -206,9 +206,9 @@ fn shell_init_code(
  * The values "false" and "no" result in `false`.
  * Check is case-insensitive.
  *
- * `None` results in `false`.
+ * `None` results in given default value.
  */
-fn some_str_to_bool(ostr: Option<&String>, default: bool) -> Result<bool, String> {
+fn optional_str_to_bool(ostr: Option<&String>, default: bool) -> Result<bool, String> {
     match ostr {
         Some(v) => match v.to_lowercase().trim() {
             "true" | "yes" => Ok(true),
@@ -216,6 +216,25 @@ fn some_str_to_bool(ostr: Option<&String>, default: bool) -> Result<bool, String
             _ => Err(format!("Invalid boolean value: '{}'", v)),
         },
         None => Ok(default),
+    }
+}
+
+/**
+ * Optional String to optional u16.
+ *
+ * Returns Err on invalid value.
+ * If input is None results in None
+ */
+fn optional_string_to_optional_u16(value: Option<&String>) -> Result<Option<u16>, String> {
+    match value {
+        Some(v) => {
+            let cnt = match v.parse::<u16>() {
+                Ok(v) => v,
+                Err(_) => Err(format!("Invalid unsigned integer (0-65535): '{}'", v))?,
+            };
+            Ok(Some(cnt))
+        }
+        None => Ok(None),
     }
 }
 
@@ -319,7 +338,7 @@ fn parse_shell_options(
 
                 match &oc.opt_type {
                     OptType::Flag(target) => {
-                        let bool_val = VarValue::BoolValue(some_str_to_bool(option.1, true)?);
+                        let bool_val = VarValue::BoolValue(optional_str_to_bool(option.1, true)?);
                         shell_code.push(assign_target(target, bool_val));
                     }
                     OptType::ModeSwitch(target, value) => {
@@ -342,29 +361,8 @@ fn parse_shell_options(
                         }
                     }
                     OptType::Counter(target) => {
-                        let value = match option.1 {
-                            Some(v) => {
-                                let cnt = match v.parse::<u16>() {
-                                    Ok(v) => v,
-                                    Err(_) => {
-                                        return Err(format!(
-                                            "Invalid unsigned integer in value of option {}",
-                                            e
-                                        ));
-                                    }
-                                };
-                                Some(cnt)
-                            }
-                            None => None,
-                        };
-                        match value {
-                            Some(v) => {
-                                oc.count_value = v;
-                            }
-                            None => {
-                                oc.count_value += 1;
-                            }
-                        }
+                        let value = optional_string_to_optional_u16(option.1)?;
+                        oc.count_value = value.unwrap_or(oc.count_value + 1);
 
                         /*
                         TODO: -vvv should only output one 'verbose=3'
