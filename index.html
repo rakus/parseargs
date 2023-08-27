@@ -512,7 +512,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <div class="details">
 <span id="author" class="author">Ralf Schandl</span><br>
 <span id="revnumber">version {version},</span>
-<span id="revdate">2023-08-25</span>
+<span id="revdate">2023-08-27</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -1238,7 +1238,6 @@ echo &quot;Arguments: $*&quot;
 set_verbosity(1)
 set_long(true)
 set_outfile(out.file)
-set_verbosity(2)
 set_verbosity(3)
 Arguments: input
 
@@ -1250,10 +1249,11 @@ Arguments: input</pre>
 <div class="ulist">
 <ul>
 <li>
-<p>For counting options, the callback is called multiple times with the current count value.</p>
+<p>For counting options, the callback might be called multiple times with the current count value.</p>
 </li>
 <li>
-<p>For flags it is called with a value <code>'true'</code>. If the option explicitly is set to <code>false</code> using <code>--option=false</code>, the callback is called with an empty string.</p>
+<p>For flags it is called with a value <code>'true'</code>.
+If the option explicitly is set to <code>false</code> using <code>--option=false</code>, the callback is called with an empty string.</p>
 </li>
 <li>
 <p>For assignment options the callback is called with the option argument.</p>
@@ -1621,7 +1621,7 @@ eval &quot;$(parseargs -n example.sh -o &#39;l#long_output,o=outfile&#39; -- &qu
 <div id="footer">
 <div id="footer-text">
 Version {version}<br>
-Last updated 2023-08-25 16:49:27 UTC
+Last updated 2023-08-27 11:29:25 UTC
 </div>
 </div>
 </body>
