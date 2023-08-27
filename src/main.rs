@@ -268,7 +268,7 @@ fn parse_shell_options(
         }
     }
 
-    let mut cl_tok = CmdLineTokenizer::build(script_args, cmd_line_args.posix);
+    let mut cl_tok = CmdLineTokenizer::new(script_args, cmd_line_args.posix);
 
     let mut after_separator = false;
 
