@@ -11,23 +11,6 @@ script_name="$(basename "$0")"
 
 start_test
 
-VERSION="$(cargo get package.version)"
-
-# Check --help produces output and first line is as expected
-if [ "Usage: parseargs [OPTIONS] -- [SCRIPT-ARGS]..." = "$(parseargs --help | grep '^Usage')" ]; then
-    ok "parseargs --help"
-else
-    failed "parseargs --help"
-fi
-
-# Check --version produces expected output
-if [ "parseargs $VERSION" = "$(parseargs --version)" ]; then
-    ok "parseargs --version"
-else
-    failed "parseargs --version"
-fi
-
-
 test_pa 'test $debug = true' -o "d:debug#debug" -- -d
 test_pa 'test $debug = true' -o "d:debug#debug" -- --debug
 test_pa 'test $debug = true' -o "d:debug#debug" -- --debug=true

@@ -640,7 +640,7 @@ fn main() {
                 exit(0);
             } else if c.version {
                 let version_str = CmdLineArgs::command().render_version();
-                println!("{}", version_str);
+                print!("{}", version_str);
                 exit(0);
             }
 
