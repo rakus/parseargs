@@ -6,6 +6,7 @@
  */
 
 use crate::arg_parser::CmdLineElement;
+use std::cell::Cell;
 
 /**
  * Target for a option. Parseargs either assigns a variable or calls
@@ -60,9 +61,9 @@ pub struct OptConfig {
     // Typically used for '--help' etc.
     pub singleton: bool,
     // Runtime: Whether this variable has been set
-    pub assigned: bool,
+    pub assigned: Cell<bool>,
     // Runtime: Count of a counting variable
-    pub count_value: u16,
+    pub count_value: Cell<u16>,
 }
 
 impl OptConfig {
@@ -617,8 +618,8 @@ fn parse_opt_def(ps: &mut ParserSource) -> Result<OptConfig, ParsingError> {
         opt_type: opt_type.0,
         required: opt_attr == Some(OptAttribute::Required),
         singleton: opt_attr == Some(OptAttribute::Singleton),
-        assigned: false,
-        count_value: 0,
+        assigned: Cell::new(false),
+        count_value: Cell::new(0),
     })
 }
 
@@ -698,8 +699,8 @@ mod unit_tests {
             opt_type: OptType::Flag(OptTarget::Variable(String::from("debug"))),
             required: false,
             singleton: false,
-            assigned: false,
-            count_value: 0,
+            assigned: Cell::new(false),
+            count_value: Cell::new(0),
         }
     }
 
@@ -713,8 +714,8 @@ mod unit_tests {
             ),
             required: false,
             singleton: false,
-            assigned: false,
-            count_value: 0,
+            assigned: Cell::new(false),
+            count_value: Cell::new(0),
         }
     }
 
@@ -725,8 +726,8 @@ mod unit_tests {
             opt_type: OptType::Assignment(OptTarget::Variable(String::from("output_file"))),
             required: false,
             singleton: false,
-            assigned: false,
-            count_value: 0,
+            assigned: Cell::new(false),
+            count_value: Cell::new(0),
         }
     }
 
@@ -737,8 +738,8 @@ mod unit_tests {
             opt_type: OptType::Counter(OptTarget::Variable(String::from("verbosity"))),
             required: false,
             singleton: false,
-            assigned: false,
-            count_value: 0,
+            assigned: Cell::new(false),
+            count_value: Cell::new(0),
         }
     }
 
