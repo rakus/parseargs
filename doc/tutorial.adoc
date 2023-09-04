@@ -24,7 +24,7 @@ The shells _bash_, _ksh_ and _zsh_ provide this.
 These shells can be enabled by using the option `-s` / `--shell` with the shell name.
 
 NOTE: When _ksh_ is mentioned in this document, we are talking about _ksh92_ or newer.
-Parseargs was never tested with _ksh88__.
+Parseargs was never tested with _ksh88_.
 
 
 [[POSIX]]
@@ -231,7 +231,9 @@ long-opt.sh: Duplicate option: '-l/--long'
 *Long Options and Optional Arguments*
 
 With long options an optional argument is supported for flag options.
-This optional argument is directly appended to the option with a `=` and the values `true` and `yes` (case-insensitive) are interpreted as boolean true.
+This optional argument is directly appended to the option with a `=`.
+The values `true` and `yes` are interpreted as boolean true and `false` and `no` as false.
+The check is case insensitive.
 
 So, to reuse the example above:
 
@@ -251,9 +253,12 @@ $ ./long-opt.sh --long=false --out-file=out.file in.file
 Output file: 'out.file'
 Arguments: in.file
 
-$ ./long-opt.sh --long=anything --out-file=out.file in.file
+$ ./long-opt.sh --long=no --out-file=out.file in.file
 Output file: 'out.file'
 Arguments: in.file
+
+$ ./long-opt.sh --long=anything --out-file=out.file in.file
+long-opt.sh: Invalid boolean value: 'anything'
 ----
 
 .By the Way ....

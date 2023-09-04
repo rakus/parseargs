@@ -8,8 +8,6 @@
 == NAME
 parseargs - command line option parser for shell scripts
 
-IMPORTANT: This man page is work on progress!
-
 
 == SYNOPSIS
 *parseargs* [options] \-- script-arguments
@@ -51,7 +49,7 @@ ONLY SUPPORTED WITH --shell `bash`, `ksh` and `zsh`.
 Behave like recommended by POSIX and stop option processing on first none-option.
 
 *-i, --init-vars*::
-Initialize all variables with '' (empty string), except for counting variables, as they are always initialized with 0.
+Initialize all variables with "" (empty string), except for counting variables, as they are always initialized with 0.
 
 *-h, --help-opt*::
 Enable support for --help as script option.
