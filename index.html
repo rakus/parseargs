@@ -574,7 +574,7 @@ These shells can be enabled by using the option <code>-s</code> / <code>--shell<
 </td>
 <td class="content">
 When <em>ksh</em> is mentioned in this document, we are talking about <em>ksh92</em> or newer.
-Parseargs was never tested with <em>ksh88_</em>.
+Parseargs was never tested with <em>ksh88</em>.
 </td>
 </tr>
 </table>
@@ -888,7 +888,9 @@ long-opt.sh: Duplicate option: '-l/--long'</pre>
 </div>
 <div class="paragraph">
 <p>With long options an optional argument is supported for flag options.
-This optional argument is directly appended to the option with a <code>=</code> and the values <code>true</code> and <code>yes</code> (case-insensitive) are interpreted as boolean true.</p>
+This optional argument is directly appended to the option with a <code>=</code>.
+The values <code>true</code> and <code>yes</code> are interpreted as boolean true and <code>false</code> and <code>no</code> as false.
+The check is case insensitive.</p>
 </div>
 <div class="paragraph">
 <p>So, to reuse the example above:</p>
@@ -909,9 +911,12 @@ $ ./long-opt.sh --long=false --out-file=out.file in.file
 Output file: 'out.file'
 Arguments: in.file
 
-$ ./long-opt.sh --long=anything --out-file=out.file in.file
+$ ./long-opt.sh --long=no --out-file=out.file in.file
 Output file: 'out.file'
-Arguments: in.file</pre>
+Arguments: in.file
+
+$ ./long-opt.sh --long=anything --out-file=out.file in.file
+long-opt.sh: Invalid boolean value: 'anything'</pre>
 </div>
 </div>
 <div class="sidebarblock">
@@ -1621,7 +1626,7 @@ eval &quot;$(parseargs -n example.sh -o &#39;l#long_output,o=outfile&#39; -- &qu
 <div id="footer">
 <div id="footer-text">
 Version {version}<br>
-Last updated 2023-09-04 18:27:30 UTC
+Last updated 2023-09-04 18:32:14 UTC
 </div>
 </div>
 </body>
