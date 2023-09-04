@@ -9,15 +9,30 @@ on:
 jobs:
   adoc_build:
     runs-on: ubuntu-latest
-    name: Asciidoctoring the docs to pretty HTML!
+    name: Build and deploy GH pages
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Get build container
-      id: adocbuild
+
+    - name: Install cargo-get
+      uses: baptiste0928/cargo-install@v2
+      with:
+        crate: cargo-get
+
+    - name: Get version
+      id: pa_version
+      run: echo "VERSION=$(cargo get package.version)" >> $GITHUB_OUTPUT
+
+    - name: Build HTML Tutorial
       uses: tonynv/asciidoctor-action@master
       with:
-          program: "asciidoctor -a source-highlighter=pygments -D doc/target/site --backend=html5 -o index.html doc/tutorial.adoc"
+          program: "asciidoctor -a version=${{ steps.pa_version.outputs.version }} -a source-highlighter=pygments -D doc/target/site --backend=html5 -o index.html doc/tutorial.adoc"
+
+    - name: Build HTML Man Page
+      uses: tonynv/asciidoctor-action@master
+      with:
+          program: "asciidoctor -a version=${{ steps.pa_version.outputs.version }} -a source-highlighter=pygments -D doc/target/site --backend=html5 -o parseargs-man.html doc/parseargs.1.adoc"
+
     - name: Deploy docs to ghpages
       uses: peaceiris/actions-gh-pages@v3
       with:
