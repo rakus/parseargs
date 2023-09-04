@@ -3,9 +3,7 @@
 #
 
 # Phony targets represents recipes, not files
-.PHONY: help debug-build release-build test rust-test script-test clean doc rpm deb prepare-archive zip tar
-
-SRCFILES := $(wildcard src/*.rs src/**/*.rs)
+.PHONY: help debug-build release-build test cargo-test script-test clean doc rpm deb prepare-archive zip tar
 
 TARGET_ENV := $(shell rustc -vV | sed -n 's/host: *//p')
 
@@ -22,30 +20,23 @@ ifndef VERSION
 $(error VERSION is not set - missing 'cargo get'?)
 endif
 
-DEBUG_TGT := target/debug/parseargs${EXE_EXT}
-RELEASE_TGT := target/release/parseargs${EXE_EXT}
-
 TGT_DOC_DIR := target/doc
 
-debug-build: ${DEBUG_TGT}                    ## Debug build using Cargo
-
-release-build: ${RELEASE_TGT}                ## Release build using Cargo
-
-${DEBUG_TGT}: Cargo.toml ${SRCFILES}
+debug-build:
 	cargo build
 
-${RELEASE_TGT}: Cargo.toml ${SRCFILES}
+release-build:
 	cargo build --release
 
 rust-test:                                   ## run 'cargo test'
 	cargo test
 
-script-test:                                 ## run shell script tests
+script-test:                                 ## run shell script tests (./script-test/run.sh)
 	./script-test/run.sh
 
 test: rust-test script-test                  ## run 'cargo test' and shell script tests
 
-check: clean debug-build test                ## run clean debug build, tests, format check etc
+check: clean debug-build test                ## run clean, tests, format check etc
 	cargo fmt --check
 	( cd script-test && shellcheck -fgcc -x -a *.sh )
 

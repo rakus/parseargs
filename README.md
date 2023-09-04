@@ -5,13 +5,6 @@
 
 [![Build and Test](https://github.com/rakus/parseargs/actions/workflows/verify.yaml/badge.svg)](https://github.com/rakus/parseargs/actions/workflows/verify.yaml)
 
----
-
-:warning: This is in an early state of development.
-Have a look at section [TODO](#todo) below.
-
----
-
 Parseargs parses given shell script parameters based on a given
 option definition. Depending on the given options shell code is
 generated that can be evaluated using the shells `eval` builtin.
@@ -44,8 +37,10 @@ The [Tutorial] explains all features using examples.
 
 ## Building
 
-Build is controlled by a Makefile.  Run `make help` to get a help on the
-available targets.
+Normal cargo commands can be used.
+
+Additional steps are provided via Makefile.
+Run `make help` to get help on the available targets.
 
 ### Prerequisites
 
