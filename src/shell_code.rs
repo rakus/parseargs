@@ -61,13 +61,13 @@ impl fmt::Display for VarValue {
     }
 }
 
-/**
- * CodeChunks represent single code lines that are used when generating
- * shell code.
- */
+///
+/// CodeChunks represent single code lines that are used when generating
+/// shell code.
+///
 //#[derive(Clone)]
 pub enum CodeChunk {
-    /// Seperator between code lines. Always ';'.
+    /// Separator between code lines. Always ';'.
     Separator,
 
     DeclareArrayVar(String),
@@ -87,12 +87,12 @@ pub enum CodeChunk {
     FalseReturn,
 }
 
-/**
- * Code templates to translate CodeChunks to real shell script code.
- * Multiple instances are created for the supported shells.
- * Some fields might be set to an empty string, if a feature is not
- * supported by the shell.
- */
+///
+/// Code templates to translate CodeChunks to real shell script code.
+/// Multiple instances are created for the supported shells.
+/// Some fields might be set to an empty string, if a feature is not
+/// supported by the shell.
+///
 #[derive(Clone, Copy)]
 pub struct CodeTemplates {
     /** Whether the shell supports arrays. */
@@ -119,9 +119,9 @@ pub struct CodeTemplates {
 }
 
 impl CodeTemplates {
-    /**
-     * Format a vector of CodeChunks into actual shell code.
-     */
+    ///
+    /// Format a vector of CodeChunks into actual shell code.
+    ///
     pub fn format_vector(&self, chunks: &[CodeChunk]) -> String {
         let mut str = String::new();
         let mut first = true;
@@ -136,9 +136,9 @@ impl CodeTemplates {
         str
     }
 
-    /**
-     * Format a vector of CodeChunks into actual shell code.
-     */
+    ///
+    /// Format a vector of CodeChunks into actual shell code.
+    ///
     pub fn format(&self, chunk: &CodeChunk) -> String {
         match chunk {
             CodeChunk::DeclareArrayVar(name) => {
@@ -192,7 +192,7 @@ impl CodeTemplates {
         tmpl.replace("{VALUE}", &value.to_string())
     }
     /// Format code with the replacement marker `{ARGS}` as a space-separated
-    /// sequence of strings.
+    /// sequence of quoted strings.
     fn format_code_args(&self, tmpl: &str, args: &[String]) -> String {
         let mut args_str = String::new();
         for (idx, a) in args.iter().enumerate() {
@@ -208,9 +208,9 @@ impl CodeTemplates {
     }
 }
 
-/**
- * Actual code template for a sh-style shell.
- */
+///
+/// Actual code template for a sh-style shell.
+///
 const SH_TEMPLATE : CodeTemplates = CodeTemplates {
     supports_arrays : false,
 
@@ -231,10 +231,10 @@ const SH_TEMPLATE : CodeTemplates = CodeTemplates {
     false_return: "false"
 };
 
-/**
- * Actual code template for the bash shell.
- * Also used for zsh.
- */
+///
+/// Actual code template for the bash shell.
+/// Also used for zsh.
+///
 const BASH_TEMPLATE : CodeTemplates = CodeTemplates {
     supports_arrays : true,
 
@@ -249,9 +249,9 @@ const BASH_TEMPLATE : CodeTemplates = CodeTemplates {
     ..SH_TEMPLATE
 };
 
-/**
- * Actual code template for the ksh shell. Ksh92 or later, to be precise.
- */
+///
+/// Actual code template for the ksh shell. Ksh92 or later, to be precise.
+///
 const KSH_TEMPLATE: CodeTemplates = CodeTemplates {
     assign_empty_array: "set -A {NAME}",
 
@@ -259,9 +259,9 @@ const KSH_TEMPLATE: CodeTemplates = CodeTemplates {
     ..BASH_TEMPLATE
 };
 
-/**
- * Lookup the code templates for the given shell.
- */
+///
+/// Lookup the code templates for the given shell.
+///
 pub fn get_shell_template(shell: &str) -> Option<&CodeTemplates> {
     match shell {
         "bash" => Some(&BASH_TEMPLATE),
