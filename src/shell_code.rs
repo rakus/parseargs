@@ -201,7 +201,7 @@ impl CodeTemplates {
             }
             args_str.push_str(&VarValue::escape_string(a));
         }
-        tmpl.replace("{ARGS}", &args_str)
+        tmpl.replace("{ARGS}", &args_str).trim().to_string()
     }
     fn statement_separator(&self) -> &str {
         self.statement_separator

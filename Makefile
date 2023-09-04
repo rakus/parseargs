@@ -3,7 +3,7 @@
 #
 
 # Phony targets represents recipes, not files
-.PHONY: help debug-build release-build test script-test clean doc rpm deb prepare-archive zip tar
+.PHONY: help debug-build release-build test rust-test script-test clean doc rpm deb prepare-archive zip tar
 
 SRCFILES := $(wildcard src/*.rs src/**/*.rs)
 
@@ -37,13 +37,13 @@ ${DEBUG_TGT}: Cargo.toml ${SRCFILES}
 ${RELEASE_TGT}: Cargo.toml ${SRCFILES}
 	cargo build --release
 
-unit-test:                                   ## run Cargo tests
+rust-test:                                   ## run 'cargo test'
 	cargo test
 
 script-test:                                 ## run shell script tests
 	./script-test/run.sh
 
-test: unit-test script-test                  ## run Cargo and shell script tests
+test: rust-test script-test                  ## run 'cargo test' and shell script tests
 
 check: clean debug-build test                ## run clean debug build, tests, format check etc
 	cargo fmt --check
