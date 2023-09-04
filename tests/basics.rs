@@ -30,7 +30,10 @@ fn test_version() {
         .arg("--version")
         .assert()
         .success()
-        .stdout(format!("parseargs {}\n", VERSION));
+        .stdout(predicate::str::starts_with(format!(
+            "parseargs {} ",
+            VERSION
+        )));
 }
 
 #[test]
