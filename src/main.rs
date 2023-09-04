@@ -23,6 +23,7 @@ use crate::opt_def::{OptConfig, OptTarget, OptType};
 use clap::{CommandFactory, Parser};
 
 const PARSEARGS: &str = env!("CARGO_PKG_NAME");
+const GIT_HASH: &str = env!("GIT_HASH_STATUS");
 
 /**
  * The default shell, if '-s' is not given.
@@ -639,8 +640,9 @@ fn main() {
                 println!("{}", help_str);
                 exit(0);
             } else if c.version {
-                let version_str = CmdLineArgs::command().render_version();
-                print!("{}", version_str);
+                let cmd = CmdLineArgs::command();
+                let version_str = cmd.get_version().unwrap_or("UNKNOWN");
+                println!("parseargs {} ({})", version_str, GIT_HASH);
                 exit(0);
             }
 
