@@ -145,7 +145,7 @@ impl CmdLineTokenizer {
 
 #[cfg(test)]
 mod cmd_line_element_tests {
-    use crate::arg_parser::CmdLineElement;
+    use crate::cmd_line::CmdLineElement;
 
     #[test]
     fn test_to_string() {
@@ -170,7 +170,7 @@ mod cmd_line_element_tests {
 }
 #[cfg(test)]
 mod arg_parser_tests {
-    use crate::arg_parser::{CmdLineElement, CmdLineTokenizer};
+    use crate::cmd_line::{CmdLineElement, CmdLineTokenizer};
 
     #[test]
     fn test_normal() {

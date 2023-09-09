@@ -5,7 +5,7 @@
  * This code is licensed under MIT license (see LICENSE.txt for details).
  */
 
-use crate::arg_parser::CmdLineElement;
+use crate::cmd_line::CmdLineElement;
 use std::cell::Cell;
 
 /**

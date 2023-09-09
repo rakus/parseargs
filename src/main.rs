@@ -5,7 +5,7 @@
  * This code is licensed under MIT license (see LICENSE.txt for details).
  */
 
-mod arg_parser;
+mod cmd_line;
 mod opt_def;
 mod shell_code;
 
@@ -18,7 +18,7 @@ use std::io::{stdout, IsTerminal};
 use std::panic::catch_unwind;
 use std::process::exit;
 
-use crate::arg_parser::{CmdLineElement, CmdLineTokenizer};
+use crate::cmd_line::{CmdLineElement, CmdLineTokenizer};
 use crate::opt_def::{OptConfig, OptTarget, OptType};
 use clap::{CommandFactory, Parser};
 
