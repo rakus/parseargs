@@ -11,10 +11,8 @@ fn parseargs() -> Command {
 
 #[test]
 fn test_help_usage_line() {
-    /*
-     * Testing usage line, as the "--" between "[OPTIONS]" and "[SCRIPT-ARGS]"
-     * is inserted manually.
-     */
+    // Testing usage line, as the "--" between "[OPTIONS]" and "[SCRIPT-ARGS]"
+    // is inserted manually.
     parseargs()
         .arg("--help")
         .assert()
