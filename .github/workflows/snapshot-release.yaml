@@ -17,12 +17,11 @@ permissions:
 
 jobs:
   create_release:
-    name: Create Release
+    name: Create Snapshot Release
     runs-on: ubuntu-latest
 
     steps:
     - name: Create Snapshot Release
-      id:   create_snapshot_release
       uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -48,7 +47,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.cargo/registry
