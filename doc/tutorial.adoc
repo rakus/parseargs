@@ -574,6 +574,16 @@ Output file: 'out.file'
 Arguments: -X
 ----
 
+A second `--` is handled as a normal argument:
+
+[%nowrap]
+----
+$ ./example.sh  -o out.file -- -X -- test
+Output file: 'out.file'
+Arguments: -X -- test
+----
+
+
 === Initializing Variables
 
 With the option `-i` / `--init-vars` the variables can be initialized with their default values.
@@ -694,6 +704,8 @@ For our first example the following output would be created:
 
 [%nowrap]
 ----
+$ shellcheck ./example.sh
+
 In example.sh line 8:
 echo "Output file: '$outfile'"
                     ^------^ SC2154 (warning): outfile is referenced but not assigned.
