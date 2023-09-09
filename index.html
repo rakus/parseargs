@@ -1410,6 +1410,16 @@ Output file: 'out.file'
 Arguments: -X</pre>
 </div>
 </div>
+<div class="paragraph">
+<p>A second <code>--</code> is handled as a normal argument:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="nowrap">$ ./example.sh  -o out.file -- -X -- test
+Output file: 'out.file'
+Arguments: -X -- test</pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_initializing_variables">1.10. Initializing Variables</h3>
@@ -1582,7 +1592,9 @@ For our first example the following output would be created:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="nowrap">In example.sh line 8:
+<pre class="nowrap">$ shellcheck ./example.sh
+
+In example.sh line 8:
 echo "Output file: '$outfile'"
                     ^------^ SC2154 (warning): outfile is referenced but not assigned.
 
@@ -1626,7 +1638,7 @@ eval &quot;$(parseargs -n example.sh -o &#39;l#long_output,o=outfile&#39; -- &qu
 <div id="footer">
 <div id="footer-text">
 Version 0.1.0<br>
-Last updated 2023-09-09 15:36:59 UTC
+Last updated 2023-09-09 17:12:50 UTC
 </div>
 </div>
 </body>
