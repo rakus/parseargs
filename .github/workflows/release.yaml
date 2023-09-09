@@ -1,9 +1,9 @@
-name: Snapshot Release
+name: Release
 
 on:
   push:
     tags:
-      - snapshot
+      - v*
 
   workflow_dispatch:
 
@@ -21,14 +21,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Create Snapshot Release
-      id:   create_snapshot_release
-      uses: marvinpinto/action-automatic-releases@latest
+    - uses: actions/checkout@v3
+
+    - name: Extract release notes
+      id: extract-release-notes
+      uses: ffurrer2/extract-release-notes@v1
+
+    - name: Create Release
+      id:   create_release
+      uses: softprops/action-gh-release@v1
       with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "snapshot-release"
-        prerelease: true
-        title: "Snapshot Release"
+        token: "${{ secrets.GITHUB_TOKEN }}"
+        name: "Release ${{ github.ref_name }}"
+        body: "${{ steps.extract-release-notes.outputs.release_notes }}"
 
   build:
     needs:
@@ -48,7 +53,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.cargo/registry
@@ -60,23 +65,23 @@ jobs:
       with:
         crate: cargo-get
 
-    - name: Install cargo-generate-rpm
+    - name: Install cargo-generate-rpm (linux only)
       if: ${{ matrix.os=='linux' }}
       uses: baptiste0928/cargo-install@v2
       with:
         crate: cargo-generate-rpm
 
-    - name: Install cargo-deb
+    - name: Install cargo-deb (linux only)
       if: ${{ matrix.os=='linux' }}
       uses: baptiste0928/cargo-install@v2
       with:
         crate: cargo-deb
 
-    - name: Install Shells
+    - name: Install Shells (linux only)
       if: ${{ matrix.os=='linux' }}
       run: sudo apt-get install -y -qq ksh zsh
 
-    - name: Install MKSH (if available)
+    - name: Install MKSH (if available, linux only)
       if: ${{ matrix.os=='linux' }}
       run: sudo apt-get install -y mksh || true
 
@@ -95,28 +100,28 @@ jobs:
     - name: Install AsciiDoctor gems
       run: gem install asciidoctor pygments.rb
 
-    - name: Build RPM and DEB
+    - name: Build RPM and DEB (linux only)
       if: ${{ matrix.os=='linux' }}
       run: make pkg
 
     - name: Build tar.gz
       run: make tar
 
-    - name: Upload RPM
+    - name: Upload RPM (linux only)
       if: ${{ matrix.os=='linux' }}
       uses: svenstaro/upload-release-action@v2
       with:
-        tag: snapshot-release
+        tag: ${{ github.ref_name }}
         file: ./target/generate-rpm/parseargs-*.rpm
         file_glob: true
         overwrite: true
         repo_token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload DEB
+    - name: Upload DEB (linux only)
       if: ${{ matrix.os=='linux' }}
       uses: svenstaro/upload-release-action@v2
       with:
-        tag: snapshot-release
+        tag: ${{ github.ref_name }}
         file: ./target/debian/parseargs_*.deb
         file_glob: true
         overwrite: true
@@ -125,7 +130,7 @@ jobs:
     - name: Upload tar.gz
       uses: svenstaro/upload-release-action@v2
       with:
-        tag: snapshot-release
+        tag: ${{ github.ref_name }}
         file: ./target/parseargs-*.tar.gz
         file_glob: true
         overwrite: true

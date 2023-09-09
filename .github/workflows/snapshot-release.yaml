@@ -1,0 +1,132 @@
+name: Snapshot Release
+
+on:
+  push:
+    tags:
+      - snapshot
+
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: "write"
+  packages: "write"
+  pull-requests: "read"
+
+jobs:
+  create_release:
+    name: Create Snapshot Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Create Snapshot Release
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "snapshot-release"
+        prerelease: true
+        title: "Snapshot Release"
+
+  build:
+    needs:
+      - create_release
+    runs-on: '${{ matrix.runs_on }}'
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            runs_on: ubuntu-latest
+            suffix: ''
+          - os: windows
+            runs_on: windows-latest
+            suffix: .exe
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Install cargo-get
+      uses: baptiste0928/cargo-install@v2
+      with:
+        crate: cargo-get
+
+    - name: Install cargo-generate-rpm
+      if: ${{ matrix.os=='linux' }}
+      uses: baptiste0928/cargo-install@v2
+      with:
+        crate: cargo-generate-rpm
+
+    - name: Install cargo-deb
+      if: ${{ matrix.os=='linux' }}
+      uses: baptiste0928/cargo-install@v2
+      with:
+        crate: cargo-deb
+
+    - name: Install Shells
+      if: ${{ matrix.os=='linux' }}
+      run: sudo apt-get install -y -qq ksh zsh
+
+    - name: Install MKSH (if available)
+      if: ${{ matrix.os=='linux' }}
+      run: sudo apt-get install -y mksh || true
+
+    - name: Install SHELLCHECK (windows only)
+      if: ${{ matrix.os=='windows' }}
+      run: choco install shellcheck
+
+    - name: Run make check
+      run: make check
+
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true
+
+    - name: Install AsciiDoctor gems
+      run: gem install asciidoctor pygments.rb
+
+    - name: Build RPM and DEB
+      if: ${{ matrix.os=='linux' }}
+      run: make pkg
+
+    - name: Build tar.gz
+      run: make tar
+
+    - name: Upload RPM
+      if: ${{ matrix.os=='linux' }}
+      uses: svenstaro/upload-release-action@v2
+      with:
+        tag: snapshot-release
+        file: ./target/generate-rpm/parseargs-*.rpm
+        file_glob: true
+        overwrite: true
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload DEB
+      if: ${{ matrix.os=='linux' }}
+      uses: svenstaro/upload-release-action@v2
+      with:
+        tag: snapshot-release
+        file: ./target/debian/parseargs_*.deb
+        file_glob: true
+        overwrite: true
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload tar.gz
+      uses: svenstaro/upload-release-action@v2
+      with:
+        tag: snapshot-release
+        file: ./target/parseargs-*.tar.gz
+        file_glob: true
+        overwrite: true
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+
