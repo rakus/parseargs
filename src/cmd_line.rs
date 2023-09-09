@@ -1,15 +1,13 @@
-/*
- * Part of parseargs - a command line options parser for shell scripts
- *
- * Copyright (c) 2023 Ralf Schandl
- * This code is licensed under MIT license (see LICENSE.txt for details).
- */
+//
+// Part of parseargs - a command line options parser for shell scripts
+//
+// Copyright (c) 2023 Ralf Schandl
+// This code is licensed under MIT license (see LICENSE.txt for details).
+//
 
 use std::fmt;
 
-/**
- * Element extracted from the command line.
- */
+/// Element extracted from the command line.
 #[derive(Debug, PartialEq)]
 pub enum CmdLineElement {
     /// A short option like '-l' without the leading dash
@@ -20,10 +18,8 @@ pub enum CmdLineElement {
     LongOptionValue(String, String),
     /// A program argument.
     Argument(String),
-    /**
-     * The option/arguments separator "--". Used by caller if the arguments before a '--' should
-     * be handled differently than after it or it is just ignored.
-     */
+    /// The option/arguments separator "--". Used by caller if the arguments before a '--' should
+    /// be handled differently than after it or it is just ignored.
     Separator,
 }
 
@@ -46,15 +42,11 @@ pub struct CmdLineTokenizer {
     cmd_line_args_idx: usize,
     /// Whether to stop option processing on the first non-option.
     posix: bool,
-    /**
-     * Whether to only returns Arguments. Switched to true when '--' is found
-     * or on the first non-option if posix == true
-     */
+    /// Whether to only returns Arguments. Switched to true when '--' is found
+    /// or on the first non-option if posix == true
     args_only: bool,
-    /**
-     * Left over characters from combined short options. With -abc, this will
-     * hold ['b', 'c'].
-     */
+    /// Left over characters from combined short options. With -abc, this will
+    /// hold ['b', 'c'].
     left_over: Vec<char>,
 }
 
@@ -145,7 +137,7 @@ impl CmdLineTokenizer {
 
 #[cfg(test)]
 mod cmd_line_element_tests {
-    use crate::arg_parser::CmdLineElement;
+    use crate::cmd_line::CmdLineElement;
 
     #[test]
     fn test_to_string() {
@@ -170,7 +162,7 @@ mod cmd_line_element_tests {
 }
 #[cfg(test)]
 mod arg_parser_tests {
-    use crate::arg_parser::{CmdLineElement, CmdLineTokenizer};
+    use crate::cmd_line::{CmdLineElement, CmdLineTokenizer};
 
     #[test]
     fn test_normal() {

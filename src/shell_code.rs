@@ -1,9 +1,9 @@
-/*
- * Part of parseargs - a command line options parser for shell scripts
- *
- * Copyright (c) 2023 Ralf Schandl
- * This code is licensed under MIT license (see LICENSE.txt for details).
- */
+//
+// Part of parseargs - a command line options parser for shell scripts
+//
+// Copyright (c) 2023 Ralf Schandl
+// This code is licensed under MIT license (see LICENSE.txt for details).
+//
 
 #![allow(unused)]
 
@@ -13,10 +13,8 @@ const SHELL_TRUE: &str = "'true'";
 const SHELL_FALSE: &str = "''";
 const SHELL_EXIT: &str = "exit";
 
-/**
- * VarValue represents a value that should be assigned to a shell variable
- * or given as argument in a function call.
- */
+/// VarValue represents a value that should be assigned to a shell variable
+/// or given as argument in a function call.
 pub enum VarValue {
     StringValue(String),
     IntValue(i32),
@@ -95,7 +93,7 @@ pub enum CodeChunk {
 ///
 #[derive(Clone, Copy)]
 pub struct CodeTemplates {
-    /** Whether the shell supports arrays. */
+    /// Whether the shell supports arrays.
     pub supports_arrays: bool,
 
     /// Seperator between statements. Most likely always `;`.

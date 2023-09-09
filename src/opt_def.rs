@@ -1,35 +1,29 @@
-/*
- * Part of parseargs - a command line options parser for shell scripts
- *
- * Copyright (c) 2023 Ralf Schandl
- * This code is licensed under MIT license (see LICENSE.txt for details).
- */
+//
+// Part of parseargs - a command line options parser for shell scripts
+//
+// Copyright (c) 2023 Ralf Schandl
+// This code is licensed under MIT license (see LICENSE.txt for details).
+//
 
-use crate::arg_parser::CmdLineElement;
+use crate::cmd_line::CmdLineElement;
 use std::cell::Cell;
 
-/**
- * Target for a option. Parseargs either assigns a variable or calls
- * a function.
- */
+/// Target for a option. Parseargs either assigns a variable or calls
+/// a function.
 #[derive(Debug, PartialEq)]
 pub enum OptTarget {
     Variable(String),
     Function(String),
 }
 
-/**
- * Option attributes. The `*` or `?` before the option target.
- */
+/// Option attributes. The `*` or `?` before the option target.
 #[derive(Debug, PartialEq)]
 enum OptAttribute {
     Required,
     Singleton,
 }
 
-/**
- * Type of the option.
- */
+/// Type of the option.
 #[derive(Debug, PartialEq)]
 pub enum OptType {
     /// Simple flag to set something to true (false is the default)
@@ -43,9 +37,7 @@ pub enum OptType {
     Counter(OptTarget),
 }
 
-/**
- * Describes a supported option.
- */
+/// Describes a supported option.
 #[derive(Debug, PartialEq)]
 pub struct OptConfig {
     /// Every character in this string is a short option.
@@ -67,12 +59,10 @@ pub struct OptConfig {
 }
 
 impl OptConfig {
-    /**
-     * Returns whether this option is matched by the given command line element.
-     *
-     * TODO: This is the only reason why we import CmdLineElement. Could also
-     *       be implemented for char or string.
-     */
+    /// Returns whether this option is matched by the given command line element.
+    ///
+    /// TODO: This is the only reason why we import CmdLineElement. Could also
+    ///       be implemented for char or string.
     pub fn match_option(&self, el: &CmdLineElement) -> bool {
         match el {
             CmdLineElement::ShortOption(c) => self.opt_chars.find(*c).is_some(),
@@ -82,10 +72,8 @@ impl OptConfig {
         }
     }
 
-    /**
-     * Returns whether duplicate usage of this option is allowed.
-     * This is allowed for Counter options and options with a target type Function.
-     */
+    /// Returns whether duplicate usage of this option is allowed.
+    /// This is allowed for Counter options and options with a target type Function.
     pub fn is_duplicate_allowed(&self) -> bool {
         matches!(self.opt_type, OptType::Counter(_))
             || matches!(
@@ -97,10 +85,8 @@ impl OptConfig {
             )
     }
 
-    /**
-     * Returns the name of the option target. The name could represent a
-     * variable or a function.
-     */
+    /// Returns the name of the option target. The name could represent a
+    /// variable or a function.
     pub fn get_target_name(&self) -> String {
         match &self.opt_type {
             OptType::Flag(OptTarget::Function(name))
@@ -114,9 +100,7 @@ impl OptConfig {
         }
     }
 
-    /**
-     * Returns the option target
-     */
+    /// Returns the option target
     pub fn get_target(&self) -> &OptTarget {
         match &self.opt_type {
             OptType::Flag(ot)
@@ -126,9 +110,7 @@ impl OptConfig {
         }
     }
 
-    /**
-     * Returns whether the option target is a function.
-     */
+    /// Returns whether the option target is a function.
     pub fn is_target_function(&self) -> bool {
         matches!(
             &self.opt_type,
@@ -139,18 +121,14 @@ impl OptConfig {
         )
     }
 
-    /**
-     * Returns whether the option target is a variable.
-     */
+    /// Returns whether the option target is a variable.
     pub fn is_target_variable(&self) -> bool {
         !self.is_target_function()
     }
 
-    /**
-     * Formats the option for display. Most likely in error messages.
-     * If the short option is `-l` and long `--long` it will return
-     * something like `-l/--long`.
-     */
+    /// Formats the option for display. Most likely in error messages.
+    /// If the short option is `-l` and long `--long` it will return
+    /// something like `-l/--long`.
     pub fn options_string(&self) -> String {
         let mut sb = String::new();
 
@@ -176,17 +154,13 @@ impl OptConfig {
     }
 }
 
-/**
- * Configuration of the option definition parser.
- */
+/// Configuration of the option definition parser.
 pub struct ParserConfig {
     /// Whether UTF-8 characters are allowed as option characters.
     allow_utf8_options: bool,
 }
 
-/**
- * The source for parsing option definitions.
- */
+/// The source for parsing option definitions.
 pub struct ParserSource {
     /// Sequence of characters to parse.
     chars: Vec<char>,
@@ -203,9 +177,7 @@ pub struct ParserSource {
 }
 
 impl ParserSource {
-    /**
-     * Creates a new ParserSource.
-     */
+    /// Creates a new ParserSource.
     pub fn new(string: &str) -> ParserSource {
         let array: Vec<char> = string.chars().collect();
         let len = array.len();
@@ -215,12 +187,10 @@ impl ParserSource {
             length: len,
             position_stack: Vec::new(),
             config: ParserConfig {
-                /*
-                 * Don't allow UTF-8 chars in options. This would most likely
-                 * result in portability problems. What if the parseargs option
-                 * defines a smiley as option char, but the current system is
-                 * configured with a single-byte character set?
-                 */
+                // Don't allow UTF-8 chars in options. This would most likely
+                // result in portability problems. What if the parseargs option
+                // defines a smiley as option char, but the current system is
+                // configured with a single-byte character set?
                 allow_utf8_options: false,
             },
         }
@@ -309,9 +279,7 @@ impl ParserSource {
     }
 }
 
-/**
- * Errors of the parser.
- */
+/// Errors of the parser.
 #[derive(Debug, PartialEq)]
 pub enum ParsingError {
     /// Nothing parsable found at all
@@ -320,13 +288,11 @@ pub enum ParsingError {
     Error(String),
 }
 
-/**
- * Check whether the given character is a valid character for an option.
- *
- * * `chr` - The character to check
- * * `first` - whether this is the first character of an option
- * * `allow_utf8` - whether characters outside the ASCII range are allowed
- */
+/// Check whether the given character is a valid character for an option.
+///
+/// * `chr` - The character to check
+/// * `first` - whether this is the first character of an option
+/// * `allow_utf8` - whether characters outside the ASCII range are allowed
 fn is_valid_opt_char(chr: char, first: bool, allow_utf8: bool) -> bool {
     if allow_utf8 {
         if first {
@@ -341,10 +307,8 @@ fn is_valid_opt_char(chr: char, first: bool, allow_utf8: bool) -> bool {
     }
 }
 
-/**
- * Gets the next character for an option from the source.
- * This handles backslash-escapes for certain characters.
- */
+/// Gets the next character for an option from the source.
+/// This handles backslash-escapes for certain characters.
 fn get_option_char(ps: &mut ParserSource, first: bool) -> Option<char> {
     let need_escape = [':', '#', '=', '+', '%'];
 
@@ -375,10 +339,8 @@ fn get_option_char(ps: &mut ParserSource, first: bool) -> Option<char> {
     }
 }
 
-/**
- * Parses an option. The resulting string either contains a single character
- * for short options or a multiple for long options.
- */
+/// Parses an option. The resulting string either contains a single character
+/// for short options or a multiple for long options.
 fn parse_option(ps: &mut ParserSource) -> Result<String, ParsingError> {
     let mut option = String::new();
 
@@ -412,9 +374,7 @@ fn parse_option(ps: &mut ParserSource) -> Result<String, ParsingError> {
     Ok(option)
 }
 
-/**
- * Parses a name. A name is a valid name for a shell variable or function.
- */
+/// Parses a name. A name is a valid name for a shell variable or function.
 fn parse_name(ps: &mut ParserSource) -> Result<String, ParsingError> {
     let mut name = String::new();
 
@@ -434,20 +394,13 @@ fn parse_name(ps: &mut ParserSource) -> Result<String, ParsingError> {
     Ok(name)
 }
 
-/**
- * Parses a value. Currently a value is the same as a name.
- *
- */
+/// Parses a value. Currently a value is the same as a name.
 fn parse_value(ps: &mut ParserSource) -> Result<String, ParsingError> {
-    /*
-     * TODO: This should be extended to also parse strings delimited by single or double quote.
-     */
+    // TODO: This should be extended to also parse strings delimited by single or double quote.
     parse_name(ps)
 }
 
-/**
- * Parse the option attribute `*` (required) or `?` (singleton).
- */
+/// Parse the option attribute `*` (required) or `?` (singleton).
 fn parse_option_attribute(ps: &mut ParserSource) -> Option<OptAttribute> {
     match ps.next_if(|c| c == '*' || c == '?') {
         Some('*') => Some(OptAttribute::Required),
@@ -456,9 +409,7 @@ fn parse_option_attribute(ps: &mut ParserSource) -> Option<OptAttribute> {
     }
 }
 
-/**
- * Parse a Flag or a Mode-Option.
- */
+/// Parse a Flag or a Mode-Option.
 fn parse_flag_mode(ps: &mut ParserSource) -> Result<(OptType, Option<OptAttribute>), ParsingError> {
     // must start with `#`
     match ps.next() {
@@ -496,9 +447,7 @@ fn parse_flag_mode(ps: &mut ParserSource) -> Result<(OptType, Option<OptAttribut
     }
 }
 
-/**
- * Parse an assignment.
- */
+/// Parse an assignment.
 fn parse_assignment(
     ps: &mut ParserSource,
 ) -> Result<(OptType, Option<OptAttribute>), ParsingError> {
@@ -529,9 +478,7 @@ fn parse_assignment(
     Ok((OptType::Assignment(target), attr))
 }
 
-/**
- * Parse a counting option.
- */
+/// Parse a counting option.
 fn parse_counter(ps: &mut ParserSource) -> Result<(OptType, Option<OptAttribute>), ParsingError> {
     match ps.next() {
         Some('+') => (),
@@ -560,9 +507,7 @@ fn parse_counter(ps: &mut ParserSource) -> Result<(OptType, Option<OptAttribute>
     Ok((OptType::Counter(target), attr))
 }
 
-/**
- * Parse a single option definition.
- */
+/// Parse a single option definition.
 fn parse_opt_def(ps: &mut ParserSource) -> Result<OptConfig, ParsingError> {
     let mut short = String::new();
     let mut long: Vec<String> = Vec::new();
@@ -623,10 +568,8 @@ fn parse_opt_def(ps: &mut ParserSource) -> Result<OptConfig, ParsingError> {
     })
 }
 
-/**
- * Format a parsing error to give the user a hint where something got wrong.
- * Returns a multi-line string.
- */
+/// Format a parsing error to give the user a hint where something got wrong.
+/// Returns a multi-line string.
 fn format_parsing_error(opt_def_str: &str, index: usize, msg: &String) -> String {
     let mut msg_list = Vec::new();
     msg_list.push(opt_def_str.to_owned());
@@ -641,11 +584,9 @@ fn format_parsing_error(opt_def_str: &str, index: usize, msg: &String) -> String
     msg_list.join("\n")
 }
 
-/**
- * Entry function to parse a comma-separated list of option definitions.
- *
- * Returns a (possibly empty) vector of OptConfig on success.
- */
+/// Entry function to parse a comma-separated list of option definitions.
+///
+/// Returns a (possibly empty) vector of OptConfig on success.
 pub fn parse(opt_def_str: &String) -> Result<Vec<OptConfig>, String> {
     if opt_def_str.is_empty() {
         Ok(Vec::new())
@@ -663,9 +604,7 @@ pub fn parse(opt_def_str: &String) -> Result<Vec<OptConfig>, String> {
     }
 }
 
-/**
- * Parses a list of option definitions from a ParserSource.
- */
+/// Parses a list of option definitions from a ParserSource.
 fn parse_opt_def_list(ps: &mut ParserSource) -> Result<Vec<OptConfig>, ParsingError> {
     let mut opt_def_list: Vec<OptConfig> = Vec::new();
     loop {
