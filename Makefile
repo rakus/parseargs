@@ -20,7 +20,7 @@ ifndef VERSION
 $(error VERSION is not set - missing 'cargo get'?)
 endif
 
-TGT_DOC_DIR := target/doc
+TGT_DOC_DIR := target/user-doc
 
 debug-build:
 	cargo build
@@ -75,7 +75,7 @@ tar: target/parseargs-${VERSION}-${TARGET_ENV}.tar.gz   ## build tar.gz of relea
 prepare-archive: release-build doc
 	rm -rf target/archive
 	mkdir -p  target/archive
-	cp target/release/parseargs${EXE_EXT} target/doc/parseargs.html target/archive
+	cp target/release/parseargs${EXE_EXT} ${TGT_DOC_DIR}/parseargs.html target/archive
 
 
 target/parseargs-${VERSION}-${TARGET_ENV}.zip: prepare-archive
