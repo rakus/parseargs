@@ -1,0 +1,138 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*
+
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: "write"
+  packages: "write"
+  pull-requests: "read"
+
+jobs:
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Extract release notes
+      id: extract-release-notes
+      uses: ffurrer2/extract-release-notes@v1
+
+    - name: Create Release
+      id:   create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        token: "${{ secrets.GITHUB_TOKEN }}"
+        name: "Release ${{ github.ref_name }}"
+        body: "${{ steps.extract-release-notes.outputs.release_notes }}"
+
+  build:
+    needs:
+      - create_release
+    runs-on: '${{ matrix.runs_on }}'
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            runs_on: ubuntu-latest
+            suffix: ''
+          - os: windows
+            runs_on: windows-latest
+            suffix: .exe
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Install cargo-get
+      uses: baptiste0928/cargo-install@v2
+      with:
+        crate: cargo-get
+
+    - name: Install cargo-generate-rpm (linux only)
+      if: ${{ matrix.os=='linux' }}
+      uses: baptiste0928/cargo-install@v2
+      with:
+        crate: cargo-generate-rpm
+
+    - name: Install cargo-deb (linux only)
+      if: ${{ matrix.os=='linux' }}
+      uses: baptiste0928/cargo-install@v2
+      with:
+        crate: cargo-deb
+
+    - name: Install Shells (linux only)
+      if: ${{ matrix.os=='linux' }}
+      run: sudo apt-get install -y -qq ksh zsh
+
+    - name: Install MKSH (if available, linux only)
+      if: ${{ matrix.os=='linux' }}
+      run: sudo apt-get install -y mksh || true
+
+    - name: Install SHELLCHECK (windows only)
+      if: ${{ matrix.os=='windows' }}
+      run: choco install shellcheck
+
+    - name: Run make check
+      run: make check
+
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true
+
+    - name: Install AsciiDoctor gems
+      run: gem install asciidoctor pygments.rb
+
+    - name: Build RPM and DEB (linux only)
+      if: ${{ matrix.os=='linux' }}
+      run: make pkg
+
+    - name: Build tar.gz
+      run: make tar
+
+    - name: Upload RPM (linux only)
+      if: ${{ matrix.os=='linux' }}
+      uses: svenstaro/upload-release-action@v2
+      with:
+        tag: ${{ github.ref_name }}
+        file: ./target/generate-rpm/parseargs-*.rpm
+        file_glob: true
+        overwrite: true
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload DEB (linux only)
+      if: ${{ matrix.os=='linux' }}
+      uses: svenstaro/upload-release-action@v2
+      with:
+        tag: ${{ github.ref_name }}
+        file: ./target/debian/parseargs_*.deb
+        file_glob: true
+        overwrite: true
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload tar.gz
+      uses: svenstaro/upload-release-action@v2
+      with:
+        tag: ${{ github.ref_name }}
+        file: ./target/parseargs-*.tar.gz
+        file_glob: true
+        overwrite: true
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+
