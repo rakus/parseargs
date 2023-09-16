@@ -42,6 +42,9 @@ jobs:
           - os: windows
             runs_on: windows-latest
             suffix: .exe
+          - os: macos
+            runs_on: macos-latest
+            suffix: ''
 
     steps:
     - uses: actions/checkout@v3
@@ -71,15 +74,17 @@ jobs:
       with:
         crate: cargo-deb
 
-    - name: Install Shells
+    - name: Install Shells (linux only)
       if: ${{ matrix.os=='linux' }}
-      run: sudo apt-get install -y -qq ksh zsh
+      run: |
+        sudo apt-get install -y -qq ksh zsh
+        sudo apt-get install -y mksh || true
 
-    - name: Install MKSH (if available)
-      if: ${{ matrix.os=='linux' }}
-      run: sudo apt-get install -y mksh || true
+    - name: Install Shells & Shellcheck (macos only)
+      if: ${{ matrix.os=='macos' }}
+      run: brew install bash ksh93 shellcheck
 
-    - name: Install SHELLCHECK (windows only)
+    - name: Install Shellcheck (windows only)
       if: ${{ matrix.os=='windows' }}
       run: choco install shellcheck
 
