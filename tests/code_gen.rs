@@ -2,7 +2,7 @@ mod exec;
 
 /// Create function check code for given function name for standard shell
 fn sh_func_check(func_name: &str) -> String {
-    format!("LC_ALL=C type {func_name} 2>/dev/null | grep function >/dev/null || (echo >&2 \"ERROR: Function '{func_name}' does not exist.\";exit 1) || exit 127;")
+    format!("if ! LC_ALL=C command -V {func_name} 2>/dev/null | head -n1 | grep function >/dev/null; then echo >&2 \"ERROR: Function '{func_name}' does not exist.\"; exit 127; fi;")
 }
 
 #[test]

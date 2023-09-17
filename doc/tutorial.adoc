@@ -433,15 +433,19 @@ To better understand how this works, see the sections <<CALLBACKS>> and <<SINGLE
 Till now we used Parseargs to assign variables for the options found on the command line, but it is also able to work with shell functions.
 
 When using functions, Parseargs also generates code to test for the existence of the function.
-Assuming a function `set_out_file` should be used, the following code will always be generated (here for bash):
+Assuming a function `set_out_file` should be used, it is always checked whether this function exists.
 
 [%nowrap,source,bash]
 ----
-typeset -f set_out_file >/dev/null 2>&1 || { echo >&2 "ERROR: Function set_out_file does not exist.";exit 127; };
+# default
+if ! LC_ALL=C command -V set_out_file 2>/dev/null | head -n1 | grep function >/dev/null; then echo >&2 "ERROR: Function 'set_out_file' does not exist."; exit 127; fi;
+
+# with --shell bash, ksh or zsh
+if ! typeset -f set_out_file >/dev/null 2>&1; then echo >&2 "ERROR: Function 'set_out_file' does not exist."; exit 127; fi;
 ----
 
 This code will exit the calling script if the function does not exist.
-This check is always done, whether the function is needed in the actually generated code or not.
+The check is always done, whether the function is needed in the actually generated code or not.
 
 When calling the callback the exit status of the function must be zero else the calling script is terminated with function exit code.
 The code for this looks like this:

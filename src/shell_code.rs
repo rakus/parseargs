@@ -221,7 +221,7 @@ const SH_TEMPLATE : CodeTemplates = CodeTemplates {
     assign_empty_array : "",
     add_to_array : "",
 
-    check_function_exists : "LC_ALL=C type {NAME} 2>/dev/null | grep function >/dev/null || (echo >&2 \"ERROR: Function '{NAME}' does not exist.\";exit 1) || exit 127" ,
+    check_function_exists : "if ! LC_ALL=C command -V {NAME} 2>/dev/null | head -n1 | grep function >/dev/null; then echo >&2 \"ERROR: Function '{NAME}' does not exist.\"; exit 127; fi" ,
     call_function : "{NAME} {VALUE} || exit $?",
 
     set_args : "set -- {ARGS}",
@@ -241,7 +241,7 @@ const BASH_TEMPLATE : CodeTemplates = CodeTemplates {
     assign_empty_array : "{NAME}=()",
     add_to_array : "{NAME}+=({VALUE})",
 
-    check_function_exists: "typeset -f {NAME} >/dev/null 2>&1 || { echo >&2 \"ERROR: Function '{NAME}' does not exist.\";exit 127; }",
+    check_function_exists : "if ! typeset -f {NAME} >/dev/null 2>&1; then echo >&2 \"ERROR: Function '{NAME}' does not exist.\"; exit 127; fi" ,
 
     // others from sh template
     ..SH_TEMPLATE
@@ -401,7 +401,7 @@ mod shell_template_test {
         assert_eq!("func 'value' || exit $?", shell.format(&chunk));
 
         let chunk = CodeChunk::CheckForFunction(var_name.clone());
-        assert_eq!("LC_ALL=C type func 2>/dev/null | grep function >/dev/null || (echo >&2 \"ERROR: Function 'func' does not exist.\";exit 1) || exit 127", shell.format(&chunk));
+        assert_eq!("if ! LC_ALL=C command -V func 2>/dev/null | head -n1 | grep function >/dev/null; then echo >&2 \"ERROR: Function 'func' does not exist.\"; exit 127; fi", shell.format(&chunk));
 
         let chunk = CodeChunk::SetArgs(vec![
             "one".to_string(),
@@ -464,7 +464,7 @@ mod shell_template_test {
         assert_eq!("func 'value' || exit $?", shell.format(&chunk));
 
         let chunk = CodeChunk::CheckForFunction(var_name);
-        assert_eq!("typeset -f func >/dev/null 2>&1 || { echo >&2 \"ERROR: Function 'func' does not exist.\";exit 127; }", shell.format(&chunk));
+        assert_eq!("if ! typeset -f func >/dev/null 2>&1; then echo >&2 \"ERROR: Function 'func' does not exist.\"; exit 127; fi", shell.format(&chunk));
 
         let chunk = CodeChunk::SetArgs(vec![
             "one".to_string(),
@@ -515,7 +515,7 @@ mod shell_template_test {
         assert_eq!("func 'value' || exit $?", shell.format(&chunk));
 
         let chunk = CodeChunk::CheckForFunction(var_name);
-        assert_eq!("typeset -f func >/dev/null 2>&1 || { echo >&2 \"ERROR: Function 'func' does not exist.\";exit 127; }", shell.format(&chunk));
+        assert_eq!("if ! typeset -f func >/dev/null 2>&1; then echo >&2 \"ERROR: Function 'func' does not exist.\"; exit 127; fi", shell.format(&chunk));
 
         let chunk = CodeChunk::SetArgs(vec![
             "one".to_string(),
