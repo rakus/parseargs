@@ -38,7 +38,7 @@ jobs:
     - name: Install Shells (linux only)
       if: ${{ matrix.os=='linux' }}
       run: |
-        sudo apt-get install -y -qq ksh zsh
+        sudo apt-get install -y -qq ksh zsh yash
         sudo apt-get install -y mksh || true
 
     - name: Install Shells & Shellcheck (macos only)
