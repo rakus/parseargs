@@ -1183,17 +1183,25 @@ help.sh 1.0</pre>
 </div>
 <div class="paragraph">
 <p>When using functions, Parseargs also generates code to test for the existence of the function.
-Assuming a function <code>set_out_file</code> should be used, the following code will always be generated (here for bash):</p>
+Assuming a function <code>set_out_file</code> should be used, it is always checked whether this function exists.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span>typeset -f set_out_file &gt;/dev/null 2&gt;&amp;1 || { echo &gt;&amp;2 &quot;ERROR: Function set_out_file does not exist.&quot;;exit 127; };
+<pre class="pygments highlight nowrap"><code data-lang="source"><div class="lineno"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span># default
+if ! LC_ALL=C command -V set_out_file 2&gt;/dev/null | head -n1 | grep function &gt;/dev/null; then echo &gt;&amp;2 &quot;ERROR: Function &#39;set_out_file&#39; does not exist.&quot;; exit 127; fi;
+
+# with --shell bash, ksh or zsh
+if ! typeset -f set_out_file &gt;/dev/null 2&gt;&amp;1; then echo &gt;&amp;2 &quot;ERROR: Function &#39;set_out_file&#39; does not exist.&quot;; exit 127; fi;
 </pre></div></td></tr></table></div></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>This code will exit the calling script if the function does not exist.
-This check is always done, whether the function is needed in the actually generated code or not.</p>
+The check is always done, whether the function is needed in the actually generated code or not.</p>
 </div>
 <div class="paragraph">
 <p>When calling the callback the exit status of the function must be zero else the calling script is terminated with function exit code.
@@ -1638,7 +1646,7 @@ eval &quot;$(parseargs -n example.sh -o &#39;l#long_output,o=outfile&#39; -- &qu
 <div id="footer">
 <div id="footer-text">
 Version 0.2.0-SNAPSHOT<br>
-Last updated 2023-10-28 05:05:53 UTC
+Last updated 2023-10-28 05:51:37 UTC
 </div>
 </div>
 </body>
