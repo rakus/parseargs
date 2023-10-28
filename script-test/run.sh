@@ -26,7 +26,7 @@ case "$(uname -s | tr '[:upper:]' '[:lower:]')" in
         ;;
 esac
 
-test_shells="bash ksh zsh pdksh mksh dash sh"
+test_shells="bash ksh zsh pdksh mksh yash dash sh"
 
 run_tests()
 {

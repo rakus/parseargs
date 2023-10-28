@@ -14,7 +14,12 @@ script_name="$(basename "$0")"
 
 start_test
 
-if [ -z "$IS_MSYS" ] && [ -z "$IS_CYGWIN" ]; then
+
+if [ -n "$IS_MSYS" ] || [ -n "$IS_CYGWIN" ]; then
+    echo "Skipped on Windows"
+elif [ "$TEST_SHELL" = "yash" ]; then
+    echo "Skipped with shell Yash, as it can't handle invalid UTF-8"
+else
 
     # The following should create some valid code on day
     test_pa_code 'exit 1' -o "n:name=name" -- "$(printf '\303\050')"
@@ -35,8 +40,6 @@ if [ -z "$IS_MSYS" ] && [ -z "$IS_CYGWIN" ]; then
     test_pa_code 'exit 1' -s "X$(printf '\303\050')Y" -o "n:name=name" --
     test_pa_code 'exit 1' -o "n:name=n$(printf '\303\050')ame" --
 
-else
-    echo "Skipped on Windows"
 fi
 
 end_test
