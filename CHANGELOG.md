@@ -6,10 +6,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+* Build and test on MacOS. Add MacOS binary to release artifacts (as tar.gz).
+
+### CHANGED
+
+* Generated code to test whether shell function exists.
 
 ## [0.1.0] - 2023-09-09
 
 Initial Release
 
-[0.1.0]: https://github.com/rakus/parseargs/releases/tag/v0.1.0
+[Unreleased]: https://github.com/rakus/parseargs/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/rakus/parseargs/compare/d64c536...v0.1.0
 

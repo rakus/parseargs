@@ -89,5 +89,35 @@ target/parseargs-${VERSION}-${TARGET_ENV}.tar.gz: prepare-archive
 clean:
 	cargo clean
 
+define HTML_HEAD
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Quick Change Directory</title>
+    <style>
+      table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+    </style>
+  </head>
+  <body>
+endef
+
+define HTML_TAIL
+  </body>
+</html>
+endef
+
+target/%.html: %.md
+	@mkdir -p target
+	( echo "$${HTML_HEAD}" && marked --gfm --tables $< && echo "$${HTML_TAIL}" ) > $@
+
+target/README.html: README.md
+
+target/CHANGELOG.html: CHANGELOG.md
+
+html: target/README.html target/CHANGELOG.html  ## format README and CHANGELOG for review
+
 help:                                        ## Prints targets with help text
 	@cat ${MAKEFILE_LIST} | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%s\033[0m\n    %s\n", $$1, $$2}'
