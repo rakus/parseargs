@@ -6,7 +6,6 @@
 script_name="$(basename "$0")"
 script_dir="$(cd "$(dirname "$0")" && pwd)" || exit 1
 
-
 cd "$script_dir" || exit 1
 
 echo "Test Environment: $(uname -a)"
@@ -16,11 +15,7 @@ case "$(uname -s | tr '[:upper:]' '[:lower:]')" in
         IS_CYGWIN=TRUE
         export IS_CYGWIN
         ;;
-    *msys*)
-        IS_MSYS=TRUE
-        export IS_MSYS
-        ;;
-    *mingw*)
+    *msys* | *mingw*)
         IS_MSYS=TRUE
         export IS_MSYS
         ;;
@@ -49,6 +44,10 @@ get_shell_version()
     esac
 }
 
+#
+# Run tests with shell
+# $1: The shell to execute
+# $2...: The shell dialect to test
 test_with_shell()
 {
     unset TEST_SHELL
@@ -76,7 +75,10 @@ test_with_shell()
 }
 
 
-get_supported_shell_dialects()
+#
+# Determine the native dialect of the shell. Might be none.
+# $1: The shell
+get_supported_shell_dialect()
 {
     bn_sh=$(basename "$1")
 
@@ -131,6 +133,7 @@ for sh in $test_shells; do
             # shellcheck disable=SC2086 # native_dialect _should_ split
             test_with_shell "$sh" $native_dialect sh
         else
+            # only test 'sh' mode
             test_with_shell "$sh" sh
         fi
         [ -n "$quick" ] && break

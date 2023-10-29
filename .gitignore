@@ -3,3 +3,4 @@ target/
 .idea/
 *.add.spl
 *.profraw
+*.log

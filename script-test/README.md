@@ -20,6 +20,7 @@ If installed the following shells are used for testing:
 * zsh
 * mksh
 * pdksh
+* yash
 * dash
 * sh
 
