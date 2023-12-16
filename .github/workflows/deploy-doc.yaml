@@ -3,6 +3,9 @@ name: Build and Deploy Tutorial
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'Cargo.toml'
+      - 'doc/**'
 
   workflow_dispatch:
 
