@@ -4,3 +4,4 @@ target/
 *.add.spl
 *.profraw
 *.log
+.vscode/

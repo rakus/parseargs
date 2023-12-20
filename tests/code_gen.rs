@@ -262,6 +262,7 @@ fn test_mode_switch_option() {
         "parseargs: Options are mutual exclusive: -c/--copy, -m/--move",
     );
 }
+
 #[test]
 fn test_combined_options() {
     let expected = &[
@@ -451,5 +452,26 @@ fn test_posix() {
         &["-po", "d#debug"],
         &["test", "-d", "--", "test2"],
         &["set -- 'test' '-d' '--' 'test2'"],
+    );
+}
+
+#[test]
+fn test_multiple_o_options() {
+    exec::test_code_gen(
+        &["-o", "d#debug", "-o", "l#long"],
+        &["-d", "-l"],
+        &["debug='true';", "long='true';", "set --"],
+    );
+
+    exec::test_code_gen(
+        &["-o", "d#debug,,", "-o", ",,l#long"],
+        &["-d", "-l"],
+        &["debug='true';", "long='true';", "set --"],
+    );
+
+    exec::test_code_gen(
+        &["-o", "d#debug", "-o", "l#long", "-o", "\\,#comma"],
+        &["-d", "-l", "-,"],
+        &["debug='true';", "long='true';", "comma='true';", "set --"],
     );
 }

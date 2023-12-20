@@ -45,7 +45,7 @@ const PARSEARGS_SHELL_VAR: &str = "PARSEARGS_SHELL";
 struct CmdLineArgs {
     /// Definition of supported shell options
     #[arg(short = 'o', long = "options", value_name = "OPT-DEFs")]
-    options: Option<String>,
+    options_list: Option<Vec<String>>,
 
     /// Name of calling shell script. Used as prefix for error messages.
     #[arg(short = 'n', long = "name")]
@@ -513,8 +513,8 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
     };
 
     // parse the option definition string
-    let result = if cmd_line_args.options.is_some() {
-        opt_def::parse(&cmd_line_args.options.clone().unwrap())
+    let result = if cmd_line_args.options_list.is_some() {
+        opt_def::parse(&cmd_line_args.options_list.clone().unwrap().join(","))
     } else {
         Ok(Vec::new())
     };

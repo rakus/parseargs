@@ -78,7 +78,12 @@ Always use exactly this notation.
 A simple `$@` (without the quotes) or `$*` might fail.
 See your shell documentation.
 
-IMPORTANT: The option character may be any ASCII character, except for `-` (minus), whitespace or control character.
+[IMPORTANT]
+====
+The option character may be any ASCII character, except for `-` (minus), whitespace or control characters.
+
+The characters `#`, `%`, `+`, `:`, `=`, `\` and `,` have to be escaped with a backslash.
+====
 
 The trailing `|| exit 1` is just a safety net, in case something goes wrong during eval.
 
@@ -201,8 +206,12 @@ Now we have two colon-separated options before the type marker (`#`, `=`).
 If a option is a single character, it defines a short option (`l` -> `-l`).
 With multiple characters it is a long option, that has two leading dashes (`long` -> `--long`).
 
+[IMPORTANT]
+====
+Long options may contain any ASCII character, except for  `=`, whitespace or control characters. The `-` (minus) is not allowed as the first character.
 
-IMPORTANT: Long options may contain any ASCII character, except for  `=`, whitespace or control character. The `-` (minus) is not allowed as the first character.
+The characters `#`, `%`, `+`, `:`, `\` and `,` have to be escaped with a backslash.
+====
 
 Now our example script enables long output by either using `-l` or `--long` and the output file can be set with `-o out.file` or `--out-file out.file` or even `--out-file=out.file`.
 

@@ -77,7 +77,6 @@ test_pa 'test "$opt" = true' -o '8#opt' -- -8
 test_pa 'test "$opt" = true' -o '9#opt' -- -9
 test_pa 'test "$opt" = true' -o '!#opt' -- -!
 test_pa 'test "$opt" = true' -o '$#opt' -- -$
-test_pa 'test "$opt" = true' -o ',#opt' -- -,
 test_pa 'test "$opt" = true' -o '.#opt' -- -.
 if [ -z "$IS_MSYS" ]; then
     test_pa 'test "$opt" = true' -o '/#opt' -- -/
@@ -113,5 +112,6 @@ test_pa 'test "$opt" = true' -o '\+#opt' -- -+
 test_pa 'test "$opt" = true' -o '\:#opt' -- -:
 test_pa 'test "$opt" = true' -o '\=#opt' -- -=
 test_pa 'test "$opt" = true' -o '\\#opt' -- -\\
+test_pa 'test "$opt" = true' -o '\,#opt' -- -,
 
 end_test

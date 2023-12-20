@@ -14,7 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### CHANGED
 
-* Generated code to test whether shell function exists.
+* Allow multiple '-o' / '--options' and join their values before parsing.
+
+* Simplify Generated code to test whether shell function exists.
 
 ## [0.1.0] - 2023-09-09
 

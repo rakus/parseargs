@@ -608,6 +608,9 @@ pub fn parse(opt_def_str: &String) -> Result<Vec<OptConfig>, String> {
 fn parse_opt_def_list(ps: &mut ParserSource) -> Result<Vec<OptConfig>, ParsingError> {
     let mut opt_def_list: Vec<OptConfig> = Vec::new();
     loop {
+        // eat up consecutive commas
+        while ps.next_if(|c| c == ',').is_some() {}
+
         match parse_opt_def(ps) {
             Ok(od) => {
                 opt_def_list.push(od);
