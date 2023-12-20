@@ -512,7 +512,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <div class="details">
 <span id="author" class="author">Ralf Schandl</span><br>
 <span id="revnumber">version 0.2.0-SNAPSHOT,</span>
-<span id="revdate">2023-10-29</span>
+<span id="revdate">2023-12-20</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -679,7 +679,12 @@ See your shell documentation.</p>
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-The option character may be any ASCII character, except for <code>-</code> (minus), whitespace or control character.
+<div class="paragraph">
+<p>The option character may be any ASCII character, except for <code>-</code> (minus), whitespace or control characters.</p>
+</div>
+<div class="paragraph">
+<p>The characters <code>#</code>, <code>%</code>, <code>+</code>, <code>:</code>, <code>=</code>, <code>\</code> and <code>,</code> have to be escaped with a backslash.</p>
+</div>
 </td>
 </tr>
 </table>
@@ -850,7 +855,12 @@ With multiple characters it is a long option, that has two leading dashes (<code
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-Long options may contain any ASCII character, except for  <code>=</code>, whitespace or control character. The <code>-</code> (minus) is not allowed as the first character.
+<div class="paragraph">
+<p>Long options may contain any ASCII character, except for  <code>=</code>, whitespace or control characters. The <code>-</code> (minus) is not allowed as the first character.</p>
+</div>
+<div class="paragraph">
+<p>The characters <code>#</code>, <code>%</code>, <code>+</code>, <code>:</code>, <code>\</code> and <code>,</code> have to be escaped with a backslash.</p>
+</div>
 </td>
 </tr>
 </table>
@@ -1646,7 +1656,7 @@ eval &quot;$(parseargs -n example.sh -o &#39;l#long_output,o=outfile&#39; -- &qu
 <div id="footer">
 <div id="footer-text">
 Version 0.2.0-SNAPSHOT<br>
-Last updated 2023-10-29 08:14:06 UTC
+Last updated 2023-12-20 07:51:30 UTC
 </div>
 </div>
 </body>

@@ -475,7 +475,7 @@ The code to set the variables is printed an can be evaluated using the shells <c
 <dl>
 <dt class="hdlist1"><strong>-o, --options</strong> OPTION-DEFINITION</dt>
 <dd>
-<p>Define the options supported by the shell script.
+<p>Define the options supported by the shell script. Can be given multiple times.
 See <a href="#OD"><strong>OPTION DEFINITION</strong></a> below.</p>
 </dd>
 <dt class="hdlist1"><strong>-n, --name</strong> NAME</dt>
@@ -557,12 +557,13 @@ The simple single definitions is:</p>
 <p>The option-names consist of one or more option chars or strings separated by colons.
 A single char defines an option that is given with one leading dash (e.g. <code>l</code> for <code>-l</code>).<br>
 Allowed option chars are all ASCII characters, except <code>-</code>, whitspace and control-characters.
-The following characters has to be escaped with a backslash in the definition: <code>#%+:=\</code>.
+The following characters has to be escaped with a backslash: <code>,#%+:=\</code>.
 Some of this characters need a backslash escape, when used on the command line.</p>
 <div class="paragraph">
 <p>A string defines a long option that is given with two leading dashes (e.g. <code>long</code> for <code>--long</code>).
 String may consist of any ASCII character, except <code>=</code>, whitespace and control characters.
-The minus (<code>-</code>) is allowed, as long it isn&#8217;t the first character.</p>
+The minus (<code>-</code>) is allowed, as long it isn&#8217;t the first character.
+The following characters has to be escaped with a backslash: <code>,#%+:\</code>.</p>
 </div>
 </dd>
 <dt class="hdlist1">option-type</dt>
@@ -998,7 +999,7 @@ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-10-29 08:14:06 UTC
+Last updated 2023-12-20 07:51:30 UTC
 </div>
 </div>
 </body>
