@@ -63,6 +63,9 @@ The calling script must provide the function `show_version` that displays the ve
 Produce code for named shell. Supported: `bash`, `ksh`, `zsh` and `sh`.
 Default: `sh`
 
+*-d, --debug*::
+Enable debug output to STDERR.
+
 *--help*::
 Print Parseargs help.
 

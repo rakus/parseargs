@@ -43,7 +43,8 @@ const PARSEARGS_SHELL_VAR: &str = "PARSEARGS_SHELL";
 )]
 #[command(version)]
 struct CmdLineArgs {
-    /// Definition of supported shell options
+    /// Definition of supported shell options.
+    /// Can be given multiple times.
     #[arg(short = 'o', long = "options", value_name = "OPT-DEFs")]
     options_list: Option<Vec<String>>,
 
@@ -65,7 +66,7 @@ struct CmdLineArgs {
     #[arg(short = 'r', long = "remainder", value_name = "SHELL-VAR", value_parser = parse_shell_name, verbatim_doc_comment)]
     remainder: Option<String>,
 
-    /// Stop option processing on first none-option
+    /// Stop option processing on first none-option.
     #[arg(short = 'p', long = "posix")]
     posix: bool,
 
@@ -87,18 +88,18 @@ struct CmdLineArgs {
     #[arg(short = 's', long = "shell", value_name = "SHELL")]
     shell: Option<String>,
 
-    /// Print help
+    /// Enable debug output to STDERR.
+    #[arg(short = 'd', long = "debug")]
+    debug: bool,
+
+    /// Print help.
     #[arg(long)]
     help: bool,
 
-    /// Print version
+    /// Print version.
     #[arg(long)]
     version: bool,
 
-    // Disabled for now
-    // /// enable debug output to STDERR.
-    // #[arg(short = 'd', long = "debug")]
-    // debug: bool,
     /// Shell script options
     #[arg(value_name = "SCRIPT-ARGS")]
     script_args: Vec<OsString>,
@@ -555,11 +556,21 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
         });
     }
 
+    if cmd_line_args.debug {
+        for oc in &opt_cfg_list {
+            eprintln!("{:?}", oc);
+        }
+    }
+
     // Determine shell. Either from option, environment var or the default.
     let shell = cmd_line_args
         .shell
         .clone()
         .unwrap_or(std::env::var(PARSEARGS_SHELL_VAR).unwrap_or(DEFAULT_SHELL.to_string()));
+
+    if cmd_line_args.debug {
+        eprintln!("Shell: {}", shell);
+    }
 
     // get the shell templates
     let shell_tmpl = shell_code::get_shell_template(shell.as_str());
