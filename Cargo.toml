@@ -17,6 +17,8 @@ strip = true        # Strip symbols from binary
 
 [dependencies]
 clap = { version = "4.3.0", features = ["derive"] }
+clap_lex = "0.6.0"
+stfu8 = "0.2.6"
 
 [dev-dependencies]
 assert_cmd = "2.0.12"
