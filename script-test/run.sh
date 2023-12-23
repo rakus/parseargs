@@ -128,7 +128,7 @@ for sh in $test_shells; do
     if command -v "$sh" >/dev/null 2>&1; then
         shells_tested="$shells_tested $sh"
 
-        native_dialect=$(get_supported_shell_dialects "$sh")
+        native_dialect=$(get_supported_shell_dialect "$sh")
         if [ -n "$native_dialect" ]; then
             # shellcheck disable=SC2086 # native_dialect _should_ split
             test_with_shell "$sh" $native_dialect sh
