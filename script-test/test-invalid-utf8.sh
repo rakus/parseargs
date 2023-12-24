@@ -15,13 +15,11 @@ script_name="$(basename "$0")"
 start_test
 
 
-if [ -n "$IS_MSYS" ] || [ -n "$IS_CYGWIN" ]; then
-    echo "Skipped on Windows"
+if [ -n "$IS_WINDOWS" ]; then
+    skip_test "on Windows"
 elif [ "$TEST_SHELL" = "yash" ]; then
-    echo "Skipped with shell Yash, as it can't handle invalid UTF-8"
+    skip_test "shell Yash, as it can't handle invalid UTF-8"
 else
-
-
     inv_1="$(printf '\303\050')"
     inv_2="$(printf '\240\241')"
     inv_3="$(printf '\342\050\241')"
