@@ -83,12 +83,12 @@ jobs:
     - name: Install Shells (linux only)
       if: ${{ matrix.os=='linux' }}
       run: |
-        sudo apt-get install -y -qq ksh zsh yash
+        sudo apt-get install -y -qq ksh zsh yash x11-utils
         sudo apt-get install -y mksh || true
 
     - name: Install Shells & Shellcheck (macos only)
       if: ${{ matrix.os=='macos' }}
-      run: brew install bash ksh93 shellcheck
+      run: brew install bash ksh93 shellcheck luit
 
     - name: Install Shellcheck (windows only)
       if: ${{ matrix.os=='windows' }}
