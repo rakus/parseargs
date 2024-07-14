@@ -587,7 +587,7 @@ fn format_parsing_error(opt_def_str: &str, index: usize, msg: &String) -> String
 /// Entry function to parse a comma-separated list of option definitions.
 ///
 /// Returns a (possibly empty) vector of OptConfig on success.
-pub fn parse(opt_def_str: &String) -> Result<Vec<OptConfig>, String> {
+pub fn parse(opt_def_str: &str) -> Result<Vec<OptConfig>, String> {
     if opt_def_str.is_empty() {
         Ok(Vec::new())
     } else {
