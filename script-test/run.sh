@@ -13,11 +13,13 @@ echo "Test Environment: $(uname -a)"
 case "$(uname -s | tr '[:upper:]' '[:lower:]')" in
     *cygwin*)
         IS_CYGWIN=TRUE
-        export IS_CYGWIN
+        IS_WINDOWS=TRUE
+        export IS_CYGWIN IS_WINDOWS
         ;;
     *msys* | *mingw*)
         IS_MSYS=TRUE
-        export IS_MSYS
+        IS_WINDOWS=TRUE
+        export IS_MSYS IS_WINDOWS
         ;;
 esac
 

@@ -52,6 +52,12 @@ start_test()
     echo "Testing:     $(command -v parseargs)"
 }
 
+skip_test()
+{
+        printf '\033[01;33mTEST SKIPPED - %s\033[0m\n' "$*"
+        exit 0
+}
+
 end_test()
 {
     rc=0
@@ -99,6 +105,7 @@ test_pa()
         ok "parseargs $args"
     else
         failed "parseargs $args"
+        parseargs "$@"
     fi
 
     return $rc

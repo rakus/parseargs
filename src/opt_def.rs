@@ -5,7 +5,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details).
 //
 
-use crate::cmd_line::CmdLineElement;
+//use crate::cmd_line::CmdLineElement;
 use std::cell::Cell;
 
 /// Target for a option. Parseargs either assigns a variable or calls
@@ -63,13 +63,20 @@ impl OptConfig {
     ///
     /// TODO: This is the only reason why we import CmdLineElement. Could also
     ///       be implemented for char or string.
-    pub fn match_option(&self, el: &CmdLineElement) -> bool {
-        match el {
-            CmdLineElement::ShortOption(c) => self.opt_chars.find(*c).is_some(),
-            CmdLineElement::LongOption(s) => self.opt_strings.contains(s),
-            CmdLineElement::LongOptionValue(s, _) => self.opt_strings.contains(s),
-            _ => false,
-        }
+    // pub fn match_option(&self, el: &CmdLineElement) -> bool {
+    //     match el {
+    //         CmdLineElement::ShortOption(c) => self.opt_chars.find(*c).is_some(),
+    //         CmdLineElement::LongOption(s) => self.opt_strings.contains(s),
+    //         CmdLineElement::LongOptionValue(s, _) => self.opt_strings.contains(s),
+    //         _ => false,
+    //     }
+    // }
+    pub fn match_option_long(&self, name: &String) -> bool {
+        self.opt_strings.contains(name)
+    }
+
+    pub fn match_option_short(&self, chr: &char) -> bool {
+        self.opt_chars.find(*chr).is_some()
     }
 
     /// Returns whether duplicate usage of this option is allowed.
@@ -632,6 +639,7 @@ fn parse_opt_def_list(ps: &mut ParserSource) -> Result<Vec<OptConfig>, ParsingEr
 
 #[cfg(test)]
 mod unit_tests {
+
     use super::*;
 
     fn get_od_debug() -> OptConfig {
@@ -688,13 +696,9 @@ mod unit_tests {
     #[test]
     fn test_opt_config_flag() {
         let oc = get_od_debug();
-        assert!(oc.match_option(&CmdLineElement::ShortOption('d')));
-        assert!(oc.match_option(&CmdLineElement::LongOption("debug".to_string())));
-        assert!(oc.match_option(&CmdLineElement::LongOptionValue(
-            "debug".to_string(),
-            "true".to_string()
-        )));
-        assert!(!oc.match_option(&CmdLineElement::Separator));
+        assert!(oc.match_option_short(&'d'));
+        assert!(oc.match_option_long(&"debug".to_string()));
+        assert!(oc.match_option_long(&"debug".to_string()));
 
         assert!(!oc.is_duplicate_allowed());
         assert!(!oc.is_target_function());
