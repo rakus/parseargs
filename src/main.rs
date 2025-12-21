@@ -174,6 +174,7 @@ fn shell_init_code(
                     OptType::Counter(_) => {
                         init_code.push(CodeChunk::AssignVar(name.clone(), VarValue::IntValue(0)));
                     }
+                    OptType::Help(_) => {}
                 }
                 handled_vars.push(name.clone());
             } else if let OptType::Counter(_) = &opt_cfg.opt_type {
@@ -357,6 +358,12 @@ fn parse_shell_options(
 
                         prev_counter = Some((target, oc.count_value.get()));
                     }
+                    OptType::Help(target) => {
+                        if opt_value.is_some() {
+                            Err(format!("{}: No value supported.", oc.options_string()))?;
+                        }
+                        shell_code.push(assign_target(target, VarValue::None));
+                    }
                 }
 
                 if oc.singleton {
@@ -535,7 +542,7 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
         opt_cfg_list.push(OptConfig {
             opt_chars: "".to_string(),
             opt_strings: vec!["help".to_string()],
-            opt_type: OptType::Flag(OptTarget::Function("show_help".to_string())),
+            opt_type: OptType::Help(OptTarget::Function("show_help".to_string())),
             required: false,
             singleton: true,
             assigned: Cell::new(false),
@@ -548,7 +555,7 @@ fn parseargs(cmd_line_args: CmdLineArgs) -> ! {
         opt_cfg_list.push(OptConfig {
             opt_chars: "".to_string(),
             opt_strings: vec!["version".to_string()],
-            opt_type: OptType::Flag(OptTarget::Function("show_version".to_string())),
+            opt_type: OptType::Help(OptTarget::Function("show_version".to_string())),
             required: false,
             singleton: true,
             assigned: Cell::new(false),

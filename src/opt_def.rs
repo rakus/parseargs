@@ -35,6 +35,9 @@ pub enum OptType {
     Assignment(OptTarget),
     /// Counting occuences on the command line. Like -v, -vvv, -v  -vvv,...
     Counter(OptTarget),
+    /// Help related option used for --help and --version. Cannot be created
+    /// by the user directly, only by requesting help/version support.
+    Help(OptTarget),
 }
 
 /// Describes a supported option.
@@ -96,7 +99,9 @@ impl OptConfig {
             | OptType::Counter(OptTarget::Function(name))
             | OptType::Counter(OptTarget::Variable(name))
             | OptType::ModeSwitch(OptTarget::Function(name), _)
-            | OptType::ModeSwitch(OptTarget::Variable(name), _) => name.clone(),
+            | OptType::ModeSwitch(OptTarget::Variable(name), _)
+            | OptType::Help(OptTarget::Variable(name))
+            | OptType::Help(OptTarget::Function(name)) => name.clone(),
         }
     }
 
@@ -106,7 +111,8 @@ impl OptConfig {
             OptType::Flag(ot)
             | OptType::Assignment(ot)
             | OptType::Counter(ot)
-            | OptType::ModeSwitch(ot, _) => ot,
+            | OptType::ModeSwitch(ot, _)
+            | OptType::Help(ot) => ot,
         }
     }
 
