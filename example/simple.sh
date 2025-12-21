@@ -19,7 +19,12 @@ show_help()
     echo " FILE...                    files to process"
 }
 
-eval "$(parseargs -n "$script_name" -H -o 'l:long#detailed,o:out-file=out_file,v+verbosity' -- "$@")"
+# next three lines to silence shellcheck
+detailed=
+out_file=
+verbosity=0
+
+eval "$(parseargs -n "$script_name" -h -o 'l:long#detailed,o:out-file=out_file,v+verbosity' -- "$@")"
 
 echo "Detailed:   '$detailed'"
 echo "Out-File:   '$out_file'"

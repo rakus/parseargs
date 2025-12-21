@@ -15,11 +15,13 @@ show_help()
 {
     echo "$script_name [OPTIONS] [FILE...]"
     echo " -d, --debug                enable debug via call to function set_debug"
-    echo " -o FILE, --out-file FILE   sets a argument via a call to the function set_file"
+    echo " -o FILE, --out-file FILE   sets a argument via a call to the function set_out_file"
     echo " -c, --copy                 set mode to copy"
     echo " -m, --mode                 set mode to move"
     echo " FILE...                    call to arg_cb"
 
+    echo ""
+    echo "Either --copy or --move required."
     echo ""
     echo "In this script parseargs mainly uses callbacks to shell functions to set"
     echo "options and parameter. Additional on error the function error_cb is called."
@@ -40,12 +42,12 @@ set_debug()
     debug=$1
 }
 
-# Called fo '-f' and '--file'
+# Called fo '-o' and '--out-file'
 # $1 is the option argument
-set_file()
+set_out_file()
 {
     echo "Output file: '$1'"
-    file=$1
+    out_file=$1
 }
 
 # Called for each program argument
@@ -61,7 +63,10 @@ err_cb()
     return 27
 }
 
-eval "$(parseargs -n "$script_name" -H -r remainder -a arg_cb -e err_cb -o 'd:debug#set_debug(),f:file=set_file(),c:copy#mode=copy,m:move#mode=move' -- "$@")"
+mode=
+eval "$(parseargs -n "$script_name" -sbash -h -r remainder -a arg_cb -e err_cb -o 'd:debug#set_debug(),o:out-file=set_out_file(),c:copy#*mode=copy,m:move#mode=move' -- "$@")"
 
-echo "Mode:      $mode"
-echo "REMAINDER: ${remainder[*]:-<EMPTY>}"
+echo "Mode:          $mode"
+echo "Output File:   $out_file"
+echo "Debug enabled: $debug"
+echo "REMAINDER:     ${remainder[*]:-<EMPTY>}"
