@@ -28,10 +28,10 @@ jobs:
             suffix: ''
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
 
     - name: Install cargo-get
-      uses: baptiste0928/cargo-install@v2
+      uses: baptiste0928/cargo-install@v3
       with:
         crate: cargo-get
 

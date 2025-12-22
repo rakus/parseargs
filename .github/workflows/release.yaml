@@ -21,15 +21,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
 
     - name: Extract release notes
       id: extract-release-notes
-      uses: ffurrer2/extract-release-notes@v1
+      uses: ffurrer2/extract-release-notes@v2
 
     - name: Create Release
       id:   create_release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
         name: "Release ${{ github.ref_name }}"
@@ -53,10 +53,10 @@ jobs:
             suffix: ''
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
 
     - name: Cache
-      uses: actions/cache@v3
+      uses: actions/cache@v5
       with:
         path: |
           ~/.cargo/registry
@@ -64,19 +64,19 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Install cargo-get
-      uses: baptiste0928/cargo-install@v2
+      uses: baptiste0928/cargo-install@v3
       with:
         crate: cargo-get
 
     - name: Install cargo-generate-rpm (linux only)
       if: ${{ matrix.os=='linux' }}
-      uses: baptiste0928/cargo-install@v2
+      uses: baptiste0928/cargo-install@v3
       with:
         crate: cargo-generate-rpm
 
     - name: Install cargo-deb (linux only)
       if: ${{ matrix.os=='linux' }}
-      uses: baptiste0928/cargo-install@v2
+      uses: baptiste0928/cargo-install@v3
       with:
         crate: cargo-deb
 

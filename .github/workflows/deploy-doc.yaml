@@ -9,16 +9,19 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: "write"
+
 jobs:
   adoc_build:
     runs-on: ubuntu-latest
     name: Build and deploy GH pages
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
 
     - name: Install cargo-get
-      uses: baptiste0928/cargo-install@v2
+      uses: baptiste0928/cargo-install@v3
       with:
         crate: cargo-get
 
@@ -37,10 +40,9 @@ jobs:
           program: "asciidoctor -a version=${{ steps.pa_version.outputs.version }} -a source-highlighter=pygments -D doc/target/site --backend=html5 -o parseargs-man.html doc/parseargs.1.adoc"
 
     - name: Deploy docs to ghpages
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@v4
       with:
-        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_branch: gh-pages
         publish_dir: ./doc/target/site
-
 
